@@ -6,6 +6,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "test": "bun test",
     "dev": "bun run src/index.ts",
     "build": "bun build ./src/index.ts --compile --outfile md --minify",
     "lint": "biome lint src/",
@@ -14,11 +15,14 @@
     "tc": "tsc --noEmit"
   },
   "dependencies": {
-    "@clack/prompts": "^0.11.0",
     "boxen": "^8.0.1",
+    "console-table-printer": "^2.15.0",
     "figlet": "^1.9.4",
     "gradient-string": "^3.0.0",
-    "picocolors": "^1.1.1"
+    "hyphen": "^1.14.1",
+    "marked": "^17.0.1",
+    "picocolors": "^1.1.1",
+    "shiki": "^3.21.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
