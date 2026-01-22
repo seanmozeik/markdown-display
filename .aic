@@ -1,0 +1,45 @@
+# markdown-display Release Configuration
+
+[release]
+# Clean and create dist directory
+rm -rf dist && mkdir -p dist
+
+# Build for all platforms
+# Note: Windows binary is named mdown.exe to avoid conflict with Windows 'md' command
+bun build ./src/index.ts --compile --target=bun-darwin-arm64 --outfile dist/md-darwin-arm64 --minify
+bun build ./src/index.ts --compile --target=bun-darwin-x64 --outfile dist/md-darwin-x64 --minify
+bun build ./src/index.ts --compile --target=bun-linux-x64 --outfile dist/md-linux-x64 --minify
+bun build ./src/index.ts --compile --target=bun-linux-arm64 --outfile dist/md-linux-arm64 --minify
+bun build ./src/index.ts --compile --target=bun-windows-x64 --outfile dist/mdown-windows-x64.exe --minify
+
+# Clean up bun build artifacts
+rm -f ./.*bun-build
+
+# Create tar.gz archives for Unix platforms
+cd dist && for f in md-darwin-* md-linux-*; do [ -f "$f" ] && tar -czvf "${f}.tar.gz" "$f" && rm "$f"; done
+
+# Create zip for Windows
+cd dist && [ -f "mdown-windows-x64.exe" ] && zip mdown-windows-x64.zip mdown-windows-x64.exe && rm mdown-windows-x64.exe
+
+# Generate checksums
+bun -e "import{readdir}from'fs/promises';for(const f of(await readdir('dist')).filter(f=>f.endsWith('.tar.gz')||f.endsWith('.zip'))){console.log(new Bun.CryptoHasher('sha256').update(await Bun.file('dist/'+f).arrayBuffer()).digest('hex')+'  '+f)}" > dist/checksums.txt && cat dist/checksums.txt
+
+[publish]
+# Create GitHub release with binaries
+gh release create "v$(bun -p "require('./package.json').version")" dist/*.tar.gz dist/*.zip dist/checksums.txt --title "v$(bun -p "require('./package.json').version")" --notes "$(aic changelog-latest)"
+
+# Update Homebrew formula with new version and SHA256 checksums
+VERSION=$(bun -p "require('./package.json').version") && \
+SHA_DARWIN_ARM64=$(bun -e "console.log(new Bun.CryptoHasher('sha256').update(await Bun.file('dist/md-darwin-arm64.tar.gz').arrayBuffer()).digest('hex'))") && \
+SHA_DARWIN_X64=$(bun -e "console.log(new Bun.CryptoHasher('sha256').update(await Bun.file('dist/md-darwin-x64.tar.gz').arrayBuffer()).digest('hex'))") && \
+SHA_LINUX_ARM64=$(bun -e "console.log(new Bun.CryptoHasher('sha256').update(await Bun.file('dist/md-linux-arm64.tar.gz').arrayBuffer()).digest('hex'))") && \
+SHA_LINUX_X64=$(bun -e "console.log(new Bun.CryptoHasher('sha256').update(await Bun.file('dist/md-linux-x64.tar.gz').arrayBuffer()).digest('hex'))") && \
+sed -i '' "s/version \".*\"/version \"$VERSION\"/" Formula/md.rb && \
+awk -v da="$SHA_DARWIN_ARM64" -v dx="$SHA_DARWIN_X64" -v la="$SHA_LINUX_ARM64" -v lx="$SHA_LINUX_X64" '/darwin-arm64\.tar\.gz/{found="da"} /darwin-x64\.tar\.gz/{found="dx"} /linux-arm64\.tar\.gz/{found="la"} /linux-x64\.tar\.gz/{found="lx"} /sha256/{if(found=="da"){sub(/sha256 ".*"/, "sha256 \""da"\"")} else if(found=="dx"){sub(/sha256 ".*"/, "sha256 \""dx"\"")} else if(found=="la"){sub(/sha256 ".*"/, "sha256 \""la"\"")} else if(found=="lx"){sub(/sha256 ".*"/, "sha256 \""lx"\"")}} {print}' Formula/md.rb > /tmp/md.rb && mv /tmp/md.rb Formula/md.rb
+
+# Copy formula to tap and commit
+cp Formula/md.rb ~/workspace/tap/Formula/md.rb && \
+cd ~/workspace/tap && \
+git add Formula/md.rb && \
+git commit -m "md $(bun -p "require('$OLDPWD/package.json').version")" && \
+git push
