@@ -1,80 +1,122 @@
 #!/usr/bin/env bun
 
-import boxen from 'boxen';
 import pkg from '../package.json' with { type: 'json' };
-import { showBanner } from './ui/banner.js';
-import { boxColors, frappe, pc, theme } from './ui/theme.js';
+import { getConfigPath, loadConfig } from './lib/config';
+import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } from './lib/pager';
+import { render } from './lib/render';
+import { getTerminalHeight, getTerminalWidth } from './lib/width';
+import { frappe, pc, theme } from './ui/theme';
 
 const args = Bun.argv.slice(2);
 const version = pkg.version;
 
-// Version flag
-if (args.includes('--version') || args.includes('-v')) {
+function getArgValue(args: string[], flag: string): string | undefined {
+  const idx = args.indexOf(flag);
+  if (idx !== -1 && idx + 1 < args.length) {
+    return args[idx + 1];
+  }
+  return undefined;
+}
+
+const flags = {
+  help: args.includes('--help') || args.includes('-h'),
+  noPager: args.includes('--no-pager'),
+  plain: args.includes('--plain') || args.includes('-p'),
+  raw: args.includes('--raw') || args.includes('-r'),
+  scroll: args.includes('--scroll'),
+  version: args.includes('--version') || args.includes('-v'),
+  width: getArgValue(args, '-w') ?? getArgValue(args, '--width'),
+  wrap: args.includes('--wrap')
+};
+
+if (flags.version) {
   console.log(`md v${version}`);
   process.exit(0);
 }
 
-// Help flag
-if (args.includes('--help') || args.includes('-h')) {
-  showBanner();
-  console.log(pc.dim(`v${version}`));
-  console.log();
-
+if (flags.help) {
   const helpText = `${theme.heading('Usage:')}
   ${frappe.mauve('md')} ${pc.dim('[file]')} ${pc.dim('[options]')}
-
-${theme.heading('Arguments:')}
-  ${frappe.blue('file')}              Markdown file to display
 
 ${theme.heading('Options:')}
   ${frappe.green('-h, --help')}        Show this help message
   ${frappe.green('-v, --version')}     Show version number
-  ${frappe.green('-p, --pager')}       Use pager for long content
-  ${frappe.green('-w, --width')}       Set output width (default: terminal width)
+  ${frappe.green('-w, --width <n>')}   Set output width (default: auto)
+  ${frappe.green('-p, --plain')}       No colors, just structure
+  ${frappe.green('-r, --raw')}         Pass through without rendering
+  ${frappe.green('--no-pager')}        Write directly, never use pager
+  ${frappe.green('--scroll')}          Horizontal scroll for code blocks
+  ${frappe.green('--wrap')}            Wrap code blocks (default)
 
 ${theme.heading('Examples:')}
   ${pc.dim('$')} md README.md
   ${pc.dim('$')} md docs/guide.md --width 80
   ${pc.dim('$')} cat file.md | md`;
 
-  console.log(
-    boxen(helpText, {
-      borderColor: boxColors.primary,
-      borderStyle: 'round',
-      padding: 1
-    })
-  );
+  console.log(helpText);
   process.exit(0);
 }
 
 async function main(): Promise<void> {
-  const filePath = args.find((arg) => !arg.startsWith('-'));
-
-  // Check for piped input
+  const filePath = args.find((arg) => !arg.startsWith('-') && arg !== flags.width);
   const hasStdin = !process.stdin.isTTY;
+  const stdoutTTY = process.stdout.isTTY ?? false;
+  const stdinTTY = process.stdin.isTTY ?? true;
 
   if (!filePath && !hasStdin) {
-    showBanner();
-    console.log(pc.dim(`v${version}`));
-    console.log();
     console.log(theme.muted('No file specified. Use --help for usage information.'));
     process.exit(1);
   }
 
+  let content: string;
   if (filePath) {
     const file = Bun.file(filePath);
-    const exists = await file.exists();
-
-    if (!exists) {
+    if (!(await file.exists())) {
       console.error(frappe.red(`Error: File not found: ${filePath}`));
       process.exit(1);
     }
+    content = await file.text();
+  } else {
+    content = await Bun.stdin.text();
+  }
 
-    const content = await file.text();
+  if (flags.raw) {
     console.log(content);
-  } else if (hasStdin) {
-    const content = await Bun.stdin.text();
-    console.log(content);
+    return;
+  }
+
+  const config = await loadConfig(getConfigPath());
+
+  if (flags.width) {
+    (config as { width: number | 'auto' }).width = parseInt(flags.width, 10);
+  }
+  if (flags.scroll) config.code.wrap = false;
+  if (flags.wrap) config.code.wrap = true;
+
+  let output = await render(content, config);
+
+  const useColor = shouldUseColor() && !flags.plain;
+  if (!useColor) {
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: ESC character required for ANSI stripping
+    output = output.replace(/\x1b\[[0-9;]*m/g, '');
+  }
+
+  const width = config.width === 'auto' ? getTerminalWidth() : config.width;
+  const lines = countLines(output, width as number);
+  const height = getTerminalHeight();
+
+  const pagingMode = shouldUsePager({
+    height,
+    lines,
+    noPager: flags.noPager,
+    stdinTTY,
+    stdoutTTY
+  });
+
+  if (pagingMode !== PagingMode.Never) {
+    await pipeToLess(output, config.pager);
+  } else {
+    console.log(output);
   }
 }
 

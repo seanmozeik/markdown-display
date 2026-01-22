@@ -1,0 +1,21 @@
+# src/lib/default-config.toml
+theme = "frappe"
+width = "auto"
+nerd_fonts = "auto"  # "auto" | true | false
+
+[code]
+wrap = true
+continuation = "↪"
+theme = "catppuccin-frappe"
+
+[text]
+hyphenation = true
+locale = "en-us"
+
+[links]
+osc8 = "auto"
+show_urls = false
+
+[pager]
+command = ""
+args = ["-R", "-F", "-K", "-X"]
