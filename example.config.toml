@@ -1,0 +1,78 @@
+# Example configuration for md (markdown-display)
+# Copy to ~/.config/md/config.toml to customize
+#
+# All settings shown are defaults unless noted otherwise.
+
+# Color theme (currently only "frappe" is supported)
+theme = "frappe"
+
+# Output width
+#   "auto" = detect terminal width (capped at 120 for readability)
+#   <number> = fixed width (minimum 40)
+width = "auto"
+
+# Nerd Font icons for code block language labels
+#   "auto" = disabled (opt-in required)
+#   true   = show icons (e.g.,  for TypeScript,  for Python)
+#   false  = show text labels (e.g., "ts", "python")
+nerd_fonts = false  # set to true if you have a Nerd Font installed
+
+
+[display]
+# Responsive side padding based on terminal width
+#   true  = add padding (1 char < 60w, 2 chars < 100w, 3 chars otherwise)
+#   false = no padding, use full width
+padding = true
+
+# Maximum content width for readability
+#   0       = disabled, use full terminal width
+#   80-120  = constrain content and center it
+maxWidth = 0
+
+
+[code]
+# Wrap long lines in code blocks
+wrap = true
+
+# Continuation character shown on wrapped lines
+continuation = "→"
+
+# Syntax highlighting theme (any Shiki theme)
+# Popular options: "catppuccin-frappe", "catppuccin-mocha", "github-dark",
+#                  "dracula", "nord", "one-dark-pro", "tokyo-night"
+theme = "catppuccin-frappe"
+
+
+[text]
+# Soft hyphenation for better text wrapping
+#   true  = break words at syllable boundaries when needed
+#   false = only break at spaces
+hyphenation = true
+
+# Hyphenation locale (affects syllable rules)
+locale = "en-us"
+
+
+[links]
+# OSC 8 hyperlinks (clickable links in supported terminals)
+#   "auto" = enable if terminal supports it
+#   true   = always enable
+#   false  = disable (show as styled text only)
+osc8 = "auto"
+
+# Show URL after link text
+#   true  = "link text (https://...)"
+#   false = just "link text"
+show_urls = false
+
+
+[pager]
+# Custom pager command (empty = auto-detect less/more)
+command = ""
+
+# Arguments passed to pager
+#   -r = raw control chars (needed for nerd font icons)
+#   -F = quit if content fits on screen
+#   -K = allow Ctrl+C to exit
+#   -X = don't clear screen on exit
+args = ["-r", "-F", "-K", "-X"]

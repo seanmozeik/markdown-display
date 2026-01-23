@@ -1,5 +1,5 @@
 // src/lib/elements/blockquote.ts
-import { frappe } from '../../ui/theme';
+import { getMutedColor, getSubtleColor } from '../../ui/themes/semantic';
 import { wrapText } from './text';
 
 interface BlockquoteConfig {
@@ -9,7 +9,8 @@ interface BlockquoteConfig {
 
 export function renderBlockquote(text: string, config?: BlockquoteConfig, depth = 1): string {
   const prefixRaw = '│ '.repeat(depth);
-  const prefix = frappe.surface2(prefixRaw);
+  const subtleColor = getSubtleColor();
+  const prefix = subtleColor(prefixRaw);
   const prefixWidth = prefixRaw.length;
 
   // If width provided, re-wrap content to fit within blockquote
@@ -28,5 +29,6 @@ export function renderBlockquote(text: string, config?: BlockquoteConfig, depth 
   }
 
   const lines = content.split('\n');
-  return lines.map((line) => `${prefix}${frappe.overlay1(line)}`).join('\n');
+  const mutedColor = getMutedColor();
+  return lines.map((line) => `${prefix}${mutedColor(line)}`).join('\n');
 }

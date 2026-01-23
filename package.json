@@ -9,6 +9,7 @@
     "test": "bun test",
     "dev": "bun run src/index.ts",
     "build": "bun build ./src/index.ts --compile --outfile md --minify",
+    "bundle": "bun build ./src/index.ts --outdir dist --target=bun --minify",
     "lint": "biome lint src/",
     "format": "biome format --write src/",
     "check": "biome check --write --unsafe src/",

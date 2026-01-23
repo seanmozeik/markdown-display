@@ -1,21 +1,35 @@
+import { dirname, join } from 'node:path';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
 // Embed font file for Bun standalone executable
 // @ts-expect-error - Bun-specific import attribute
 import fontPath from '../../node_modules/figlet/fonts/Slant.flf' with { type: 'file' };
-import { gradientColors } from './theme';
+import { getGradientColors } from './themes/semantic';
 
-// Create custom gradient using Catppuccin Frappe colors
-const bannerGradient = gradient([...gradientColors.banner]);
+// Create gradient lazily to pick up theme changes
+function getBannerGradient() {
+  return gradient([...getGradientColors().banner]);
+}
 
-// Load and register the embedded font
-const fontContent = await Bun.file(fontPath).text();
-figlet.parseFont('Slant', fontContent);
+// Lazy font loading for bytecode caching compatibility (no top-level await)
+let fontLoaded = false;
+
+async function ensureFontLoaded(): Promise<void> {
+  if (fontLoaded) return;
+  // In dev: fontPath is absolute. In bundled builds: fontPath is relative
+  // Use Bun.main for runtime path (import.meta.dir returns source dir with bytecode)
+  const resolvedFontPath = fontPath.startsWith('/') ? fontPath : join(dirname(Bun.main), fontPath);
+  const fontContent = await Bun.file(resolvedFontPath).text();
+  figlet.parseFont('Slant', fontContent);
+  fontLoaded = true;
+}
 
 /**
  * Display the ASCII art banner with gradient colors
  */
-export function showBanner(): void {
+export async function showBanner(): Promise<void> {
+  await ensureFontLoaded();
+
   const banner = figlet.textSync('md', {
     font: 'Slant',
     horizontalLayout: 'default'
@@ -28,6 +42,6 @@ export function showBanner(): void {
     .map((line) => indent + line)
     .join('\n');
 
-  console.log(`\n${bannerGradient(indentedBanner)}`);
+  console.log(`\n${getBannerGradient()(indentedBanner)}`);
   console.log(); // Spacing after banner
 }

@@ -44,7 +44,6 @@ describe('loadConfig', () => {
 describe('DEFAULT_CONFIG', () => {
   test('has expected structure', () => {
     expect(DEFAULT_CONFIG.theme).toBe('frappe');
-    expect(DEFAULT_CONFIG.code.theme).toBe('catppuccin-frappe');
     expect(DEFAULT_CONFIG.text.hyphenation).toBe(true);
     expect(DEFAULT_CONFIG.links.osc8).toBe('auto');
     expect(DEFAULT_CONFIG.pager.args).toContain('-r');

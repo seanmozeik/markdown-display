@@ -10,7 +10,6 @@ maxWidth = 0         # 0 = full width, 80-120 = constrain & center
 [code]
 wrap = true
 continuation = "→"
-theme = "catppuccin-frappe"
 
 [text]
 hyphenation = true

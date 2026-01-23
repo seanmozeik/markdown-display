@@ -21,7 +21,6 @@ export async function render(markdown: string, config: Config): Promise<string> 
   });
 
   const content = await parseMarkdown(markdown, {
-    codeTheme: config.code.theme,
     continuation: config.code.continuation,
     hyphenation: config.text.hyphenation,
     nerdFonts: resolveNerdFonts(config.nerd_fonts),

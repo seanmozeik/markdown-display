@@ -1,14 +1,15 @@
 import boxen from 'boxen';
-import { frappe } from '../../ui/theme';
+import { getHeadingColor, getHexColors, getSubtleColor } from '../../ui/themes/semantic';
 
 export function renderHeading(text: string, level: number, width: number): string {
   const cleanText = text.trim();
+  const colors = getHexColors();
 
   switch (level) {
     case 1: {
-      // H1 gets a prominent boxen container with strong mauve color
-      const boxed = boxen(frappe.mauve(cleanText), {
-        borderColor: '#ca9ee6', // frappe.mauve
+      const h1Color = getHeadingColor(1);
+      const boxed = boxen(h1Color(cleanText), {
+        borderColor: colors.h1,
         borderStyle: 'round',
         padding: { bottom: 0, left: 2, right: 2, top: 0 },
         textAlignment: 'center',
@@ -18,14 +19,14 @@ export function renderHeading(text: string, level: number, width: number): strin
     }
     case 2: {
       const lineLength = Math.max(0, width - cleanText.length - 2);
-      const line = frappe.surface2('─'.repeat(lineLength));
-      return `\n${frappe.lavender(cleanText)} ${line}\n`;
+      const line = getSubtleColor()('─'.repeat(lineLength));
+      return `\n${getHeadingColor(2)(cleanText)} ${line}\n`;
     }
     case 3:
-      return `\n${frappe.blue(cleanText)}\n`;
+      return `\n${getHeadingColor(3)(cleanText)}\n`;
     case 4:
-      return `\n${frappe.teal(cleanText)}\n`;
+      return `\n${getHeadingColor(4)(cleanText)}\n`;
     default:
-      return `\n${frappe.subtext1(cleanText)}\n`;
+      return `\n${getHeadingColor(5)(cleanText)}\n`;
   }
 }

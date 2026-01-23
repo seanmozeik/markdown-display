@@ -1,5 +1,5 @@
 // src/lib/elements/link.ts
-import { frappe } from '../../ui/theme';
+import { getLinkColor, getSubtleColor } from '../../ui/themes/semantic';
 
 interface LinkConfig {
   osc8: 'auto' | boolean;
@@ -18,15 +18,15 @@ export function renderLink(text: string, url: string, config: LinkConfig): strin
   const textAndUrlSame = text === url;
 
   if (useOsc8) {
-    const hyperlink = `\x1b]8;;${url}\x07${frappe.blue(text)}\x1b]8;;\x07`;
+    const hyperlink = `\x1b]8;;${url}\x07${getLinkColor()(text)}\x1b]8;;\x07`;
     if (config.show_urls && !textAndUrlSame) {
-      return `${hyperlink} ${frappe.surface2(`(${url})`)}`;
+      return `${hyperlink} ${getSubtleColor()(`(${url})`)}`;
     }
     return hyperlink;
   }
 
   if (textAndUrlSame) {
-    return frappe.blue(url);
+    return getLinkColor()(url);
   }
-  return `${frappe.blue(text)} ${frappe.surface2(`(${url})`)}`;
+  return `${getLinkColor()(text)} ${getSubtleColor()(`(${url})`)}`;
 }

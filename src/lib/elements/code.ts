@@ -1,6 +1,13 @@
 // src/lib/elements/code.ts
 import boxen from 'boxen';
-import { frappe } from '../../ui/theme';
+import { theme } from '../../ui/themes';
+import {
+  getHexColors,
+  getInlineCodeStyle,
+  getLinkColor,
+  getMutedColor,
+  getSubtleColor
+} from '../../ui/themes/semantic';
 import { visibleLength } from '../ansi';
 import { getLanguageLabel, normalizeLang, supportsNerdFonts } from '../languages';
 
@@ -273,7 +280,7 @@ function sliceByVisible(str: string, start: number, end?: number): [string, stri
 export function wrapCodeLines(code: string, width: number, continuation: string): string {
   const lines = code.split('\n');
   const wrapped: string[] = [];
-  const continuationPrefix = `${frappe.surface2(continuation)} `;
+  const continuationPrefix = `${getSubtleColor()(continuation)} `;
   const continuationWidth = continuation.length + 1;
 
   for (const line of lines) {
@@ -301,8 +308,7 @@ export function wrapCodeLines(code: string, width: number, continuation: string)
 }
 
 export function renderInlineCode(code: string): string {
-  // Glow-inspired: colored text on subtle background with padding
-  return frappe.inlineCode(` ${code} `);
+  return getInlineCodeStyle()(` ${code} `);
 }
 
 export async function renderCodeBlock(
@@ -316,26 +322,25 @@ export async function renderCodeBlock(
   try {
     // Skip syntax highlighting for very long content (bat pattern)
     if (code.length > MAX_LINE_LENGTH) {
-      highlighted = frappe.subtext0(code);
+      highlighted = getMutedColor()(code);
     } else {
       const langId = normalizeLang(lang);
 
       if (SUPPORTED_LANGS.has(langId)) {
         const { codeToANSI } = await import('@shikijs/cli');
-        // Cast langId and theme to their expected types since we've validated langId
         highlighted = await codeToANSI(
           code,
           langId as import('shiki').BundledLanguage,
-          config.theme as import('shiki').BundledTheme
+          theme().shikiTheme as import('shiki').BundledTheme
         );
         // Shiki adds a trailing newline - remove it to avoid extra empty line in boxen
         highlighted = highlighted.replace(/\n$/, '');
       } else {
-        highlighted = frappe.subtext0(code);
+        highlighted = getMutedColor()(code);
       }
     }
   } catch {
-    highlighted = frappe.subtext0(code);
+    highlighted = getMutedColor()(code);
   }
 
   const wrapped = config.wrap
@@ -346,10 +351,10 @@ export async function renderCodeBlock(
   const title = lang ? getLanguageLabel(lang, useNerdFonts) : undefined;
 
   const box = boxen(wrapped, {
-    borderColor: '#626880', // frappe.surface2
+    borderColor: getHexColors().subtle,
     borderStyle: 'round',
     padding: { bottom: 0, left: 1, right: 1, top: 0 },
-    title: title ? frappe.blue(title) : undefined,
+    title: title ? getLinkColor()(title) : undefined,
     titleAlignment: 'left',
     width: config.width
   });

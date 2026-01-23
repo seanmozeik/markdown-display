@@ -1,6 +1,7 @@
 // src/lib/parser.ts
 import { Marked } from 'marked';
-import { frappe } from '../ui/theme';
+import { theme } from '../ui/themes';
+import { getBoldStyle, getItalicStyle } from '../ui/themes/semantic';
 import { renderBlockquote } from './elements/blockquote';
 import { renderCodeBlock, renderInlineCode } from './elements/code';
 import { renderHeading } from './elements/heading';
@@ -14,7 +15,6 @@ interface ParseOptions {
   osc8?: boolean | 'auto';
   wrap?: boolean;
   hyphenation?: boolean;
-  codeTheme?: string;
   nerdFonts?: boolean;
   continuation?: string;
 }
@@ -40,7 +40,7 @@ export function createRenderer(options: ParseOptions) {
     },
 
     em({ text }: { text: string }) {
-      return frappe.italic(text);
+      return getItalicStyle()(text);
     },
     heading({ tokens, depth }: { tokens: unknown[]; depth: number }) {
       const text = this.parser.parseInline(tokens);
@@ -78,7 +78,7 @@ export function createRenderer(options: ParseOptions) {
     },
 
     strong({ text }: { text: string }) {
-      return frappe.bold(text);
+      return getBoldStyle()(text);
     },
 
     table({
@@ -123,7 +123,7 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
   for (const [id, { code, lang }] of codeBlocks) {
     const rendered = await renderCodeBlock(code, lang, {
       continuation: options.continuation ?? '→',
-      theme: options.codeTheme ?? 'catppuccin-frappe',
+      theme: theme().shikiTheme,
       useNerdFonts: options.nerdFonts,
       width: options.width,
       wrap: options.wrap ?? true

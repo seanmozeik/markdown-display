@@ -12,7 +12,6 @@ export interface Config {
   code: {
     wrap: boolean;
     continuation: string;
-    theme: string;
   };
   text: {
     hyphenation: boolean;

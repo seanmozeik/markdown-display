@@ -1,5 +1,5 @@
 // src/lib/elements/list.ts
-import { frappe } from '../../ui/theme';
+import { getAccentColor } from '../../ui/themes/semantic';
 import { visibleLength } from '../ansi';
 import { wrapText } from './text';
 
@@ -21,7 +21,8 @@ export function renderListItem(
   const indent = ' '.repeat(depth * INDENT_SIZE);
   const bulletChar = BULLETS[depth % BULLETS.length] ?? '•';
   const bullet = ordered ? `${index ?? 1}.` : bulletChar;
-  const coloredBullet = frappe.mauve(bullet);
+  const accentColor = getAccentColor();
+  const coloredBullet = accentColor(bullet);
 
   // If no width specified, return without wrapping
   if (!config?.width) {

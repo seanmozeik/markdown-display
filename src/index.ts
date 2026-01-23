@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import boxen from 'boxen';
+import pc from 'picocolors';
 import pkg from '../package.json' with { type: 'json' };
 import { stripAnsi } from './lib/ansi';
 import { getConfigPath, loadConfig } from './lib/config';
@@ -8,7 +9,15 @@ import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } fr
 import { render } from './lib/render';
 import { getTerminalHeight, getTerminalWidth } from './lib/width';
 import { showBanner } from './ui/banner';
-import { boxColors, frappe, pc, theme } from './ui/theme';
+import { availableThemes, isValidTheme, loadTheme } from './ui/themes';
+import {
+  getAccentColor,
+  getErrorColor,
+  getHeadingColor,
+  getHexColors,
+  getMutedColor,
+  getSuccessColor
+} from './ui/themes/semantic';
 
 const args = Bun.argv.slice(2);
 const version = pkg.version;
@@ -23,68 +32,103 @@ function getArgValue(args: string[], flag: string): string | undefined {
 
 const flags = {
   help: args.includes('--help') || args.includes('-h'),
+  listThemes: args.includes('--list-themes'),
   noPager: args.includes('--no-pager'),
   plain: args.includes('--plain') || args.includes('-p'),
   raw: args.includes('--raw') || args.includes('-r'),
   scroll: args.includes('--scroll'),
+  theme: getArgValue(args, '-t') ?? getArgValue(args, '--theme'),
   version: args.includes('--version') || args.includes('-v'),
   width: getArgValue(args, '-w') ?? getArgValue(args, '--width'),
   wrap: args.includes('--wrap')
 };
 
-if (flags.version) {
-  showBanner();
-  console.log(
-    boxen(pc.dim(`v${version}`), {
-      borderColor: boxColors.primary,
-      borderStyle: 'round',
-      padding: { bottom: 0, left: 2, right: 2, top: 0 }
-    })
-  );
-  process.exit(0);
-}
+async function main(): Promise<void> {
+  // Load config and initialize theme early so it's available for --version and --help
+  const config = await loadConfig(getConfigPath());
 
-if (flags.help) {
-  showBanner();
-  console.log(pc.dim(`v${version}`));
-  console.log();
+  // Handle --list-themes before loading theme (doesn't need theme colors)
+  if (flags.listThemes) {
+    console.log('Available themes:\n');
+    for (const id of availableThemes()) {
+      console.log(`  ${id}`);
+    }
+    process.exit(0);
+  }
 
-  const helpText = `${theme.heading('Usage:')}
-  ${frappe.mauve('md')} ${pc.dim('[file]')} ${pc.dim('[options]')}
+  // CLI --theme flag overrides config
+  const themeName = flags.theme ?? config.theme;
+  if (flags.theme && !isValidTheme(flags.theme)) {
+    console.error(`Invalid theme: ${flags.theme}`);
+    console.error('Use --list-themes to see available themes.');
+    process.exit(1);
+  }
+  loadTheme(themeName);
 
-${theme.heading('Options:')}
-  ${frappe.green('-h, --help')}        Show this help message
-  ${frappe.green('-v, --version')}     Show version number
-  ${frappe.green('-w, --width <n>')}   Set output width (default: auto)
-  ${frappe.green('-p, --plain')}       No colors, just structure
-  ${frappe.green('-r, --raw')}         Pass through without rendering
-  ${frappe.green('--no-pager')}        Write directly, never use pager
-  ${frappe.green('--scroll')}          Horizontal scroll for code blocks
-  ${frappe.green('--wrap')}            Wrap code blocks (default)
+  // Get colors after theme is loaded
+  const colors = getHexColors();
+  const heading = getHeadingColor(1);
+  const accent = getAccentColor();
+  const success = getSuccessColor();
+  const muted = getMutedColor();
+  const error = getErrorColor();
 
-${theme.heading('Examples:')}
+  if (flags.version) {
+    await showBanner();
+    console.log(
+      boxen(pc.dim(`v${version}`), {
+        borderColor: colors.accent,
+        borderStyle: 'round',
+        padding: { bottom: 0, left: 2, right: 2, top: 0 }
+      })
+    );
+    process.exit(0);
+  }
+
+  if (flags.help) {
+    await showBanner();
+    console.log(pc.dim(`v${version}`));
+    console.log();
+
+    const helpText = `${heading('Usage:')}
+  ${accent('md')} ${pc.dim('[file]')} ${pc.dim('[options]')}
+
+${heading('Options:')}
+  ${success('-h, --help')}        Show this help message
+  ${success('-v, --version')}     Show version number
+  ${success('-w, --width <n>')}   Set output width (default: auto)
+  ${success('-t, --theme <name>')} Color theme (e.g., nord, dracula)
+  ${success('--list-themes')}     List all available themes
+  ${success('-p, --plain')}       No colors, just structure
+  ${success('-r, --raw')}         Pass through without rendering
+  ${success('--no-pager')}        Write directly, never use pager
+  ${success('--scroll')}          Horizontal scroll for code blocks
+  ${success('--wrap')}            Wrap code blocks (default)
+
+${heading('Examples:')}
   ${pc.dim('$')} md README.md
   ${pc.dim('$')} md docs/guide.md --width 80
   ${pc.dim('$')} cat file.md | md`;
 
-  console.log(
-    boxen(helpText, {
-      borderColor: boxColors.primary,
-      borderStyle: 'round',
-      padding: 1
-    })
-  );
-  process.exit(0);
-}
+    console.log(
+      boxen(helpText, {
+        borderColor: colors.accent,
+        borderStyle: 'round',
+        padding: 1
+      })
+    );
+    process.exit(0);
+  }
 
-async function main(): Promise<void> {
-  const filePath = args.find((arg) => !arg.startsWith('-') && arg !== flags.width);
+  const filePath = args.find(
+    (arg) => !arg.startsWith('-') && arg !== flags.width && arg !== flags.theme
+  );
   const hasStdin = !process.stdin.isTTY;
   const stdoutTTY = process.stdout.isTTY ?? false;
   const stdinTTY = process.stdin.isTTY ?? true;
 
   if (!filePath && !hasStdin) {
-    console.log(theme.muted('No file specified. Use --help for usage information.'));
+    console.log(muted('No file specified. Use --help for usage information.'));
     process.exit(1);
   }
 
@@ -92,7 +136,7 @@ async function main(): Promise<void> {
   if (filePath) {
     const file = Bun.file(filePath);
     if (!(await file.exists())) {
-      console.error(frappe.red(`Error: File not found: ${filePath}`));
+      console.error(error(`Error: File not found: ${filePath}`));
       process.exit(1);
     }
     content = await file.text();
@@ -105,10 +149,10 @@ async function main(): Promise<void> {
     return;
   }
 
-  const config = await loadConfig(getConfigPath());
-
   if (flags.width) {
     (config as { width: number | 'auto' }).width = parseInt(flags.width, 10);
+    // Explicit --width overrides maxWidth constraint
+    config.display.maxWidth = 0;
   }
   if (flags.scroll) config.code.wrap = false;
   if (flags.wrap) config.code.wrap = true;
@@ -140,6 +184,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error(frappe.red(String(err)));
+  console.error(getErrorColor()(String(err)));
   process.exit(1);
 });
