@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-01-23
+
+### Added
+- Add a helpful banner shown when the CLI starts
+- Add responsive layout with a maximum width and padding to improve readability
+- Add full markdown rendering support for files and input streams
+
+### Changed
+- Update ANSI handling so that wrapped lines inside code blocks keep correct styling
+- Update Nerd Fonts processing for consistent icon display
+
+### Fixed
+- Fix layout width calculation on narrow screens
+- Fix ANSI state reset when wrapping lines inside code blocks
+
 ## [0.1.0] - 2026-01-23
 
 ### Added
