@@ -25,8 +25,10 @@ describe('md CLI', () => {
 
   test('renders markdown file', async () => {
     const result = await $`bun run src/index.ts ${testFile} --no-pager`.text();
-    expect(result).toContain('Test');
-    expect(result).toContain('Hello world');
+    // Strip soft hyphens for comparison (hyphenation inserts \u00AD)
+    const normalized = result.replace(/\u00AD/g, '');
+    expect(normalized).toContain('Test');
+    expect(normalized).toContain('Hello world');
   });
 
   test('--raw passes through without rendering', async () => {

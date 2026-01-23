@@ -14,6 +14,7 @@ interface ParseOptions {
   wrap?: boolean;
   hyphenation?: boolean;
   codeTheme?: string;
+  nerdFonts?: boolean;
 }
 
 const codeBlocks = new Map<string, { code: string; lang: string }>();
@@ -92,6 +93,7 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
     const rendered = await renderCodeBlock(code, lang, {
       continuation: '↪',
       theme: options.codeTheme ?? 'catppuccin-frappe',
+      useNerdFonts: options.nerdFonts,
       width: options.width,
       wrap: options.wrap ?? true
     });

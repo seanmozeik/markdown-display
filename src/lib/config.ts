@@ -5,6 +5,10 @@ export interface Config {
   theme: string;
   width: 'auto' | number;
   nerd_fonts: 'auto' | boolean;
+  display: {
+    padding: boolean;
+    maxWidth: number;
+  };
   code: {
     wrap: boolean;
     continuation: string;

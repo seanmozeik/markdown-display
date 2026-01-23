@@ -11,7 +11,7 @@ describe('parseMarkdown', () => {
 
   test('parses paragraphs', async () => {
     const md = 'This is a paragraph.';
-    const result = await parseMarkdown(md, { width: 80 });
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
     expect(result).toContain('This is a paragraph');
   });
 
@@ -24,7 +24,7 @@ describe('parseMarkdown', () => {
 
   test('parses links', async () => {
     const md = '[Example](https://example.com)';
-    const result = await parseMarkdown(md, { osc8: false, width: 80 });
+    const result = await parseMarkdown(md, { hyphenation: false, osc8: false, width: 80 });
     expect(result).toContain('Example');
     expect(result).toContain('example.com');
   });

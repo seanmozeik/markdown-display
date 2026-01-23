@@ -49,4 +49,9 @@ describe('DEFAULT_CONFIG', () => {
     expect(DEFAULT_CONFIG.links.osc8).toBe('auto');
     expect(DEFAULT_CONFIG.pager.args).toContain('-R');
   });
+
+  test('has display config with defaults', () => {
+    expect(DEFAULT_CONFIG.display.padding).toBe(true);
+    expect(DEFAULT_CONFIG.display.maxWidth).toBe(0);
+  });
 });

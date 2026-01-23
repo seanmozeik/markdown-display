@@ -3,6 +3,10 @@ theme = "frappe"
 width = "auto"
 nerd_fonts = "auto"  # "auto" | true | false
 
+[display]
+padding = true       # responsive padding based on terminal width
+maxWidth = 0         # 0 = full width, 80-120 = constrain & center
+
 [code]
 wrap = true
 continuation = "↪"

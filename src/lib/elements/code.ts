@@ -2,7 +2,7 @@
 import boxen from 'boxen';
 import { frappe } from '../../ui/theme';
 import { visibleLength } from '../ansi';
-import { getLanguageIcon, normalizeLang, supportsNerdFonts } from '../languages';
+import { getLanguageLabel, normalizeLang, supportsNerdFonts } from '../languages';
 
 interface CodeConfig {
   width: number;
@@ -217,15 +217,14 @@ export async function renderCodeBlock(
     ? wrapCodeLines(highlighted, config.width - 4, config.continuation)
     : highlighted;
 
-  // Build header with language icon/label
-  const langIcon = getLanguageIcon(lang, useNerdFonts);
-  const title = langIcon ? `${langIcon} ${lang}` : lang || 'code';
+  // Build header with language label (icon when nerd fonts enabled, name otherwise)
+  const title = lang ? getLanguageLabel(lang, useNerdFonts) : undefined;
 
   return boxen(wrapped, {
     borderColor: '#626880', // frappe.surface2
     borderStyle: 'round',
     padding: { bottom: 0, left: 1, right: 1, top: 0 },
-    title: lang ? frappe.blue(title) : undefined,
+    title: title ? frappe.blue(title) : undefined,
     titleAlignment: 'left',
     width: config.width
   });
