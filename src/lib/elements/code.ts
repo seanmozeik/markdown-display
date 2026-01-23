@@ -107,15 +107,13 @@ const SUPPORTED_LANGS = new Set([
   'wasm'
 ]);
 
-// ESC character for ANSI escape sequence parsing
+// ESC character for ANSI escape sequence parsing (avoid literal \x1b for linter)
 const ESC = String.fromCharCode(0x1b);
 const ANSI_RESET = `${ESC}[0m`;
+const ANSI_SGR_PATTERN = new RegExp(`${ESC}\\[([0-9;]*)m`);
 
-/**
- * Extract ANSI SGR parameters from a sequence like "\x1b[32;1m" -> ["32", "1"]
- */
 function parseAnsiParams(sequence: string): string[] {
-  const match = sequence.match(/\x1b\[([0-9;]*)m/);
+  const match = sequence.match(ANSI_SGR_PATTERN);
   if (!match || !match[1]) return [];
   return match[1].split(';').filter(Boolean);
 }
@@ -136,7 +134,8 @@ class AnsiState {
     let i = 0;
 
     while (i < params.length) {
-      const code = Number.parseInt(params[i], 10);
+      const param = params[i]!;
+      const code = Number.parseInt(param, 10);
 
       if (code === 0) {
         // Reset all
@@ -145,7 +144,7 @@ class AnsiState {
         this.bgColor = null;
       } else if (code >= 1 && code <= 9) {
         // Style attributes (bold, dim, italic, underline, etc.)
-        this.styles.add(params[i]);
+        this.styles.add(param);
       } else if (code >= 21 && code <= 29) {
         // Turn off style attributes
         this.styles.delete(String(code - 20));
@@ -167,13 +166,13 @@ class AnsiState {
         i += 4;
       } else if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) {
         // Basic foreground colors
-        this.fgColor = params[i];
+        this.fgColor = param;
       } else if (code === 39) {
         // Default foreground
         this.fgColor = null;
       } else if ((code >= 40 && code <= 47) || (code >= 100 && code <= 107)) {
         // Basic background colors
-        this.bgColor = params[i];
+        this.bgColor = param;
       } else if (code === 49) {
         // Default background
         this.bgColor = null;

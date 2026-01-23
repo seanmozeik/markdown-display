@@ -42,9 +42,9 @@ describe('supportsNerdFonts', () => {
 describe('getLanguageIcon (deprecated, delegates to getLanguageLabel)', () => {
   test('returns icon for known languages when nerd fonts enabled', () => {
     // Icons exist and are non-empty strings
-    expect(getLanguageIcon('typescript', true)).toBe(LANGUAGES.typescript.icon);
-    expect(getLanguageIcon('python', true)).toBe(LANGUAGES.python.icon);
-    expect(getLanguageIcon('rust', true)).toBe(LANGUAGES.rust.icon);
+    expect(getLanguageIcon('typescript', true)).toBe(LANGUAGES.typescript!.icon);
+    expect(getLanguageIcon('python', true)).toBe(LANGUAGES.python!.icon);
+    expect(getLanguageIcon('rust', true)).toBe(LANGUAGES.rust!.icon);
   });
 
   test('returns normalized language name when nerd fonts disabled', () => {
@@ -54,9 +54,9 @@ describe('getLanguageIcon (deprecated, delegates to getLanguageLabel)', () => {
 
   test('handles language aliases', () => {
     // 'ts' normalizes to 'typescript'
-    expect(getLanguageIcon('ts', true)).toBe(LANGUAGES.typescript.icon);
-    expect(getLanguageIcon('js', true)).toBe(LANGUAGES.javascript.icon);
-    expect(getLanguageIcon('py', true)).toBe(LANGUAGES.python.icon);
+    expect(getLanguageIcon('ts', true)).toBe(LANGUAGES.typescript!.icon);
+    expect(getLanguageIcon('js', true)).toBe(LANGUAGES.javascript!.icon);
+    expect(getLanguageIcon('py', true)).toBe(LANGUAGES.python!.icon);
   });
 
   test('returns normalized name for unknown languages', () => {
@@ -98,7 +98,7 @@ describe('LANGUAGES', () => {
 describe('getLanguageLabel', () => {
   test('returns icon when nerdFonts enabled and icon exists', () => {
     const result = getLanguageLabel('typescript', true);
-    expect(result).toBe(LANGUAGES.typescript.icon);
+    expect(result).toBe(LANGUAGES.typescript!.icon);
     expect(result.length).toBeGreaterThan(0);
   });
 

@@ -1,5 +1,5 @@
 // src/lib/parser.ts
-import { Marked } from 'marked';
+import { Marked, type Token } from 'marked';
 import { theme } from '../ui/themes';
 import { getBoldStyle, getItalicStyle } from '../ui/themes/semantic';
 import { renderBlockquote } from './elements/blockquote';
@@ -19,44 +19,56 @@ interface ParseOptions {
   continuation?: string;
 }
 
+// Type for marked renderer context (this binding)
+interface RendererThis {
+  parser: {
+    parse(tokens: Token[]): string;
+    parseInline(tokens: Token[]): string;
+  };
+}
+
 const codeBlocks = new Map<string, { code: string; lang: string }>();
 
 export function createRenderer(options: ParseOptions) {
   return {
-    blockquote({ tokens }: { tokens: unknown[] }) {
+    blockquote(this: RendererThis, { tokens }: { tokens: Token[] }): string {
       // Blockquotes contain block-level tokens (paragraphs, lists, etc.), not inline
       const text = this.parser.parse(tokens);
       return `${renderBlockquote(text.trim(), { hyphenation: options.hyphenation, width: options.width })}\n\n`;
     },
 
-    code({ text, lang }: { text: string; lang?: string }) {
+    code({ text, lang }: { text: string; lang?: string }): string {
       const id = `__CODE_${Date.now()}_${Math.random().toString(36)}__`;
       codeBlocks.set(id, { code: text, lang: lang ?? '' });
       return id;
     },
 
-    codespan({ text }: { text: string }) {
+    codespan({ text }: { text: string }): string {
       return renderInlineCode(text);
     },
 
-    em({ text }: { text: string }) {
+    em({ text }: { text: string }): string {
       return getItalicStyle()(text);
     },
-    heading({ tokens, depth }: { tokens: unknown[]; depth: number }) {
+
+    heading(this: RendererThis, { tokens, depth }: { tokens: Token[]; depth: number }): string {
       const text = this.parser.parseInline(tokens);
       return renderHeading(text, depth, options.width);
     },
 
-    hr() {
+    hr(): string {
       return `\n${'─'.repeat(options.width)}\n\n`;
     },
 
-    link({ href, tokens }: { href: string; tokens: unknown[] }) {
+    link(this: RendererThis, { href, tokens }: { href: string; tokens: Token[] }): string {
       const text = this.parser.parseInline(tokens);
       return renderLink(text, href, { osc8: options.osc8 ?? 'auto', show_urls: false });
     },
 
-    list({ items, ordered }: { items: Array<{ tokens: unknown[] }>; ordered: boolean }) {
+    list(
+      this: RendererThis,
+      { items, ordered }: { items: Array<{ tokens: Token[] }>; ordered: boolean }
+    ): string {
       return `${items
         .map((item, i) => {
           const text = this.parser.parseInline(item.tokens);
@@ -68,16 +80,16 @@ export function createRenderer(options: ParseOptions) {
         .join('\n')}\n`;
     },
 
-    listitem({ tokens }: { tokens: unknown[] }) {
+    listitem(this: RendererThis, { tokens }: { tokens: Token[] }): string {
       return this.parser.parseInline(tokens);
     },
 
-    paragraph({ tokens }: { tokens: unknown[] }) {
+    paragraph(this: RendererThis, { tokens }: { tokens: Token[] }): string {
       const text = this.parser.parseInline(tokens);
       return `${renderText(text, { hyphenation: options.hyphenation ?? true, width: options.width })}\n`;
     },
 
-    strong({ text }: { text: string }) {
+    strong({ text }: { text: string }): string {
       return getBoldStyle()(text);
     },
 
@@ -87,7 +99,7 @@ export function createRenderer(options: ParseOptions) {
     }: {
       header: Array<{ text: string }>;
       rows: Array<Array<{ text: string }>>;
-    }) {
+    }): string {
       return `${renderTable(
         header.map((h) => h.text),
         rows.map((row) => row.map((c) => c.text))

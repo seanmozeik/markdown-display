@@ -45,8 +45,9 @@ describe('wrapCodeLines', () => {
 
     // Second line should have both bold and color re-applied
     // The state is reconstructed as "1;32" (styles then color)
-    expect(lines[1]).toMatch(/\x1b\[.*1.*m/); // Has bold
-    expect(lines[1]).toMatch(/\x1b\[.*32.*m/); // Has green
+    expect(lines[1]).toContain('\x1b['); // Has ANSI escape
+    expect(lines[1]).toContain('1;'); // Has bold code
+    expect(lines[1]).toContain('32'); // Has green code
   });
 
   test('preserves 256-color syntax highlighting (Shiki style)', () => {
