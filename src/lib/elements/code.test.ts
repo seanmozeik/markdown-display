@@ -5,17 +5,64 @@ import { renderCodeBlock, renderInlineCode, wrapCodeLines } from './code';
 describe('wrapCodeLines', () => {
   test('wraps long lines with continuation marker', () => {
     const code = 'x'.repeat(100);
-    const result = wrapCodeLines(code, 50, '↪');
+    const result = wrapCodeLines(code, 50, '→');
 
-    expect(result).toContain('↪');
+    expect(result).toContain('→');
     const lines = result.split('\n');
     expect(lines.length).toBeGreaterThan(1);
   });
 
   test('preserves short lines', () => {
     const code = 'short line';
-    const result = wrapCodeLines(code, 80, '↪');
+    const result = wrapCodeLines(code, 80, '→');
     expect(result).toBe('short line');
+  });
+
+  test('preserves ANSI state across wrapped lines', () => {
+    // Simulate syntax-highlighted string that wraps
+    // \x1b[32m = basic green foreground
+    const greenText = `\x1b[32m${'x'.repeat(100)}\x1b[0m`;
+    const result = wrapCodeLines(greenText, 50, '→');
+
+    const lines = result.split('\n');
+    expect(lines.length).toBeGreaterThan(1);
+
+    // First line should have reset at the end
+    expect(lines[0]).toContain('\x1b[0m');
+
+    // Second line content should have the green color re-applied
+    // (after the continuation marker which has its own styling)
+    expect(lines[1]).toContain('\x1b[32m');
+  });
+
+  test('handles multiple ANSI styles (bold + color)', () => {
+    // Bold (1) + green (32)
+    const styledText = `\x1b[1;32m${'x'.repeat(100)}\x1b[0m`;
+    const result = wrapCodeLines(styledText, 50, '→');
+
+    const lines = result.split('\n');
+    expect(lines.length).toBeGreaterThan(1);
+
+    // Second line should have both bold and color re-applied
+    // The state is reconstructed as "1;32" (styles then color)
+    expect(lines[1]).toMatch(/\x1b\[.*1.*m/); // Has bold
+    expect(lines[1]).toMatch(/\x1b\[.*32.*m/); // Has green
+  });
+
+  test('preserves 256-color syntax highlighting (Shiki style)', () => {
+    // Shiki uses 256-color mode: \x1b[38;5;Nm for foreground
+    // Simulate a highlighted string literal in color 114 (light green)
+    const shikiStyled = `\x1b[38;5;114m"this is a long string"${'x'.repeat(80)}\x1b[0m`;
+    const result = wrapCodeLines(shikiStyled, 50, '→');
+
+    const lines = result.split('\n');
+    expect(lines.length).toBeGreaterThan(1);
+
+    // First line ends with reset
+    expect(lines[0]).toContain('\x1b[0m');
+
+    // Second line should re-apply the 256-color: \x1b[38;5;114m
+    expect(lines[1]).toContain('\x1b[38;5;114m');
   });
 });
 

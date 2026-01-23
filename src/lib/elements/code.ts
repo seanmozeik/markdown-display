@@ -102,10 +102,110 @@ const SUPPORTED_LANGS = new Set([
 
 // ESC character for ANSI escape sequence parsing
 const ESC = String.fromCharCode(0x1b);
+const ANSI_RESET = `${ESC}[0m`;
+
+/**
+ * Extract ANSI SGR parameters from a sequence like "\x1b[32;1m" -> ["32", "1"]
+ */
+function parseAnsiParams(sequence: string): string[] {
+  const match = sequence.match(/\x1b\[([0-9;]*)m/);
+  if (!match || !match[1]) return [];
+  return match[1].split(';').filter(Boolean);
+}
+
+/**
+ * Track active ANSI styles. Handles basic SGR codes:
+ * 0 = reset, 1 = bold, 2 = dim, 3 = italic, 4 = underline,
+ * 30-37/90-97 = fg color, 38;5;N = 256 fg, 38;2;R;G;B = RGB fg,
+ * 40-47/100-107 = bg color, 48;5;N = 256 bg, 48;2;R;G;B = RGB bg
+ */
+class AnsiState {
+  private styles: Set<string> = new Set();
+  private fgColor: string | null = null;
+  private bgColor: string | null = null;
+
+  apply(sequence: string): void {
+    const params = parseAnsiParams(sequence);
+    let i = 0;
+
+    while (i < params.length) {
+      const code = Number.parseInt(params[i], 10);
+
+      if (code === 0) {
+        // Reset all
+        this.styles.clear();
+        this.fgColor = null;
+        this.bgColor = null;
+      } else if (code >= 1 && code <= 9) {
+        // Style attributes (bold, dim, italic, underline, etc.)
+        this.styles.add(params[i]);
+      } else if (code >= 21 && code <= 29) {
+        // Turn off style attributes
+        this.styles.delete(String(code - 20));
+      } else if (code === 38 && params[i + 1] === '5') {
+        // 256 foreground color
+        this.fgColor = `38;5;${params[i + 2]}`;
+        i += 2;
+      } else if (code === 38 && params[i + 1] === '2') {
+        // RGB foreground color
+        this.fgColor = `38;2;${params[i + 2]};${params[i + 3]};${params[i + 4]}`;
+        i += 4;
+      } else if (code === 48 && params[i + 1] === '5') {
+        // 256 background color
+        this.bgColor = `48;5;${params[i + 2]}`;
+        i += 2;
+      } else if (code === 48 && params[i + 1] === '2') {
+        // RGB background color
+        this.bgColor = `48;2;${params[i + 2]};${params[i + 3]};${params[i + 4]}`;
+        i += 4;
+      } else if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) {
+        // Basic foreground colors
+        this.fgColor = params[i];
+      } else if (code === 39) {
+        // Default foreground
+        this.fgColor = null;
+      } else if ((code >= 40 && code <= 47) || (code >= 100 && code <= 107)) {
+        // Basic background colors
+        this.bgColor = params[i];
+      } else if (code === 49) {
+        // Default background
+        this.bgColor = null;
+      }
+
+      i++;
+    }
+  }
+
+  toSequence(): string {
+    const parts: string[] = [];
+
+    for (const style of this.styles) {
+      parts.push(style);
+    }
+
+    if (this.fgColor) parts.push(this.fgColor);
+    if (this.bgColor) parts.push(this.bgColor);
+
+    if (parts.length === 0) return '';
+    return `${ESC}[${parts.join(';')}m`;
+  }
+
+  clone(): AnsiState {
+    const copy = new AnsiState();
+    copy.styles = new Set(this.styles);
+    copy.fgColor = this.fgColor;
+    copy.bgColor = this.bgColor;
+    return copy;
+  }
+
+  isEmpty(): boolean {
+    return this.styles.size === 0 && this.fgColor === null && this.bgColor === null;
+  }
+}
 
 /**
  * Slice a string by visible character positions, preserving ANSI codes.
- * Returns [sliced portion, remainder]
+ * Returns [sliced portion with reset, remainder with state prefix]
  */
 function sliceByVisible(str: string, start: number, end?: number): [string, string] {
   let visiblePos = 0;
@@ -114,14 +214,21 @@ function sliceByVisible(str: string, start: number, end?: number): [string, stri
   let foundStart = start === 0;
   let foundEnd = end === undefined;
 
-  const ansiStartRegex = new RegExp(`^${ESC}\\[[0-9;]*m`);
+  const state = new AnsiState();
+  let stateAtEnd: AnsiState | null = null;
 
-  for (let i = 0; i < str.length; i++) {
-    // Check for ANSI escape sequence
-    const match = str.slice(i).match(ansiStartRegex);
-    if (match) {
-      // Skip over ANSI sequence (don't count as visible)
-      i += match[0].length - 1;
+  const ansiRegex = new RegExp(`${ESC}\\[[0-9;]*m`, 'g');
+
+  let i = 0;
+  while (i < str.length) {
+    // Check for ANSI escape sequence at current position
+    ansiRegex.lastIndex = i;
+    const match = ansiRegex.exec(str);
+
+    if (match && match.index === i) {
+      // Found ANSI sequence at current position - update state
+      state.apply(match[0]);
+      i += match[0].length;
       continue;
     }
 
@@ -135,9 +242,12 @@ function sliceByVisible(str: string, start: number, end?: number): [string, stri
 
     if (!foundEnd && end !== undefined && visiblePos === end) {
       endIdx = i + 1;
+      stateAtEnd = state.clone();
       foundEnd = true;
       break;
     }
+
+    i++;
   }
 
   // If we didn't find start, it means start is beyond string length
@@ -145,7 +255,19 @@ function sliceByVisible(str: string, start: number, end?: number): [string, stri
     return ['', ''];
   }
 
-  return [str.slice(startIdx, endIdx), str.slice(endIdx)];
+  const sliced = str.slice(startIdx, endIdx);
+  const remainder = str.slice(endIdx);
+
+  // Add reset to end of sliced portion if we had active state
+  const slicedWithReset = stateAtEnd && !stateAtEnd.isEmpty() ? sliced + ANSI_RESET : sliced;
+
+  // Prepend state to remainder if there was active state
+  const remainderWithState =
+    stateAtEnd && !stateAtEnd.isEmpty() && remainder
+      ? stateAtEnd.toSequence() + remainder
+      : remainder;
+
+  return [slicedWithReset, remainderWithState];
 }
 
 export function wrapCodeLines(code: string, width: number, continuation: string): string {

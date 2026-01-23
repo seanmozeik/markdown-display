@@ -15,7 +15,9 @@ describe('md CLI', () => {
 
   test('--version shows version', async () => {
     const result = await $`bun run src/index.ts --version`.text();
-    expect(result).toMatch(/md v\d+\.\d+\.\d+/);
+    expect(result).toMatch(/v\d+\.\d+\.\d+/);
+    // Banner shows figlet ASCII art + version in box
+    expect(result).toContain('╭');
   });
 
   test('--help shows help', async () => {

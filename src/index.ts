@@ -1,12 +1,14 @@
 #!/usr/bin/env bun
 
+import boxen from 'boxen';
 import pkg from '../package.json' with { type: 'json' };
 import { stripAnsi } from './lib/ansi';
 import { getConfigPath, loadConfig } from './lib/config';
 import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } from './lib/pager';
 import { render } from './lib/render';
 import { getTerminalHeight, getTerminalWidth } from './lib/width';
-import { frappe, pc, theme } from './ui/theme';
+import { showBanner } from './ui/banner';
+import { boxColors, frappe, pc, theme } from './ui/theme';
 
 const args = Bun.argv.slice(2);
 const version = pkg.version;
@@ -31,11 +33,22 @@ const flags = {
 };
 
 if (flags.version) {
-  console.log(`md v${version}`);
+  showBanner();
+  console.log(
+    boxen(pc.dim(`v${version}`), {
+      borderColor: boxColors.primary,
+      borderStyle: 'round',
+      padding: { bottom: 0, left: 2, right: 2, top: 0 }
+    })
+  );
   process.exit(0);
 }
 
 if (flags.help) {
+  showBanner();
+  console.log(pc.dim(`v${version}`));
+  console.log();
+
   const helpText = `${theme.heading('Usage:')}
   ${frappe.mauve('md')} ${pc.dim('[file]')} ${pc.dim('[options]')}
 
@@ -54,7 +67,13 @@ ${theme.heading('Examples:')}
   ${pc.dim('$')} md docs/guide.md --width 80
   ${pc.dim('$')} cat file.md | md`;
 
-  console.log(helpText);
+  console.log(
+    boxen(helpText, {
+      borderColor: boxColors.primary,
+      borderStyle: 'round',
+      padding: 1
+    })
+  );
   process.exit(0);
 }
 
