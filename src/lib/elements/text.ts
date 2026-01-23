@@ -34,9 +34,12 @@ export function wrapText(text: string, width: number, options?: WrapOptions): st
     const testLine = currentLine ? `${currentLine} ${word}` : word;
 
     if (visibleLength(testLine) <= width) {
-      currentLine = testLine;
+      // Word fits - strip soft hyphens since we don't need to break here
+      const cleanWord = word.replace(/\u00AD/g, '');
+      currentLine = currentLine ? `${currentLine} ${cleanWord}` : cleanWord;
     } else if (currentLine) {
-      lines.push(currentLine);
+      // Strip soft hyphens from the completed line before pushing
+      lines.push(currentLine.replace(/\u00AD/g, ''));
       // Try to fit word, potentially breaking at soft hyphens
       currentLine = breakWord(word, width);
     } else {
@@ -49,7 +52,8 @@ export function wrapText(text: string, width: number, options?: WrapOptions): st
   }
 
   if (currentLine) {
-    lines.push(currentLine);
+    // Strip any remaining soft hyphens from the last line
+    lines.push(currentLine.replace(/\u00AD/g, ''));
   }
 
   return lines.join('\n');

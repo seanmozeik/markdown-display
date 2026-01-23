@@ -1,5 +1,6 @@
 // src/lib/parser.ts
 import { Marked } from 'marked';
+import { frappe } from '../ui/theme';
 import { renderBlockquote } from './elements/blockquote';
 import { renderCodeBlock, renderInlineCode } from './elements/code';
 import { renderHeading } from './elements/heading';
@@ -21,8 +22,10 @@ const codeBlocks = new Map<string, { code: string; lang: string }>();
 
 export function createRenderer(options: ParseOptions) {
   return {
-    blockquote({ text }: { text: string }) {
-      return `${renderBlockquote(text.trim())}\n`;
+    blockquote({ tokens }: { tokens: unknown[] }) {
+      // Blockquotes contain block-level tokens (paragraphs, lists, etc.), not inline
+      const text = this.parser.parse(tokens);
+      return `${renderBlockquote(text.trim())}\n\n`;
     },
 
     code({ text, lang }: { text: string; lang?: string }) {
@@ -36,9 +39,10 @@ export function createRenderer(options: ParseOptions) {
     },
 
     em({ text }: { text: string }) {
-      return `\x1b[3m${text}\x1b[23m`;
+      return frappe.italic(text);
     },
-    heading({ text, depth }: { text: string; depth: number }) {
+    heading({ tokens, depth }: { tokens: unknown[]; depth: number }) {
+      const text = this.parser.parseInline(tokens);
       return renderHeading(text, depth, options.width);
     },
 
@@ -46,24 +50,34 @@ export function createRenderer(options: ParseOptions) {
       return `\n${'─'.repeat(options.width)}\n\n`;
     },
 
-    link({ href, text }: { href: string; text: string }) {
+    link({ href, tokens }: { href: string; tokens: unknown[] }) {
+      const text = this.parser.parseInline(tokens);
       return renderLink(text, href, { osc8: options.osc8 ?? 'auto', show_urls: false });
     },
 
-    list({ items, ordered }: { items: Array<{ text: string }>; ordered: boolean }) {
-      return `${items.map((item, i) => renderListItem(item.text, ordered, 0, i + 1)).join('\n')}\n`;
+    list({ items, ordered }: { items: Array<{ tokens: unknown[] }>; ordered: boolean }) {
+      return `${items
+        .map((item, i) => {
+          const text = this.parser.parseInline(item.tokens);
+          return renderListItem(text, ordered, 0, i + 1, {
+            hyphenation: options.hyphenation,
+            width: options.width
+          });
+        })
+        .join('\n')}\n`;
     },
 
-    listitem({ text }: { text: string }) {
-      return text;
+    listitem({ tokens }: { tokens: unknown[] }) {
+      return this.parser.parseInline(tokens);
     },
 
-    paragraph({ text }: { text: string }) {
+    paragraph({ tokens }: { tokens: unknown[] }) {
+      const text = this.parser.parseInline(tokens);
       return `${renderText(text, { hyphenation: options.hyphenation ?? true, width: options.width })}\n`;
     },
 
     strong({ text }: { text: string }) {
-      return `\x1b[1m${text}\x1b[22m`;
+      return frappe.bold(text);
     },
 
     table({
@@ -81,6 +95,19 @@ export function createRenderer(options: ParseOptions) {
   };
 }
 
+// Decode HTML entities that marked escapes (we're outputting to terminal, not HTML)
+const HTML_ENTITIES: Record<string, string> = {
+  '&#39;': "'",
+  '&amp;': '&',
+  '&gt;': '>',
+  '&lt;': '<',
+  '&quot;': '"'
+};
+
+function decodeHtmlEntities(text: string): string {
+  return text.replace(/&#?\w+;/g, (entity) => HTML_ENTITIES[entity] ?? entity);
+}
+
 export async function parseMarkdown(markdown: string, options: ParseOptions): Promise<string> {
   codeBlocks.clear();
 
@@ -88,6 +115,9 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
   marked.use({ renderer: createRenderer(options) });
 
   let result = marked.parse(markdown) as string;
+
+  // Decode HTML entities since we're outputting to terminal, not HTML
+  result = decodeHtmlEntities(result);
 
   for (const [id, { code, lang }] of codeBlocks) {
     const rendered = await renderCodeBlock(code, lang, {

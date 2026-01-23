@@ -71,6 +71,21 @@ function ansiBg(code: number): (text: string) => string {
   return (text: string) => `\x1b[48;5;${code}m${text}\x1b[0m`;
 }
 
+// Combined foreground + background
+function ansiFgBg(fg: number, bg: number): (text: string) => string {
+  return (text: string) => `\x1b[38;5;${fg};48;5;${bg}m${text}\x1b[0m`;
+}
+
+// Bold with color
+function ansiBoldColor(code: number): (text: string) => string {
+  return (text: string) => `\x1b[1;38;5;${code}m${text}\x1b[0m`;
+}
+
+// Italic with color
+function ansiItalicColor(code: number): (text: string) => string {
+  return (text: string) => `\x1b[3;38;5;${code}m${text}\x1b[0m`;
+}
+
 // Theme colors as functions
 export const frappe = {
   // Base colors
@@ -82,10 +97,18 @@ export const frappe = {
     surface0: ansiBg(ansi.surface0),
     surface1: ansiBg(ansi.surface1)
   },
+
   blue: ansiColor(ansi.blue),
+
+  // Text emphasis (bold + italic with colors)
+  bold: ansiBoldColor(ansi.peach),
   crust: ansiColor(ansi.crust),
   flamingo: ansiColor(ansi.flamingo),
   green: ansiColor(ansi.green),
+
+  // Inline code styling (glow-inspired: foreground + background)
+  inlineCode: ansiFgBg(ansi.flamingo, ansi.surface0),
+  italic: ansiItalicColor(ansi.sky),
   lavender: ansiColor(ansi.lavender),
   mantle: ansiColor(ansi.mantle),
   maroon: ansiColor(ansi.maroon),

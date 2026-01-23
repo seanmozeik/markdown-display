@@ -179,7 +179,8 @@ export function wrapCodeLines(code: string, width: number, continuation: string)
 }
 
 export function renderInlineCode(code: string): string {
-  return frappe.bg.surface0(` ${code} `);
+  // Glow-inspired: colored text on subtle background with padding
+  return frappe.inlineCode(` ${code} `);
 }
 
 export async function renderCodeBlock(
@@ -205,6 +206,8 @@ export async function renderCodeBlock(
           langId as import('shiki').BundledLanguage,
           config.theme as import('shiki').BundledTheme
         );
+        // Shiki adds a trailing newline - remove it to avoid extra empty line in boxen
+        highlighted = highlighted.replace(/\n$/, '');
       } else {
         highlighted = frappe.subtext0(code);
       }
@@ -220,7 +223,7 @@ export async function renderCodeBlock(
   // Build header with language label (icon when nerd fonts enabled, name otherwise)
   const title = lang ? getLanguageLabel(lang, useNerdFonts) : undefined;
 
-  return boxen(wrapped, {
+  const box = boxen(wrapped, {
     borderColor: '#626880', // frappe.surface2
     borderStyle: 'round',
     padding: { bottom: 0, left: 1, right: 1, top: 0 },
@@ -228,4 +231,7 @@ export async function renderCodeBlock(
     titleAlignment: 'left',
     width: config.width
   });
+
+  // Add trailing newline for proper spacing after code block
+  return `${box}\n`;
 }

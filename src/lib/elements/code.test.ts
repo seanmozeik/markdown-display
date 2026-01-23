@@ -65,4 +65,34 @@ describe('renderCodeBlock', () => {
 
     expect(result).toContain('some code');
   });
+
+  test('does not have extra empty line at bottom of code block', async () => {
+    const result = await renderCodeBlock('const x = 1;', 'ts', {
+      continuation: '↪',
+      theme: 'catppuccin-frappe',
+      useNerdFonts: false,
+      width: 60,
+      wrap: true
+    });
+
+    const lines = result.split('\n');
+    // Structure should be: [header, code, closing border, empty from trailing newline]
+    // Line at index 1 should be the code line (between header and closing border)
+    const codeLine = lines[1];
+    expect(codeLine).toMatch(/const/);
+    // There should be exactly 4 lines (header, code, border, empty)
+    expect(lines.length).toBe(4);
+  });
+
+  test('ends with newline for proper spacing after block', async () => {
+    const result = await renderCodeBlock('const x = 1;', 'ts', {
+      continuation: '↪',
+      theme: 'catppuccin-frappe',
+      useNerdFonts: false,
+      width: 60,
+      wrap: true
+    });
+
+    expect(result.endsWith('\n')).toBe(true);
+  });
 });

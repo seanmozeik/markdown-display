@@ -35,4 +35,27 @@ describe('parseMarkdown', () => {
     expect(result).toContain('┌');
     expect(result).toContain('A');
   });
+
+  test('renders bold text with ANSI codes', async () => {
+    const md = 'This is **bold** text';
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    // Should contain ANSI bold+color codes (combined format), not literal asterisks
+    expect(result).toContain('\x1b[1;38;5;');
+    expect(result).not.toContain('**');
+  });
+
+  test('renders italic text with ANSI codes', async () => {
+    const md = 'This is *italic* text';
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    // Should contain ANSI italic+color codes (combined format), not literal asterisks
+    expect(result).toContain('\x1b[3;38;5;');
+    expect(result).not.toContain('*italic*');
+  });
+
+  test('renders bold in list items', async () => {
+    const md = '- Item with **bold** text';
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('\x1b[1;38;5;');
+    expect(result).not.toContain('**');
+  });
 });
