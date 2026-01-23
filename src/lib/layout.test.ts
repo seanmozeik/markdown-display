@@ -4,21 +4,29 @@ import { applyPadding, calculateLayout } from './layout';
 describe('calculateLayout', () => {
   describe('with maxWidth set (readability mode)', () => {
     test('centers content when terminal is wider than maxWidth', () => {
-      const result = calculateLayout(120, { maxWidth: 80, padding: true });
+      // Terminal 120, content would be 120, but maxWidth limits to 80
+      const result = calculateLayout(120, 120, { maxWidth: 80, padding: true });
       expect(result.contentWidth).toBe(80);
       expect(result.sidePadding).toBe(20); // (120 - 80) / 2
     });
 
+    test('centers on actual terminal width even when content width is capped', () => {
+      // Terminal 200, content capped at 120, maxWidth 80 - should center on 200
+      const result = calculateLayout(200, 120, { maxWidth: 80, padding: true });
+      expect(result.contentWidth).toBe(80);
+      expect(result.sidePadding).toBe(60); // (200 - 80) / 2
+    });
+
     test('constrains to terminal width minus minimum padding', () => {
-      const result = calculateLayout(60, { maxWidth: 80, padding: true });
+      const result = calculateLayout(60, 60, { maxWidth: 80, padding: true });
       expect(result.contentWidth).toBe(58); // 60 - 2 (min 1 each side)
       expect(result.sidePadding).toBe(1);
     });
   });
 
   describe('with padding disabled', () => {
-    test('uses full terminal width', () => {
-      const result = calculateLayout(100, { maxWidth: 0, padding: false });
+    test('uses default content width', () => {
+      const result = calculateLayout(200, 100, { maxWidth: 0, padding: false });
       expect(result.contentWidth).toBe(100);
       expect(result.sidePadding).toBe(0);
     });
@@ -26,19 +34,19 @@ describe('calculateLayout', () => {
 
   describe('responsive padding breakpoints', () => {
     test('narrow terminal (<60) gets 1 space padding', () => {
-      const result = calculateLayout(50, { maxWidth: 0, padding: true });
+      const result = calculateLayout(50, 50, { maxWidth: 0, padding: true });
       expect(result.sidePadding).toBe(1);
       expect(result.contentWidth).toBe(48);
     });
 
     test('medium terminal (60-100) gets 2 space padding', () => {
-      const result = calculateLayout(80, { maxWidth: 0, padding: true });
+      const result = calculateLayout(80, 80, { maxWidth: 0, padding: true });
       expect(result.sidePadding).toBe(2);
       expect(result.contentWidth).toBe(76);
     });
 
     test('wide terminal (>100) gets 3 space padding', () => {
-      const result = calculateLayout(120, { maxWidth: 0, padding: true });
+      const result = calculateLayout(120, 120, { maxWidth: 0, padding: true });
       expect(result.sidePadding).toBe(3);
       expect(result.contentWidth).toBe(114);
     });

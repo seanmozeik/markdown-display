@@ -37,7 +37,7 @@ describe('loadConfig', () => {
     await Bun.write(testConfigPath, '[code]\nwrap = false');
     const config = await loadConfig(testConfigPath);
     expect(config.code.wrap).toBe(false);
-    expect(config.code.continuation).toBe('↪'); // default preserved
+    expect(config.code.continuation).toBe('→'); // default preserved
   });
 });
 
@@ -47,7 +47,7 @@ describe('DEFAULT_CONFIG', () => {
     expect(DEFAULT_CONFIG.code.theme).toBe('catppuccin-frappe');
     expect(DEFAULT_CONFIG.text.hyphenation).toBe(true);
     expect(DEFAULT_CONFIG.links.osc8).toBe('auto');
-    expect(DEFAULT_CONFIG.pager.args).toContain('-R');
+    expect(DEFAULT_CONFIG.pager.args).toContain('-r');
   });
 
   test('has display config with defaults', () => {

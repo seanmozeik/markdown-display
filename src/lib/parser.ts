@@ -16,6 +16,7 @@ interface ParseOptions {
   hyphenation?: boolean;
   codeTheme?: string;
   nerdFonts?: boolean;
+  continuation?: string;
 }
 
 const codeBlocks = new Map<string, { code: string; lang: string }>();
@@ -25,7 +26,7 @@ export function createRenderer(options: ParseOptions) {
     blockquote({ tokens }: { tokens: unknown[] }) {
       // Blockquotes contain block-level tokens (paragraphs, lists, etc.), not inline
       const text = this.parser.parse(tokens);
-      return `${renderBlockquote(text.trim())}\n\n`;
+      return `${renderBlockquote(text.trim(), { hyphenation: options.hyphenation, width: options.width })}\n\n`;
     },
 
     code({ text, lang }: { text: string; lang?: string }) {
@@ -121,7 +122,7 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
 
   for (const [id, { code, lang }] of codeBlocks) {
     const rendered = await renderCodeBlock(code, lang, {
-      continuation: '↪',
+      continuation: options.continuation ?? '→',
       theme: options.codeTheme ?? 'catppuccin-frappe',
       useNerdFonts: options.nerdFonts,
       width: options.width,

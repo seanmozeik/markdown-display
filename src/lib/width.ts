@@ -12,6 +12,11 @@ export function getTerminalWidth(override?: number): number {
   return Math.max(MIN_WIDTH, Math.min(MAX_AUTO_WIDTH, detected));
 }
 
+// Get actual terminal width without capping (for centering calculations)
+export function getRawTerminalWidth(): number {
+  return process.stdout.columns ?? DEFAULT_WIDTH;
+}
+
 export function getTerminalHeight(): number {
   return process.stdout.rows ?? 24;
 }

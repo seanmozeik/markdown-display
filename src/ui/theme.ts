@@ -101,13 +101,13 @@ export const frappe = {
   blue: ansiColor(ansi.blue),
 
   // Text emphasis (bold + italic with colors)
-  bold: ansiBoldColor(ansi.peach),
+  bold: ansiBoldColor(ansi.pink),
   crust: ansiColor(ansi.crust),
   flamingo: ansiColor(ansi.flamingo),
   green: ansiColor(ansi.green),
 
   // Inline code styling (glow-inspired: foreground + background)
-  inlineCode: ansiFgBg(ansi.flamingo, ansi.surface0),
+  inlineCode: ansiFgBg(ansi.rosewater, ansi.mantle),
   italic: ansiItalicColor(ansi.sky),
   lavender: ansiColor(ansi.lavender),
   mantle: ansiColor(ansi.mantle),

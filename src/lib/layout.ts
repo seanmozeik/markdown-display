@@ -10,26 +10,30 @@ export interface LayoutResult {
   sidePadding: number;
 }
 
-export function calculateLayout(terminalWidth: number, config: LayoutConfig): LayoutResult {
+export function calculateLayout(
+  terminalWidth: number,
+  defaultContentWidth: number,
+  config: LayoutConfig
+): LayoutResult {
   const { maxWidth, padding } = config;
 
-  // Readability mode: constrain to maxWidth and center
+  // Readability mode: constrain to maxWidth and center on actual terminal
   if (maxWidth > 0) {
     const contentWidth = Math.min(maxWidth, terminalWidth - 2); // min 1 padding each side
     const sidePadding = Math.floor((terminalWidth - contentWidth) / 2);
     return { contentWidth, sidePadding };
   }
 
-  // Padding disabled: full width
+  // Padding disabled: use default content width (may be capped)
   if (!padding) {
-    return { contentWidth: terminalWidth, sidePadding: 0 };
+    return { contentWidth: defaultContentWidth, sidePadding: 0 };
   }
 
-  // Responsive padding breakpoints
-  const sidePadding = terminalWidth < 60 ? 1 : terminalWidth <= 100 ? 2 : 3;
+  // Responsive padding breakpoints based on default content width
+  const sidePadding = defaultContentWidth < 60 ? 1 : defaultContentWidth <= 100 ? 2 : 3;
 
   return {
-    contentWidth: terminalWidth - sidePadding * 2,
+    contentWidth: defaultContentWidth - sidePadding * 2,
     sidePadding
   };
 }

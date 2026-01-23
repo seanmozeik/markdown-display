@@ -164,13 +164,13 @@ export function wrapCodeLines(code: string, width: number, continuation: string)
     const [firstChunk, firstRest] = sliceByVisible(line, 0, width);
     wrapped.push(firstChunk);
 
-    // Subsequent chunks reserve space for continuation prefix
+    // Subsequent chunks reserve space for continuation prefix (+ 1 extra space)
     let remaining = firstRest;
-    const chunkWidth = width - continuationWidth;
+    const chunkWidth = width - continuationWidth - 1;
 
     while (visibleLength(remaining) > 0) {
       const [chunk, rest] = sliceByVisible(remaining, 0, chunkWidth);
-      wrapped.push(`${continuationPrefix}${chunk}`);
+      wrapped.push(`${continuationPrefix} ${chunk}`);
       remaining = rest;
     }
   }

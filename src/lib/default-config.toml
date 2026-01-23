@@ -9,7 +9,7 @@ maxWidth = 0         # 0 = full width, 80-120 = constrain & center
 
 [code]
 wrap = true
-continuation = "↪"
+continuation = "→"
 theme = "catppuccin-frappe"
 
 [text]
@@ -22,4 +22,4 @@ show_urls = false
 
 [pager]
 command = ""
-args = ["-R", "-F", "-K", "-X"]
+args = ["-r", "-F", "-K", "-X"]

@@ -6,8 +6,8 @@ export function renderHeading(text: string, level: number, width: number): strin
 
   switch (level) {
     case 1: {
-      // H1 gets a prominent boxen container
-      const boxed = boxen(frappe.text(cleanText), {
+      // H1 gets a prominent boxen container with strong mauve color
+      const boxed = boxen(frappe.mauve(cleanText), {
         borderColor: '#ca9ee6', // frappe.mauve
         borderStyle: 'round',
         padding: { bottom: 0, left: 2, right: 2, top: 0 },

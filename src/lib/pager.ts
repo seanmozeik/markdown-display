@@ -49,13 +49,16 @@ export function getPagerCommand(config: PagerConfig): {
   // For less, inject smart defaults if no args configured
   let args = config.args;
   if (command === 'less' && args.length === 0) {
-    args = ['-R', '-F', '-K', '-X']; // Raw ANSI, quit-if-one-screen, quit-on-interrupt, no-init
+    args = ['-r', '-F', '-K', '-X']; // Raw control chars (for nerd fonts), quit-if-one-screen, quit-on-interrupt, no-init
   }
 
   return {
     args,
     command,
-    env: { LESSCHARSET: 'UTF-8' } // Ensure UTF-8 (bat pattern)
+    env: {
+      LESSCHARSET: 'UTF-8', // Ensure UTF-8 (bat pattern)
+      LESSUTFBINFMT: '*d' // Display Unicode PUA chars (nerd fonts) as-is, not escaped
+    }
   };
 }
 

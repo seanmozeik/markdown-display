@@ -69,7 +69,7 @@ describe('getPagerCommand', () => {
     delete Bun.env.MD_PAGER;
     const result = getPagerCommand({ args: [], command: '' });
     expect(result.command).toBe('less');
-    expect(result.args).toContain('-R'); // raw ANSI
+    expect(result.args).toContain('-r'); // raw control chars (for nerd fonts)
   });
 });
 
