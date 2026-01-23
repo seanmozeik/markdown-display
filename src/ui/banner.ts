@@ -3,7 +3,7 @@ import gradient from 'gradient-string';
 // Embed font file for Bun standalone executable
 // @ts-expect-error - Bun-specific import attribute
 import fontPath from '../../node_modules/figlet/fonts/Slant.flf' with { type: 'file' };
-import { gradientColors } from './theme.js';
+import { gradientColors } from './theme';
 
 // Create custom gradient using Catppuccin Frappe colors
 const bannerGradient = gradient([...gradientColors.banner]);

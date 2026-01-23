@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import pkg from '../package.json' with { type: 'json' };
+import { stripAnsi } from './lib/ansi';
 import { getConfigPath, loadConfig } from './lib/config';
 import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } from './lib/pager';
 import { render } from './lib/render';
@@ -97,8 +98,7 @@ async function main(): Promise<void> {
 
   const useColor = shouldUseColor() && !flags.plain;
   if (!useColor) {
-    // biome-ignore lint/suspicious/noControlCharactersInRegex: ESC character required for ANSI stripping
-    output = output.replace(/\x1b\[[0-9;]*m/g, '');
+    output = stripAnsi(output);
   }
 
   const width = config.width === 'auto' ? getTerminalWidth() : config.width;

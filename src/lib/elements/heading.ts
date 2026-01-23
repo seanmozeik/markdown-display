@@ -21,9 +21,11 @@ export function renderHeading(text: string, level: number, width: number): strin
       const line = frappe.surface2('─'.repeat(lineLength));
       return `\n${frappe.lavender(cleanText)} ${line}\n`;
     }
-    default: {
-      const color = level === 3 ? frappe.blue : level === 4 ? frappe.teal : frappe.subtext1;
-      return `\n${color(cleanText)}\n`;
-    }
+    case 3:
+      return `\n${frappe.blue(cleanText)}\n`;
+    case 4:
+      return `\n${frappe.teal(cleanText)}\n`;
+    default:
+      return `\n${frappe.subtext1(cleanText)}\n`;
   }
 }

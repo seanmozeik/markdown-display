@@ -1,4 +1,6 @@
 // src/lib/pager.ts
+import { stripAnsi } from './ansi';
+
 export enum PagingMode {
   Always = 'always',
   QuitIfOneScreen = 'quit-if-one-screen',
@@ -70,11 +72,6 @@ export function countLines(content: string, width?: number): number {
     total += Math.max(1, Math.ceil(visibleLength / width));
   }
   return total;
-}
-
-function stripAnsi(str: string): string {
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: ESC character required for ANSI stripping
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
 export async function pipeToLess(content: string, config: PagerConfig): Promise<void> {

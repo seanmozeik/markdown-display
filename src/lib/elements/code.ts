@@ -1,7 +1,8 @@
 // src/lib/elements/code.ts
 import boxen from 'boxen';
 import { frappe } from '../../ui/theme';
-import { getLanguageIcon, supportsNerdFonts } from '../icons';
+import { visibleLength } from '../ansi';
+import { getLanguageIcon, normalizeLang, supportsNerdFonts } from '../languages';
 
 interface CodeConfig {
   width: number;
@@ -99,17 +100,8 @@ const SUPPORTED_LANGS = new Set([
   'wasm'
 ]);
 
-// ANSI escape code pattern (ESC[...m)
+// ESC character for ANSI escape sequence parsing
 const ESC = String.fromCharCode(0x1b);
-const ANSI_REGEX = new RegExp(`${ESC}\\[[0-9;]*m`, 'g');
-
-function stripAnsi(str: string): string {
-  return str.replace(ANSI_REGEX, '');
-}
-
-function visibleLength(str: string): number {
-  return stripAnsi(str).length;
-}
 
 /**
  * Slice a string by visible character positions, preserving ANSI codes.
@@ -159,40 +151,27 @@ function sliceByVisible(str: string, start: number, end?: number): [string, stri
 export function wrapCodeLines(code: string, width: number, continuation: string): string {
   const lines = code.split('\n');
   const wrapped: string[] = [];
+  const continuationPrefix = `${frappe.surface2(continuation)} `;
+  const continuationWidth = continuation.length + 1;
 
   for (const line of lines) {
-    const lineVisibleLen = visibleLength(line);
-
-    if (lineVisibleLen <= width) {
+    if (visibleLength(line) <= width) {
       wrapped.push(line);
-    } else {
-      let remaining = line;
-      let first = true;
+      continue;
+    }
 
-      while (visibleLength(remaining) > 0) {
-        const chunkWidth = first ? width : width - continuation.length - 1;
-        const remainingLen = visibleLength(remaining);
+    // First chunk uses full width
+    const [firstChunk, firstRest] = sliceByVisible(line, 0, width);
+    wrapped.push(firstChunk);
 
-        if (remainingLen <= chunkWidth) {
-          // Rest fits on this line
-          if (!first) {
-            wrapped.push(`${frappe.surface2(continuation)} ${remaining}`);
-          } else {
-            wrapped.push(remaining);
-          }
-          break;
-        }
+    // Subsequent chunks reserve space for continuation prefix
+    let remaining = firstRest;
+    const chunkWidth = width - continuationWidth;
 
-        const [chunk, rest] = sliceByVisible(remaining, 0, chunkWidth);
-        remaining = rest;
-
-        if (!first) {
-          wrapped.push(`${frappe.surface2(continuation)} ${chunk}`);
-        } else {
-          wrapped.push(chunk);
-        }
-        first = false;
-      }
+    while (visibleLength(remaining) > 0) {
+      const [chunk, rest] = sliceByVisible(remaining, 0, chunkWidth);
+      wrapped.push(`${continuationPrefix}${chunk}`);
+      remaining = rest;
     }
   }
 
@@ -250,20 +229,4 @@ export async function renderCodeBlock(
     titleAlignment: 'left',
     width: config.width
   });
-}
-
-function normalizeLang(lang: string): string {
-  const aliases: Record<string, string> = {
-    cs: 'csharp',
-    js: 'javascript',
-    kt: 'kotlin',
-    py: 'python',
-    rb: 'ruby',
-    rs: 'rust',
-    sh: 'bash',
-    shell: 'bash',
-    ts: 'typescript',
-    yml: 'yaml'
-  };
-  return aliases[lang] ?? lang;
 }

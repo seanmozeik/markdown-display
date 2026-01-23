@@ -1,6 +1,6 @@
-// src/lib/icons.test.ts
+// src/lib/languages.test.ts
 import { afterEach, describe, expect, test } from 'bun:test';
-import { getLanguageIcon, LANGUAGE_ICONS, supportsNerdFonts } from './icons';
+import { getLanguageIcon, LANGUAGES, supportsNerdFonts } from './languages';
 
 describe('supportsNerdFonts', () => {
   const originalTermProgram = Bun.env.TERM_PROGRAM;
@@ -57,7 +57,7 @@ describe('getLanguageIcon', () => {
   });
 });
 
-describe('LANGUAGE_ICONS', () => {
+describe('LANGUAGES', () => {
   test('has icons for common languages', () => {
     const expected = [
       'typescript',
@@ -82,7 +82,7 @@ describe('LANGUAGE_ICONS', () => {
       'sql'
     ];
     for (const lang of expected) {
-      expect(LANGUAGE_ICONS[lang]).toBeDefined();
+      expect(LANGUAGES[lang]).toBeDefined();
     }
   });
 });

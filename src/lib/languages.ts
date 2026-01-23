@@ -1,7 +1,14 @@
-// src/lib/icons.ts
+// src/lib/languages.ts
+
+// Language metadata including icons, colors, and aliases
+export interface LanguageInfo {
+  icon: string;
+  label: string;
+  color: string;
+}
 
 // Nerd Font icons for programming languages (from nvim-web-devicons)
-export const LANGUAGE_ICONS: Record<string, { icon: string; label: string; color: string }> = {
+export const LANGUAGES: Record<string, LanguageInfo> = {
   bash: { color: '#4D5A5E', icon: '', label: 'sh' },
   c: { color: '#599EFF', icon: '', label: 'c' },
   clojure: { color: '#8DC149', icon: '', label: 'clj' },
@@ -55,7 +62,7 @@ export const LANGUAGE_ICONS: Record<string, { icon: string; label: string; color
   zig: { color: '#F7A41D', icon: '', label: 'zig' }
 };
 
-// Aliases for common short names
+// Aliases for common short names and variants
 const LANG_ALIASES: Record<string, string> = {
   cc: 'cpp',
   cjs: 'javascript',
@@ -80,11 +87,31 @@ const LANG_ALIASES: Record<string, string> = {
   rb: 'ruby',
   rs: 'rust',
   sh: 'bash',
+  shell: 'bash',
   ts: 'typescript',
   tsx: 'typescript',
   yml: 'yaml',
   zsh: 'bash'
 };
+
+export function normalizeLang(lang: string): string {
+  const lower = lang.toLowerCase();
+  return LANG_ALIASES[lower] ?? lower;
+}
+
+export function getLanguageInfo(lang: string): LanguageInfo | undefined {
+  return LANGUAGES[normalizeLang(lang)];
+}
+
+export function getLanguageIcon(lang: string, useNerdFonts: boolean): string {
+  const info = getLanguageInfo(lang);
+  if (!info) return '';
+  return useNerdFonts ? info.icon : info.label;
+}
+
+export function getLanguageColor(lang: string): string | undefined {
+  return getLanguageInfo(lang)?.color;
+}
 
 // Terminals known to typically have nerd fonts installed
 const NERD_FONT_TERMINALS = ['WezTerm', 'kitty', 'Alacritty'];
@@ -101,18 +128,4 @@ export function supportsNerdFonts(): boolean {
   // Auto-detect based on terminal
   const term = Bun.env.TERM_PROGRAM ?? '';
   return NERD_FONT_TERMINALS.some((t) => term.includes(t));
-}
-
-export function getLanguageIcon(lang: string, useNerdFonts: boolean): string {
-  const normalized = LANG_ALIASES[lang.toLowerCase()] ?? lang.toLowerCase();
-  const entry = LANGUAGE_ICONS[normalized];
-
-  if (!entry) return '';
-
-  return useNerdFonts ? entry.icon : entry.label;
-}
-
-export function getLanguageColor(lang: string): string | undefined {
-  const normalized = LANG_ALIASES[lang.toLowerCase()] ?? lang.toLowerCase();
-  return LANGUAGE_ICONS[normalized]?.color;
 }

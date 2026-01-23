@@ -62,7 +62,7 @@ export async function loadConfig(configPath: string): Promise<Config> {
   }
 
   const content = await file.text();
-  const parsed = await import('bun').then((b) => b.TOML.parse(content));
+  const parsed = Bun.TOML.parse(content);
   return deepMerge(
     DEFAULT_CONFIG as unknown as Record<string, unknown>,
     parsed as Record<string, unknown>
