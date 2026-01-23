@@ -22,7 +22,7 @@ cd dist && zip mdown-windows-x64.zip mdown-windows-x64.exe && rm mdown-windows-x
 
 # Generate checksums
 VERSION=$(bun -p "require('./package.json').version") && \
-bun -e "for(const f of['md-${process.argv[1]}.tar.gz','mdown-windows-x64.zip']){console.log(new Bun.CryptoHasher('sha256').update(await Bun.file('dist/'+f).arrayBuffer()).digest('hex')+'  '+f)}" "$VERSION" > dist/checksums.txt && cat dist/checksums.txt
+bun -e 'for(const f of[`md-${process.argv[1]}.tar.gz`,"mdown-windows-x64.zip"]){console.log(new Bun.CryptoHasher("sha256").update(await Bun.file("dist/"+f).arrayBuffer()).digest("hex")+"  "+f)}' "$VERSION" > dist/checksums.txt && cat dist/checksums.txt
 
 [publish]
 # Create GitHub release with bundled tarball and Windows binary
@@ -30,7 +30,7 @@ gh release create "v$(bun -p "require('./package.json').version")" dist/*.tar.gz
 
 # Update Homebrew formula with new version and SHA256
 VERSION=$(bun -p "require('./package.json').version") && \
-SHA=$(bun -e "console.log(new Bun.CryptoHasher('sha256').update(await Bun.file('dist/md-'+process.argv[1]+'.tar.gz').arrayBuffer()).digest('hex'))" "$VERSION") && \
+SHA=$(bun -e 'console.log(new Bun.CryptoHasher("sha256").update(await Bun.file("dist/md-"+process.argv[1]+".tar.gz").arrayBuffer()).digest("hex"))' "$VERSION") && \
 sed -i '' "s/version \".*\"/version \"$VERSION\"/" Formula/md.rb && \
 sed -i '' "s/sha256 \".*\"/sha256 \"$SHA\"/" Formula/md.rb
 

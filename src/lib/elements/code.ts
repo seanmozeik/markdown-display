@@ -134,7 +134,8 @@ class AnsiState {
     let i = 0;
 
     while (i < params.length) {
-      const param = params[i]!;
+      const param = params[i];
+      if (!param) break;
       const code = Number.parseInt(param, 10);
 
       if (code === 0) {
