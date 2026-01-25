@@ -148,7 +148,8 @@ export function createRenderer(
     }): string {
       return `${renderTable(
         header.map((h) => h.text),
-        rows.map((row) => row.map((c) => c.text))
+        rows.map((row) => row.map((c) => c.text)),
+        { width: options.width }
       )}\n`;
     }
   };

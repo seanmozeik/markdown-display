@@ -5,9 +5,10 @@ import pc from 'picocolors';
 import pkg from '../package.json' with { type: 'json' };
 import { stripAnsi } from './lib/ansi';
 import { getConfigPath, loadConfig } from './lib/config';
+import { calculateLayout } from './lib/layout';
 import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } from './lib/pager';
 import { render } from './lib/render';
-import { getTerminalHeight, getTerminalWidth } from './lib/width';
+import { getRawTerminalWidth, getTerminalHeight, getTerminalWidth } from './lib/width';
 import { showBanner } from './ui/banner';
 import { availableThemes, isValidTheme, loadTheme } from './ui/themes';
 import {
@@ -159,21 +160,30 @@ ${h('Examples:')}
   if (flags.scroll) config.code.wrap = false;
   if (flags.wrap) config.code.wrap = true;
 
-  // Render file header for multi-file display
-  function renderFileHeader(filePath: string, width: number): string {
+  // Calculate layout for consistent width handling
+  const outputWidth: number = config.width === 'auto' ? getTerminalWidth() : config.width;
+  const rawTerminalWidth = getRawTerminalWidth();
+  const layout = calculateLayout(rawTerminalWidth, outputWidth, {
+    maxWidth: config.display.maxWidth,
+    padding: config.display.padding
+  });
+
+  // Render file header for multi-file display (matches body content width/padding)
+  function renderFileHeader(filePath: string): string {
     const label = ` ${filePath} `;
     const leftPad = 3;
-    const rightLen = Math.max(0, width - leftPad - label.length);
-    return getSubtleColor()(`${'─'.repeat(leftPad)}${label}${'─'.repeat(rightLen)}`);
+    const rightLen = Math.max(0, layout.contentWidth - leftPad - label.length);
+    const header = getSubtleColor()(`${'─'.repeat(leftPad)}${label}${'─'.repeat(rightLen)}`);
+    // Apply same padding as body content
+    return layout.sidePadding > 0 ? ' '.repeat(layout.sidePadding) + header : header;
   }
 
   // Render each file
-  const outputWidth: number = config.width === 'auto' ? getTerminalWidth() : config.width;
   const outputs: string[] = [];
   for (const file of files) {
     const rendered = await render(file.content, config);
     if (files.length > 1) {
-      outputs.push(`${renderFileHeader(file.path, outputWidth)}\n\n${rendered}`);
+      outputs.push(`${renderFileHeader(file.path)}\n\n${rendered}`);
     } else {
       outputs.push(rendered);
     }
