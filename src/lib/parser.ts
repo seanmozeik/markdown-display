@@ -30,6 +30,46 @@ interface RendererThis {
 const codeBlocks = new Map<string, { code: string; lang: string }>();
 
 export function createRenderer(options: ParseOptions) {
+  function renderListWithDepth(
+    parser: RendererThis['parser'],
+    items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>,
+    ordered: boolean,
+    start: number,
+    depth: number
+  ): string {
+    return items
+      .map((item, i) => {
+        // Separate inline vs block tokens
+        const inlineTokens = item.tokens.filter((t) => t.type !== 'list');
+        const nestedLists = item.tokens.filter((t) => t.type === 'list') as Array<{
+          items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>;
+          ordered: boolean;
+          start?: number;
+        }>;
+
+        // Render the item's inline content
+        const text = parser.parseInline(inlineTokens);
+        const renderedItem = renderListItem(text, ordered, depth, start + i, {
+          checked: item.checked,
+          hyphenation: options.hyphenation,
+          nerdFonts: options.nerdFonts,
+          task: item.task,
+          width: options.width
+        });
+
+        // Recursively render nested lists
+        const nestedContent = nestedLists
+          .map((nested) =>
+            renderListWithDepth(parser, nested.items, nested.ordered, nested.start ?? 1, depth + 1)
+          )
+          .join('\n');
+
+        // Join with newline
+        return nestedContent ? `${renderedItem}\n${nestedContent}` : renderedItem;
+      })
+      .join('\n');
+  }
+
   return {
     blockquote(this: RendererThis, { tokens }: { tokens: Token[] }): string {
       // Blockquotes contain block-level tokens (paragraphs, lists, etc.), not inline
@@ -67,17 +107,17 @@ export function createRenderer(options: ParseOptions) {
 
     list(
       this: RendererThis,
-      { items, ordered }: { items: Array<{ tokens: Token[] }>; ordered: boolean }
+      {
+        items,
+        ordered,
+        start
+      }: {
+        items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>;
+        ordered: boolean;
+        start: number | '';
+      }
     ): string {
-      return `${items
-        .map((item, i) => {
-          const text = this.parser.parseInline(item.tokens);
-          return renderListItem(text, ordered, 0, i + 1, {
-            hyphenation: options.hyphenation,
-            width: options.width
-          });
-        })
-        .join('\n')}\n`;
+      return `${renderListWithDepth(this.parser, items, ordered, start || 1, 0)}\n`;
     },
 
     listitem(this: RendererThis, { tokens }: { tokens: Token[] }): string {

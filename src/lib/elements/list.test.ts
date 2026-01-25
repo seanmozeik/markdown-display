@@ -47,6 +47,42 @@ describe('renderList', () => {
   });
 });
 
+describe('task list items', () => {
+  test('renders unchecked task with checkbox', () => {
+    const result = renderListItem('Todo item', false, 0, undefined, { checked: false, task: true });
+    expect(result).toContain('☐');
+    expect(result).toContain('Todo item');
+    expect(result).not.toContain('•');
+  });
+
+  test('renders checked task with checkbox', () => {
+    const result = renderListItem('Done item', false, 0, undefined, { checked: true, task: true });
+    expect(result).toContain('☑');
+    expect(result).toContain('Done item');
+  });
+
+  test('renders nerd font checkbox when enabled', () => {
+    const unchecked = renderListItem('Todo', false, 0, undefined, {
+      checked: false,
+      nerdFonts: true,
+      task: true
+    });
+    const checked = renderListItem('Done', false, 0, undefined, {
+      checked: true,
+      nerdFonts: true,
+      task: true
+    });
+    expect(unchecked).toContain('<nf-unchecked>');
+    expect(checked).toContain('<nf-checked>');
+  });
+
+  test('mutes text for completed tasks', () => {
+    const result = renderListItem('Done item', false, 0, undefined, { checked: true, task: true });
+    // Should contain muted ANSI color code (the muted color from theme)
+    expect(result).toContain('\x1b[38;5;');
+  });
+});
+
 describe('list item wrapping', () => {
   test('wraps long list items when width is provided', () => {
     const longText =

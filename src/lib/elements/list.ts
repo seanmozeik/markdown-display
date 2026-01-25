@@ -1,14 +1,22 @@
 // src/lib/elements/list.ts
-import { getAccentColor } from '../../ui/themes/semantic';
+import { getAccentColor, getMutedColor } from '../../ui/themes/semantic';
 import { visibleLength } from '../ansi';
 import { wrapText } from './text';
 
 const INDENT_SIZE = 3;
 const BULLETS = ['•', '◦', '▪'] as const;
 
+const CHECKBOXES = {
+  checked: { nerd: '󰱒', unicode: '☑' },
+  unchecked: { nerd: '󰄱', unicode: '☐' }
+} as const;
+
 interface ListItemConfig {
   width?: number;
   hyphenation?: boolean;
+  task?: boolean;
+  checked?: boolean;
+  nerdFonts?: boolean;
 }
 
 export function renderListItem(
@@ -19,14 +27,22 @@ export function renderListItem(
   config?: ListItemConfig
 ): string {
   const indent = ' '.repeat(depth * INDENT_SIZE);
-  const bulletChar = BULLETS[depth % BULLETS.length] ?? '•';
-  const bullet = ordered ? `${index ?? 1}.` : bulletChar;
+  let bullet: string;
+  if (config?.task) {
+    const style = config.checked ? CHECKBOXES.checked : CHECKBOXES.unchecked;
+    bullet = config.nerdFonts ? style.nerd : style.unicode;
+  } else if (ordered) {
+    bullet = `${index ?? 1}.`;
+  } else {
+    bullet = BULLETS[depth % BULLETS.length] ?? '•';
+  }
   const accentColor = getAccentColor();
   const coloredBullet = accentColor(bullet);
+  const displayText = config?.task && config.checked ? getMutedColor()(text) : text;
 
   // If no width specified, return without wrapping
   if (!config?.width) {
-    return `${indent}${coloredBullet} ${text}`;
+    return `${indent}${coloredBullet} ${displayText}`;
   }
 
   // Calculate available width for text (subtract indent + bullet + space)
@@ -35,11 +51,12 @@ export function renderListItem(
   const textWidth = config.width - prefixWidth;
 
   if (textWidth <= 0) {
-    return `${indent}${coloredBullet} ${text}`;
+    return `${indent}${coloredBullet} ${displayText}`;
   }
 
-  // Wrap the text
-  const wrapped = wrapText(text, textWidth, {
+  // Wrap the text (apply muting before wrapping so each line is muted)
+  const textToWrap = config?.task && config.checked ? getMutedColor()(text) : text;
+  const wrapped = wrapText(textToWrap, textWidth, {
     hyphenation: config.hyphenation ?? false,
     locale: 'en-us'
   });

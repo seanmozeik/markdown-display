@@ -59,3 +59,73 @@ describe('parseMarkdown', () => {
     expect(result).not.toContain('**');
   });
 });
+
+describe('ordered list start number', () => {
+  test('respects start number for ordered lists', async () => {
+    const md = `3. Third item
+4. Fourth item
+5. Fifth item`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('3.');
+    expect(result).toContain('4.');
+    expect(result).toContain('5.');
+    expect(result).not.toContain('1.');
+  });
+});
+
+describe('task lists', () => {
+  test('renders unchecked task items', async () => {
+    const md = `- [ ] Unchecked task`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('☐');
+    expect(result).toContain('Unchecked task');
+  });
+
+  test('renders checked task items', async () => {
+    const md = `- [x] Checked task`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('☑');
+    expect(result).toContain('Checked task');
+  });
+
+  test('renders nested task lists', async () => {
+    const md = `- [ ] Parent task
+  - [x] Completed subtask
+  - [ ] Pending subtask`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('☐');
+    expect(result).toContain('☑');
+  });
+});
+
+describe('nested lists', () => {
+  test('renders nested unordered list with proper indentation', async () => {
+    const md = `- Level 1
+  - Level 2
+    - Level 3`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    // Should have different bullets at each level
+    expect(result).toContain('•'); // Level 1
+    expect(result).toContain('◦'); // Level 2
+    expect(result).toContain('▪'); // Level 3
+  });
+
+  test('renders nested ordered list', async () => {
+    const md = `1. First
+   1. Nested first
+   2. Nested second`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('1.');
+    expect(result).toContain('2.');
+  });
+
+  test('renders mixed nested lists', async () => {
+    const md = `- Unordered
+  1. Nested ordered
+  2. Second ordered`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('•');
+    expect(result).toContain('1.');
+    expect(result).toContain('2.');
+  });
+});
