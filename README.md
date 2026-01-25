@@ -24,6 +24,7 @@ A markdown viewer for the terminal.
 
 ```bash
 md README.md
+md README.md CHANGELOG.md
 cat file.md | md
 curl -s https://example.com/doc.md | md
 ```
@@ -57,8 +58,11 @@ Set-Alias -Name md -Value mdown -Option AllScope
 
 ```bash
 md README.md
+md README.md CHANGELOG.md
 md docs/guide.md --width 80
 ```
+
+Multiple files are concatenated with filename headers.
 
 ```
 -w, --width <n>     Output width (default: auto)

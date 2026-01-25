@@ -16,6 +16,7 @@ import {
   getHeadingColor,
   getHexColors,
   getMutedColor,
+  getSubtleColor,
   getSuccessColor
 } from './ui/themes/semantic';
 
@@ -91,7 +92,7 @@ async function main(): Promise<void> {
     console.log();
 
     const helpText = `${heading('Usage:')}
-  ${accent('md')} ${pc.dim('[file]')} ${pc.dim('[options]')}
+  ${accent('md')} ${pc.dim('[file...]')} ${pc.dim('[options]')}
 
 ${heading('Options:')}
   ${success('-h, --help')}        Show this help message
@@ -107,6 +108,7 @@ ${heading('Options:')}
 
 ${heading('Examples:')}
   ${pc.dim('$')} md README.md
+  ${pc.dim('$')} md README.md CHANGELOG.md
   ${pc.dim('$')} md docs/guide.md --width 80
   ${pc.dim('$')} cat file.md | md`;
 
@@ -120,32 +122,35 @@ ${heading('Examples:')}
     process.exit(0);
   }
 
-  const filePath = args.find(
+  const filePaths = args.filter(
     (arg) => !arg.startsWith('-') && arg !== flags.width && arg !== flags.theme
   );
   const hasStdin = !process.stdin.isTTY;
   const stdoutTTY = process.stdout.isTTY ?? false;
   const stdinTTY = process.stdin.isTTY ?? true;
 
-  if (!filePath && !hasStdin) {
+  if (filePaths.length === 0 && !hasStdin) {
     console.log(muted('No file specified. Use --help for usage information.'));
     process.exit(1);
   }
 
-  let content: string;
-  if (filePath) {
-    const file = Bun.file(filePath);
-    if (!(await file.exists())) {
-      console.error(error(`Error: File not found: ${filePath}`));
-      process.exit(1);
+  // Read file contents
+  const files: Array<{ path: string; content: string }> = [];
+  if (filePaths.length > 0) {
+    for (const filePath of filePaths) {
+      const file = Bun.file(filePath);
+      if (!(await file.exists())) {
+        console.error(error(`Error: File not found: ${filePath}`));
+        process.exit(1);
+      }
+      files.push({ content: await file.text(), path: filePath });
     }
-    content = await file.text();
   } else {
-    content = await Bun.stdin.text();
+    files.push({ content: await Bun.stdin.text(), path: '' });
   }
 
   if (flags.raw) {
-    console.log(content);
+    console.log(files.map((f) => f.content).join('\n'));
     return;
   }
 
@@ -157,15 +162,35 @@ ${heading('Examples:')}
   if (flags.scroll) config.code.wrap = false;
   if (flags.wrap) config.code.wrap = true;
 
-  let output = await render(content, config);
+  // Render file header for multi-file display
+  const renderFileHeader = (filePath: string, width: number): string => {
+    const subtle = getSubtleColor();
+    const label = ` ${filePath} `;
+    const lineChar = '─';
+    const leftPad = 3;
+    const rightLen = Math.max(0, width - leftPad - label.length);
+    return subtle(lineChar.repeat(leftPad) + label + lineChar.repeat(rightLen));
+  };
+
+  // Render each file
+  const outputWidth = config.width === 'auto' ? getTerminalWidth() : config.width;
+  const outputs: string[] = [];
+  for (const file of files) {
+    const rendered = await render(file.content, config);
+    if (files.length > 1) {
+      outputs.push(`${renderFileHeader(file.path, outputWidth as number)}\n\n${rendered}`);
+    } else {
+      outputs.push(rendered);
+    }
+  }
+  let output = outputs.join('\n\n');
 
   const useColor = shouldUseColor() && !flags.plain;
   if (!useColor) {
     output = stripAnsi(output);
   }
 
-  const width = config.width === 'auto' ? getTerminalWidth() : config.width;
-  const lines = countLines(output, width as number);
+  const lines = countLines(output, outputWidth as number);
   const height = getTerminalHeight();
 
   const pagingMode = shouldUsePager({
