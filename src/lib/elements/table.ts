@@ -30,12 +30,8 @@ export function renderTable(headers: string[], rows: string[][]): string {
     }
   });
 
-  // Add rows as objects
   for (const row of rows) {
-    const rowObj: Record<string, string> = {};
-    headers.forEach((header, i) => {
-      rowObj[header] = row[i] ?? '';
-    });
+    const rowObj = Object.fromEntries(headers.map((header, i) => [header, row[i] ?? '']));
     table.addRow(rowObj, { color: 'custom_row' });
   }
 

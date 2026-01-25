@@ -15,9 +15,41 @@ interface WrapOptions {
 }
 
 const SOFT_HYPHEN = '\u00AD';
+const SOFT_HYPHEN_REGEX = /\u00AD/g;
+
+function stripSoftHyphens(text: string): string {
+  return text.replace(SOFT_HYPHEN_REGEX, '');
+}
 
 function hyphenateText(text: string): string {
   return hyphenateSync(text);
+}
+
+function findSoftHyphenPositions(text: string): number[] {
+  const positions: number[] = [];
+  let idx = text.indexOf(SOFT_HYPHEN);
+  while (idx !== -1) {
+    positions.push(idx);
+    idx = text.indexOf(SOFT_HYPHEN, idx + 1);
+  }
+  return positions;
+}
+
+/**
+ * Find the best soft hyphen break point that fits within maxWidth.
+ * Returns the position, or -1 if no suitable break exists.
+ */
+function findBestBreakPoint(text: string, maxWidth: number): number {
+  const positions = findSoftHyphenPositions(text);
+  let best = -1;
+  for (const pos of positions) {
+    const beforeBreak = text.slice(0, pos);
+    // +1 for the visible hyphen we'll add
+    if (visibleLength(stripSoftHyphens(beforeBreak)) + 1 <= maxWidth) {
+      best = pos;
+    }
+  }
+  return best;
 }
 
 /**
@@ -35,32 +67,10 @@ function trySplitWordToFill(
   const minFragment = width < 50 ? 2 : 3;
   if (remainingSpace < minFragment) return null;
 
-  // Find all soft hyphen positions
-  const softHyphenPositions: number[] = [];
-  for (let i = 0; i < word.length; i++) {
-    if (word[i] === SOFT_HYPHEN) {
-      softHyphenPositions.push(i);
-    }
-  }
+  const breakAt = findBestBreakPoint(word, remainingSpace);
+  if (breakAt <= 0) return null;
 
-  if (softHyphenPositions.length === 0) return null;
-
-  // Find best break point (last soft hyphen that fits with visible hyphen)
-  let bestBreak = -1;
-  for (const pos of softHyphenPositions) {
-    const beforeBreak = word.slice(0, pos);
-    // +1 for the visible hyphen we'll add
-    if (visibleLength(beforeBreak.replace(/\u00AD/g, '')) + 1 <= remainingSpace) {
-      bestBreak = pos;
-    }
-  }
-
-  if (bestBreak <= 0) return null;
-
-  const firstPart = `${word.slice(0, bestBreak).replace(/\u00AD/g, '')}-`;
-  const remainder = word.slice(bestBreak + 1); // Skip the soft hyphen
-
-  return [firstPart, remainder];
+  return [`${stripSoftHyphens(word.slice(0, breakAt))}-`, word.slice(breakAt + 1)];
 }
 
 export function wrapText(text: string, width: number, options?: WrapOptions): string {
@@ -78,7 +88,7 @@ export function wrapText(text: string, width: number, options?: WrapOptions): st
 
     if (visibleLength(testLine) <= width) {
       // Word fits - strip soft hyphens since we don't need to break here
-      const cleanWord = word.replace(/\u00AD/g, '');
+      const cleanWord = stripSoftHyphens(word);
       currentLine = currentLine ? `${currentLine} ${cleanWord}` : cleanWord;
     } else if (currentLine) {
       // Word doesn't fit - try to split it to fill current line
@@ -88,12 +98,12 @@ export function wrapText(text: string, width: number, options?: WrapOptions): st
       if (split) {
         // Fill current line with first part of word
         const [firstPart, remainder] = split;
-        lines.push(`${currentLine.replace(/\u00AD/g, '')} ${firstPart}`);
+        lines.push(`${stripSoftHyphens(currentLine)} ${firstPart}`);
         // Continue with remainder (may need further breaking)
         currentLine = breakWord(remainder, width);
       } else {
         // Can't split usefully - push current line and start fresh
-        lines.push(currentLine.replace(/\u00AD/g, ''));
+        lines.push(stripSoftHyphens(currentLine));
         currentLine = breakWord(word, width);
       }
     } else {
@@ -107,7 +117,7 @@ export function wrapText(text: string, width: number, options?: WrapOptions): st
 
   if (currentLine) {
     // Strip any remaining soft hyphens from the last line
-    lines.push(currentLine.replace(/\u00AD/g, ''));
+    lines.push(stripSoftHyphens(currentLine));
   }
 
   return lines.join('\n');
@@ -118,40 +128,19 @@ function breakWord(word: string, width: number): string {
   let remaining = word;
 
   while (visibleLength(remaining) > width) {
-    // Find soft hyphen positions
-    const softHyphenPositions: number[] = [];
-    for (let i = 0; i < remaining.length; i++) {
-      if (remaining[i] === SOFT_HYPHEN) {
-        softHyphenPositions.push(i);
-      }
-    }
-
-    // Find best break point (last soft hyphen that fits with visible hyphen)
-    let breakAt = -1;
-    for (const pos of softHyphenPositions) {
-      const beforeBreak = remaining.slice(0, pos);
-      // +1 for the visible hyphen we'll add
-      if (visibleLength(beforeBreak) + 1 <= width) {
-        breakAt = pos;
-      }
-    }
+    const breakAt = findBestBreakPoint(remaining, width);
 
     if (breakAt > 0) {
-      // Break at soft hyphen, replace with visible hyphen
-      const beforeBreak = remaining.slice(0, breakAt).replace(/\u00AD/g, '');
-      lines.push(`${beforeBreak}-`);
-      remaining = remaining.slice(breakAt + 1); // Skip the soft hyphen
+      lines.push(`${stripSoftHyphens(remaining.slice(0, breakAt))}-`);
+      remaining = remaining.slice(breakAt + 1);
     } else {
-      // No suitable soft hyphen - hard break
-      const chunk = remaining.slice(0, width);
-      lines.push(chunk.replace(/\u00AD/g, ''));
+      lines.push(stripSoftHyphens(remaining.slice(0, width)));
       remaining = remaining.slice(width);
     }
   }
 
-  // Remove remaining soft hyphens from last chunk
   if (remaining) {
-    lines.push(remaining.replace(/\u00AD/g, ''));
+    lines.push(stripSoftHyphens(remaining));
   }
 
   return lines.join('\n');

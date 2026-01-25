@@ -1,6 +1,6 @@
 // src/ui/themes/semantic.ts
 
-import { ansiBg, ansiBold, ansiFg, ansiFgBg, ansiItalic } from './ansi';
+import { ansiBold, ansiFg, ansiFgBg, ansiItalic } from './ansi';
 import { theme } from './index';
 
 type StyleFn = (text: string) => string;
@@ -32,16 +32,17 @@ export function getInlineCodeStyle(): StyleFn {
 export function getHeadingColor(level: number): StyleFn {
   const t = theme();
   const o = t.overrides;
+  const heading = o?.heading;
 
   switch (level) {
     case 1:
-      return ansiFg(o?.h1 ?? o?.heading ?? t.colors.accent);
+      return ansiFg(o?.h1 ?? heading ?? t.colors.accent);
     case 2:
-      return ansiFg(o?.h2 ?? o?.heading ?? t.colors.accent);
+      return ansiFg(o?.h2 ?? heading ?? t.colors.accent);
     case 3:
-      return ansiFg(o?.h3 ?? o?.heading ?? t.colors.info);
+      return ansiFg(o?.h3 ?? heading ?? t.colors.info);
     case 4:
-      return ansiFg(o?.h4 ?? o?.heading ?? t.colors.auxiliary);
+      return ansiFg(o?.h4 ?? heading ?? t.colors.auxiliary);
     default:
       return ansiFg(t.colors.muted);
   }
@@ -68,29 +69,14 @@ export function getSubtleColor(): StyleFn {
   return ansiFg(theme().colors.subtle);
 }
 
-/** Get surface background color */
-export function getSurfaceColor(): StyleFn {
-  return ansiBg(theme().colors.surface);
-}
-
 /** Get error color */
 export function getErrorColor(): StyleFn {
   return ansiFg(theme().colors.error);
 }
 
-/** Get warning color */
-export function getWarningColor(): StyleFn {
-  return ansiFg(theme().colors.warning);
-}
-
 /** Get success color */
 export function getSuccessColor(): StyleFn {
   return ansiFg(theme().colors.success);
-}
-
-/** Get info color */
-export function getInfoColor(): StyleFn {
-  return ansiFg(theme().colors.info);
 }
 
 /** Get accent color (headings, links, list markers) */
@@ -103,17 +89,8 @@ export function getHexColors() {
   const t = theme();
   return {
     accent: t.colors.accent,
-    bg: t.colors.bg,
-    error: t.colors.error,
     h1: t.overrides?.h1 ?? t.overrides?.heading ?? t.colors.accent,
-    h2: t.overrides?.h2 ?? t.overrides?.heading ?? t.colors.accent,
-    info: t.colors.info,
-    muted: t.colors.muted,
-    subtle: t.colors.subtle,
-    success: t.colors.success,
-    surface: t.colors.surface,
-    text: t.colors.text,
-    warning: t.colors.warning
+    subtle: t.colors.subtle
   };
 }
 

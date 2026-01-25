@@ -1,7 +1,6 @@
 // src/lib/languages.ts
 
-// Language metadata including icons, colors, and aliases
-export interface LanguageInfo {
+interface LanguageInfo {
   icon: string;
   label: string;
   color: string;
@@ -92,35 +91,14 @@ export function normalizeLang(lang: string): string {
   return LANG_ALIASES[lower] ?? lower;
 }
 
-export function getLanguageInfo(lang: string): LanguageInfo | undefined {
-  return LANGUAGES[normalizeLang(lang)];
-}
-
 export function getLanguageLabel(lang: string, nerdFontsEnabled: boolean): string {
   const normalized = normalizeLang(lang);
   const info = LANGUAGES[normalized];
-
-  if (nerdFontsEnabled && info?.icon) {
-    return info.icon;
-  }
-
-  return normalized;
-}
-
-// Deprecated: use getLanguageLabel instead
-export function getLanguageIcon(lang: string, useNerdFonts: boolean): string {
-  return getLanguageLabel(lang, useNerdFonts);
-}
-
-export function getLanguageColor(lang: string): string | undefined {
-  return getLanguageInfo(lang)?.color;
+  return nerdFontsEnabled && info?.icon ? info.icon : normalized;
 }
 
 export function resolveNerdFonts(configValue: 'auto' | boolean): boolean {
-  if (configValue === 'auto') {
-    return false; // Default to off - user must explicitly enable
-  }
-  return configValue;
+  return configValue === 'auto' ? false : configValue;
 }
 
 // Terminals known to typically have nerd fonts installed

@@ -66,13 +66,8 @@ async function main(): Promise<void> {
   }
   loadTheme(themeName);
 
-  // Get colors after theme is loaded
+  // Get colors after theme is loaded (used for help/version display)
   const colors = getHexColors();
-  const heading = getHeadingColor(1);
-  const accent = getAccentColor();
-  const success = getSuccessColor();
-  const muted = getMutedColor();
-  const error = getErrorColor();
 
   if (flags.version) {
     await showBanner();
@@ -91,22 +86,25 @@ async function main(): Promise<void> {
     console.log(pc.dim(`v${version}`));
     console.log();
 
-    const helpText = `${heading('Usage:')}
+    const h = getHeadingColor(1);
+    const accent = getAccentColor();
+    const opt = getSuccessColor();
+    const helpText = `${h('Usage:')}
   ${accent('md')} ${pc.dim('[file...]')} ${pc.dim('[options]')}
 
-${heading('Options:')}
-  ${success('-h, --help')}        Show this help message
-  ${success('-v, --version')}     Show version number
-  ${success('-w, --width <n>')}   Set output width (default: auto)
-  ${success('-t, --theme <name>')} Color theme (e.g., nord, dracula)
-  ${success('--list-themes')}     List all available themes
-  ${success('-p, --plain')}       No colors, just structure
-  ${success('-r, --raw')}         Pass through without rendering
-  ${success('--no-pager')}        Write directly, never use pager
-  ${success('--scroll')}          Horizontal scroll for code blocks
-  ${success('--wrap')}            Wrap code blocks (default)
+${h('Options:')}
+  ${opt('-h, --help')}        Show this help message
+  ${opt('-v, --version')}     Show version number
+  ${opt('-w, --width <n>')}   Set output width (default: auto)
+  ${opt('-t, --theme <name>')} Color theme (e.g., nord, dracula)
+  ${opt('--list-themes')}     List all available themes
+  ${opt('-p, --plain')}       No colors, just structure
+  ${opt('-r, --raw')}         Pass through without rendering
+  ${opt('--no-pager')}        Write directly, never use pager
+  ${opt('--scroll')}          Horizontal scroll for code blocks
+  ${opt('--wrap')}            Wrap code blocks (default)
 
-${heading('Examples:')}
+${h('Examples:')}
   ${pc.dim('$')} md README.md
   ${pc.dim('$')} md README.md CHANGELOG.md
   ${pc.dim('$')} md docs/guide.md --width 80
@@ -122,15 +120,14 @@ ${heading('Examples:')}
     process.exit(0);
   }
 
-  const filePaths = args.filter(
-    (arg) => !arg.startsWith('-') && arg !== flags.width && arg !== flags.theme
-  );
+  const flagValues = new Set([flags.width, flags.theme]);
+  const filePaths = args.filter((arg) => !arg.startsWith('-') && !flagValues.has(arg));
   const hasStdin = !process.stdin.isTTY;
   const stdoutTTY = process.stdout.isTTY ?? false;
   const stdinTTY = process.stdin.isTTY ?? true;
 
   if (filePaths.length === 0 && !hasStdin) {
-    console.log(muted('No file specified. Use --help for usage information.'));
+    console.log(getMutedColor()('No file specified. Use --help for usage information.'));
     process.exit(1);
   }
 
@@ -140,7 +137,7 @@ ${heading('Examples:')}
     for (const filePath of filePaths) {
       const file = Bun.file(filePath);
       if (!(await file.exists())) {
-        console.error(error(`Error: File not found: ${filePath}`));
+        console.error(getErrorColor()(`Error: File not found: ${filePath}`));
         process.exit(1);
       }
       files.push({ content: await file.text(), path: filePath });
@@ -163,22 +160,20 @@ ${heading('Examples:')}
   if (flags.wrap) config.code.wrap = true;
 
   // Render file header for multi-file display
-  const renderFileHeader = (filePath: string, width: number): string => {
-    const subtle = getSubtleColor();
+  function renderFileHeader(filePath: string, width: number): string {
     const label = ` ${filePath} `;
-    const lineChar = '─';
     const leftPad = 3;
     const rightLen = Math.max(0, width - leftPad - label.length);
-    return subtle(lineChar.repeat(leftPad) + label + lineChar.repeat(rightLen));
-  };
+    return getSubtleColor()(`${'─'.repeat(leftPad)}${label}${'─'.repeat(rightLen)}`);
+  }
 
   // Render each file
-  const outputWidth = config.width === 'auto' ? getTerminalWidth() : config.width;
+  const outputWidth: number = config.width === 'auto' ? getTerminalWidth() : config.width;
   const outputs: string[] = [];
   for (const file of files) {
     const rendered = await render(file.content, config);
     if (files.length > 1) {
-      outputs.push(`${renderFileHeader(file.path, outputWidth as number)}\n\n${rendered}`);
+      outputs.push(`${renderFileHeader(file.path, outputWidth)}\n\n${rendered}`);
     } else {
       outputs.push(rendered);
     }
@@ -190,7 +185,7 @@ ${heading('Examples:')}
     output = stripAnsi(output);
   }
 
-  const lines = countLines(output, outputWidth as number);
+  const lines = countLines(output, outputWidth);
   const height = getTerminalHeight();
 
   const pagingMode = shouldUsePager({

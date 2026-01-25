@@ -15,18 +15,19 @@ export function supportsOsc8(): boolean {
 
 export function renderLink(text: string, url: string, config: LinkConfig): string {
   const useOsc8 = config.osc8 === true || (config.osc8 === 'auto' && supportsOsc8());
-  const textAndUrlSame = text === url;
+  const linkColor = getLinkColor();
+  const styledText = linkColor(text);
 
   if (useOsc8) {
-    const hyperlink = `\x1b]8;;${url}\x07${getLinkColor()(text)}\x1b]8;;\x07`;
-    if (config.show_urls && !textAndUrlSame) {
+    const hyperlink = `\x1b]8;;${url}\x07${styledText}\x1b]8;;\x07`;
+    if (config.show_urls && text !== url) {
       return `${hyperlink} ${getSubtleColor()(`(${url})`)}`;
     }
     return hyperlink;
   }
 
-  if (textAndUrlSame) {
-    return getLinkColor()(url);
+  if (text === url) {
+    return styledText;
   }
-  return `${getLinkColor()(text)} ${getSubtleColor()(`(${url})`)}`;
+  return `${styledText} ${getSubtleColor()(`(${url})`)}`;
 }

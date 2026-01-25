@@ -1,12 +1,6 @@
 // src/lib/languages.test.ts
 import { afterEach, describe, expect, test } from 'bun:test';
-import {
-  getLanguageIcon,
-  getLanguageLabel,
-  LANGUAGES,
-  resolveNerdFonts,
-  supportsNerdFonts
-} from './languages';
+import { getLanguageLabel, LANGUAGES, resolveNerdFonts, supportsNerdFonts } from './languages';
 
 describe('supportsNerdFonts', () => {
   const originalTermProgram = Bun.env.TERM_PROGRAM;
@@ -36,32 +30,6 @@ describe('supportsNerdFonts', () => {
     delete Bun.env.NERD_FONTS;
     Bun.env.TERM_PROGRAM = 'unknown';
     expect(supportsNerdFonts()).toBe(false);
-  });
-});
-
-describe('getLanguageIcon (deprecated, delegates to getLanguageLabel)', () => {
-  test('returns icon for known languages when nerd fonts enabled', () => {
-    // Icons exist and are non-empty strings
-    expect(getLanguageIcon('typescript', true)).toBe(LANGUAGES.typescript?.icon);
-    expect(getLanguageIcon('python', true)).toBe(LANGUAGES.python?.icon);
-    expect(getLanguageIcon('rust', true)).toBe(LANGUAGES.rust?.icon);
-  });
-
-  test('returns normalized language name when nerd fonts disabled', () => {
-    expect(getLanguageIcon('typescript', false)).toBe('typescript');
-    expect(getLanguageIcon('python', false)).toBe('python');
-  });
-
-  test('handles language aliases', () => {
-    // 'ts' normalizes to 'typescript'
-    expect(getLanguageIcon('ts', true)).toBe(LANGUAGES.typescript?.icon);
-    expect(getLanguageIcon('js', true)).toBe(LANGUAGES.javascript?.icon);
-    expect(getLanguageIcon('py', true)).toBe(LANGUAGES.python?.icon);
-  });
-
-  test('returns normalized name for unknown languages', () => {
-    expect(getLanguageIcon('unknown-lang', true)).toBe('unknown-lang');
-    expect(getLanguageIcon('unknown-lang', false)).toBe('unknown-lang');
   });
 });
 
@@ -97,8 +65,10 @@ describe('LANGUAGES', () => {
 
 describe('getLanguageLabel', () => {
   test('returns icon when nerdFonts enabled and icon exists', () => {
+    const tsLang = LANGUAGES.typescript;
+    if (!tsLang) throw new Error('typescript should be in LANGUAGES');
     const result = getLanguageLabel('typescript', true);
-    expect(result).toBe(LANGUAGES.typescript?.icon);
+    expect(result).toBe(tsLang.icon);
     expect(result.length).toBeGreaterThan(0);
   });
 

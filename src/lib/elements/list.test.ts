@@ -72,8 +72,8 @@ describe('task list items', () => {
       nerdFonts: true,
       task: true
     });
-    expect(unchecked).toContain('<nf-unchecked>');
-    expect(checked).toContain('<nf-checked>');
+    expect(unchecked).toContain('󰄱'); // nf-md-checkbox_blank_outline
+    expect(checked).toContain('󰱒'); // nf-md-checkbox_marked
   });
 
   test('mutes text for completed tasks', () => {

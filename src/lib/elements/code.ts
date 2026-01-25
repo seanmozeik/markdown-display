@@ -112,12 +112,6 @@ const ESC = String.fromCharCode(0x1b);
 const ANSI_RESET = `${ESC}[0m`;
 const ANSI_SGR_PATTERN = new RegExp(`${ESC}\\[([0-9;]*)m`);
 
-function parseAnsiParams(sequence: string): string[] {
-  const match = sequence.match(ANSI_SGR_PATTERN);
-  if (!match || !match[1]) return [];
-  return match[1].split(';').filter(Boolean);
-}
-
 /**
  * Track active ANSI styles. Handles basic SGR codes:
  * 0 = reset, 1 = bold, 2 = dim, 3 = italic, 4 = underline,
@@ -130,7 +124,8 @@ class AnsiState {
   private bgColor: string | null = null;
 
   apply(sequence: string): void {
-    const params = parseAnsiParams(sequence);
+    const match = sequence.match(ANSI_SGR_PATTERN);
+    const params = match?.[1]?.split(';').filter(Boolean) ?? [];
     let i = 0;
 
     while (i < params.length) {
@@ -184,17 +179,10 @@ class AnsiState {
   }
 
   toSequence(): string {
-    const parts: string[] = [];
-
-    for (const style of this.styles) {
-      parts.push(style);
-    }
-
+    const parts = [...this.styles];
     if (this.fgColor) parts.push(this.fgColor);
     if (this.bgColor) parts.push(this.bgColor);
-
-    if (parts.length === 0) return '';
-    return `${ESC}[${parts.join(';')}m`;
+    return parts.length === 0 ? '' : `${ESC}[${parts.join(';')}m`;
   }
 
   clone(): AnsiState {

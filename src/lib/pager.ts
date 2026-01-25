@@ -22,19 +22,9 @@ interface PagingContext {
 }
 
 export function shouldUsePager(ctx: PagingContext): PagingMode {
-  if (ctx.noPager || !ctx.stdoutTTY) {
-    return PagingMode.Never;
-  }
-
-  if (ctx.forceAlways) {
-    return PagingMode.Always;
-  }
-
-  // Content fits on screen
-  if (ctx.lines <= ctx.height) {
-    return PagingMode.Never;
-  }
-
+  if (ctx.noPager || !ctx.stdoutTTY) return PagingMode.Never;
+  if (ctx.forceAlways) return PagingMode.Always;
+  if (ctx.lines <= ctx.height) return PagingMode.Never;
   return PagingMode.QuitIfOneScreen;
 }
 
@@ -66,15 +56,12 @@ export function countLines(content: string, width?: number): number {
   if (!content) return 1;
 
   const lines = content.split('\n');
-
   if (!width) return lines.length;
 
-  let total = 0;
-  for (const line of lines) {
+  return lines.reduce((total, line) => {
     const visibleLength = stripAnsi(line).length;
-    total += Math.max(1, Math.ceil(visibleLength / width));
-  }
-  return total;
+    return total + Math.max(1, Math.ceil(visibleLength / width));
+  }, 0);
 }
 
 export async function pipeToLess(content: string, config: PagerConfig): Promise<void> {

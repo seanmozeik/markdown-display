@@ -27,9 +27,10 @@ interface RendererThis {
   };
 }
 
-const codeBlocks = new Map<string, { code: string; lang: string }>();
-
-export function createRenderer(options: ParseOptions) {
+export function createRenderer(
+  options: ParseOptions,
+  codeBlocks: Map<string, { code: string; lang: string }>
+) {
   function renderListWithDepth(
     parser: RendererThis['parser'],
     items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>,
@@ -75,6 +76,11 @@ export function createRenderer(options: ParseOptions) {
       // Blockquotes contain block-level tokens (paragraphs, lists, etc.), not inline
       const text = this.parser.parse(tokens);
       return `${renderBlockquote(text.trim(), { hyphenation: options.hyphenation, width: options.width })}\n\n`;
+    },
+
+    checkbox(): string {
+      // Return empty - we render checkboxes in renderListItem based on task/checked flags
+      return '';
     },
 
     code({ text, lang }: { text: string; lang?: string }): string {
@@ -162,10 +168,10 @@ function decodeHtmlEntities(text: string): string {
 }
 
 export async function parseMarkdown(markdown: string, options: ParseOptions): Promise<string> {
-  codeBlocks.clear();
+  const codeBlocks = new Map<string, { code: string; lang: string }>();
 
   const marked = new Marked();
-  marked.use({ renderer: createRenderer(options) });
+  marked.use({ renderer: createRenderer(options, codeBlocks) });
 
   let result = marked.parse(markdown) as string;
 
@@ -183,6 +189,5 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
     result = result.replace(id, rendered);
   }
 
-  codeBlocks.clear();
   return result;
 }

@@ -3,13 +3,11 @@ import { getHeadingColor, getHexColors, getSubtleColor } from '../../ui/themes/s
 
 export function renderHeading(text: string, level: number, width: number): string {
   const cleanText = text.trim();
-  const colors = getHexColors();
 
   switch (level) {
     case 1: {
-      const h1Color = getHeadingColor(1);
-      const boxed = boxen(h1Color(cleanText), {
-        borderColor: colors.h1,
+      const boxed = boxen(getHeadingColor(1)(cleanText), {
+        borderColor: getHexColors().h1,
         borderStyle: 'round',
         padding: { bottom: 0, left: 2, right: 2, top: 0 },
         textAlignment: 'center',
@@ -18,8 +16,7 @@ export function renderHeading(text: string, level: number, width: number): strin
       return `\n\n${boxed}\n\n`;
     }
     case 2: {
-      const lineLength = Math.max(0, width - cleanText.length - 2);
-      const line = getSubtleColor()('─'.repeat(lineLength));
+      const line = getSubtleColor()('─'.repeat(Math.max(0, width - cleanText.length - 2)));
       return `\n${getHeadingColor(2)(cleanText)} ${line}\n`;
     }
     case 3:
