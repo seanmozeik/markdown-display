@@ -8,12 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.3] - 2026-01-26
 
 ### Added
-- Add ability to render custom elements in content
-- Add ability to fetch user data for dynamic content
+- Add ability to render more types of elements within lists
 - Add loose list support for easier formatting
-
-### Changed
-- Update inline rendering for improved formatting
 
 ## [0.3.2] - 2026-01-26
 

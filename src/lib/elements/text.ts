@@ -53,6 +53,40 @@ function hyphenateText(text: string): string {
   return hyphenateSync(text);
 }
 
+/**
+ * Hyphenate text while preserving ANSI-styled blocks (like inline code).
+ * Only plain text segments get hyphenated; styled blocks pass through unchanged.
+ */
+function hyphenatePreservingAnsi(text: string): string {
+  // Split into segments: [plain, styled, plain, styled, ...]
+  const segments: string[] = [];
+  let lastIndex = 0;
+
+  // Reset regex state
+  ANSI_STYLED_BLOCK.lastIndex = 0;
+
+  for (
+    let match = ANSI_STYLED_BLOCK.exec(text);
+    match !== null;
+    match = ANSI_STYLED_BLOCK.exec(text)
+  ) {
+    // Plain text before this styled block
+    if (match.index > lastIndex) {
+      segments.push(hyphenateText(text.slice(lastIndex, match.index)));
+    }
+    // The styled block itself (unchanged)
+    segments.push(match[0]);
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Remaining plain text after last styled block
+  if (lastIndex < text.length) {
+    segments.push(hyphenateText(text.slice(lastIndex)));
+  }
+
+  return segments.join('');
+}
+
 function findSoftHyphenPositions(text: string): number[] {
   const positions: number[] = [];
   let idx = text.indexOf(SOFT_HYPHEN);
@@ -104,8 +138,8 @@ function trySplitWordToFill(
 export function wrapText(text: string, width: number, options?: WrapOptions): string {
   const shouldHyphenate = options?.hyphenation ?? false;
 
-  // Insert soft hyphens at syllable boundaries if hyphenation enabled
-  const processedText = shouldHyphenate ? hyphenateText(text) : text;
+  // Hyphenate only non-ANSI text to protect inline code from being split
+  const processedText = shouldHyphenate ? hyphenatePreservingAnsi(text) : text;
 
   // Use ANSI-aware split to keep styled content (like inline code) atomic
   const words = splitPreservingAnsi(processedText);
