@@ -17,6 +17,34 @@ interface WrapOptions {
 const SOFT_HYPHEN = '\u00AD';
 const SOFT_HYPHEN_REGEX = /\u00AD/g;
 
+// ANSI escape character - used to build regex dynamically to satisfy linter
+const ESC = '\x1b';
+
+// Matches ANSI-styled content: \x1b[...m (content) \x1b[0m
+const ANSI_STYLED_BLOCK = new RegExp(`${ESC}\\[[0-9;]*m[^${ESC}]*${ESC}\\[0m`, 'g');
+
+// Marker for preserving ANSI blocks during splitting (uses NUL which won't appear in text)
+const NUL = '\x00';
+const MARKER_REGEX = new RegExp(`${NUL}ANSI(\\d+)${NUL}`, 'g');
+
+/**
+ * Split text into words while keeping ANSI-styled content as atomic units.
+ * This prevents inline code backgrounds from bleeding when text wraps.
+ */
+function splitPreservingAnsi(text: string): string[] {
+  const styledBlocks: string[] = [];
+  const markedText = text.replace(ANSI_STYLED_BLOCK, (match) => {
+    styledBlocks.push(match);
+    return `${NUL}ANSI${styledBlocks.length - 1}${NUL}`;
+  });
+
+  const parts = markedText.split(/\s+/);
+
+  return parts.map((part) =>
+    part.replace(MARKER_REGEX, (_, idx) => styledBlocks[Number(idx)] ?? '')
+  );
+}
+
 function stripSoftHyphens(text: string): string {
   return text.replace(SOFT_HYPHEN_REGEX, '');
 }
@@ -79,7 +107,8 @@ export function wrapText(text: string, width: number, options?: WrapOptions): st
   // Insert soft hyphens at syllable boundaries if hyphenation enabled
   const processedText = shouldHyphenate ? hyphenateText(text) : text;
 
-  const words = processedText.split(/\s+/);
+  // Use ANSI-aware split to keep styled content (like inline code) atomic
+  const words = splitPreservingAnsi(processedText);
   const lines: string[] = [];
   let currentLine = '';
 
