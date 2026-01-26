@@ -10,6 +10,7 @@ import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } fr
 import { render } from './lib/render';
 import { getRawTerminalWidth, getTerminalHeight, getTerminalWidth } from './lib/width';
 import { showBanner } from './ui/banner';
+import { showFilePicker } from './ui/picker';
 import { availableThemes, isValidTheme, loadTheme } from './ui/themes';
 import { setColorConfig } from './ui/themes/color-support';
 import {
@@ -17,7 +18,6 @@ import {
   getErrorColor,
   getHeadingColor,
   getHexColors,
-  getMutedColor,
   getSubtleColor,
   getSuccessColor
 } from './ui/themes/semantic';
@@ -133,8 +133,12 @@ ${h('Examples:')}
   const stdinTTY = process.stdin.isTTY ?? true;
 
   if (filePaths.length === 0 && !hasStdin) {
-    console.log(getMutedColor()('No file specified. Use --help for usage information.'));
-    process.exit(1);
+    await showBanner();
+    const selected = await showFilePicker();
+    if (selected.length === 0) {
+      process.exit(0);
+    }
+    filePaths.push(...selected);
   }
 
   // Read file contents

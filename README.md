@@ -20,6 +20,8 @@ A markdown viewer for the terminal.
 
 **Fast** — Bun. Standalone binary. No runtime dependencies.
 
+**File picker** — Run with no arguments for interactive fuzzy search. Type to filter, Enter to open.
+
 **Truecolor** — 24-bit RGB when supported, degrades to 256-color on older terminals. Auto-detected.
 
 **Standards** — Respects `NO_COLOR` and `--no-color`. Runs on macOS, Linux, Windows.
@@ -65,6 +67,8 @@ md docs/guide.md --width 80
 ```
 
 Multiple files are concatenated with filename headers.
+
+**Interactive file picker** — Run `md` with no arguments to fuzzy-search and select a markdown file. Type to filter, arrow keys to navigate, Enter to open. Files are sorted by modification time (most recent first).
 
 ```
 -w, --width <n>     Output width (default: auto)
