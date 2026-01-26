@@ -1,5 +1,11 @@
 # md (markdown-display)
 
+<p align="center">
+  <a href="https://docnative.app">
+    <img src="https://github.com/seanmozeik/markdown-display/releases/download/v0.3.4/md.gif" alt="md - view markdown in terminal" width="400">
+  </a>
+</p>
+
 A markdown viewer for the terminal.
 
 ## Features
