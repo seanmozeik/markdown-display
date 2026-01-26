@@ -142,7 +142,8 @@ export function createRenderer(
       return renderInlineCode(text);
     },
 
-    em({ text }: { text: string }): string {
+    em(this: RendererThis, { tokens }: { tokens: Token[] }): string {
+      const text = this.parser.parseInline(tokens);
       return getItalicStyle()(text);
     },
 
@@ -184,7 +185,8 @@ export function createRenderer(
       return `${renderText(text, { hyphenation: options.hyphenation ?? true, width: options.width })}\n`;
     },
 
-    strong({ text }: { text: string }): string {
+    strong(this: RendererThis, { tokens }: { tokens: Token[] }): string {
+      const text = this.parser.parseInline(tokens);
       return getBoldStyle()(text);
     },
 

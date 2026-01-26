@@ -58,6 +58,16 @@ describe('parseMarkdown', () => {
     expect(result).toContain('\x1b[1;38;5;');
     expect(result).not.toContain('**');
   });
+
+  test('renders bold italic text (***text***)', async () => {
+    const md = 'This is ***bold italic*** text';
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    // Should contain both bold and italic ANSI codes, not literal asterisks
+    expect(result).toContain('\x1b[1;38;5;'); // bold
+    expect(result).toContain('\x1b[3;38;5;'); // italic
+    expect(result).not.toContain('**');
+    expect(result).not.toContain('***');
+  });
 });
 
 describe('ordered list start number', () => {
