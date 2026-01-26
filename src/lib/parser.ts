@@ -38,15 +38,58 @@ export function createRenderer(
     start: number,
     depth: number
   ): string {
+    // Inline token types that can be passed to parseInline
+    const INLINE_TYPES = new Set([
+      'text',
+      'strong',
+      'em',
+      'codespan',
+      'link',
+      'image',
+      'br',
+      'del',
+      'escape',
+      'checkbox'
+    ]);
+
     return items
       .map((item, i) => {
-        // Separate inline vs block tokens
-        const inlineTokens = item.tokens.filter((t) => t.type !== 'list');
-        const nestedLists = item.tokens.filter((t) => t.type === 'list') as Array<{
+        // Separate tokens by type:
+        // - Inline tokens: can be parsed with parseInline
+        // - Paragraph: unwrap to get inner inline tokens
+        // - Code: handle specially for deferred syntax highlighting
+        // - List: handle recursively for nesting
+        // - Other block tokens (blockquote, table, heading, hr, html): render with parse()
+        const inlineTokens: Token[] = [];
+        const nestedLists: Array<{
           items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>;
           ordered: boolean;
           start?: number;
-        }>;
+        }> = [];
+        const blockContent: Token[] = [];
+
+        for (const t of item.tokens) {
+          if (t.type === 'list') {
+            nestedLists.push(t as (typeof nestedLists)[number]);
+          } else if (t.type === 'code') {
+            // Code blocks - store for deferred syntax highlighting
+            const codeToken = t as { text: string; lang?: string };
+            const id = `__CODE_${Date.now()}_${Math.random().toString(36)}__`;
+            codeBlocks.set(id, { code: codeToken.text, lang: codeToken.lang ?? '' });
+            blockContent.push({ raw: id, text: id, type: 'html' } as Token);
+          } else if (t.type === 'paragraph' && 'tokens' in t) {
+            // Paragraph wraps inline content in loose lists - extract inner tokens
+            inlineTokens.push(...(t.tokens as Token[]));
+          } else if (t.type === 'space') {
+            // Whitespace between block content - skip
+          } else if (INLINE_TYPES.has(t.type)) {
+            // Known inline token
+            inlineTokens.push(t);
+          } else {
+            // Other block tokens (blockquote, table, heading, hr, html)
+            blockContent.push(t);
+          }
+        }
 
         // Render the item's inline content
         const text = parser.parseInline(inlineTokens);
@@ -58,15 +101,21 @@ export function createRenderer(
           width: options.width
         });
 
+        // Render any block content (tables, blockquotes, code blocks, etc.)
+        const blockRendered = blockContent.length > 0 ? parser.parse(blockContent).trim() : '';
+
         // Recursively render nested lists
-        const nestedContent = nestedLists
+        const nestedRendered = nestedLists
           .map((nested) =>
             renderListWithDepth(parser, nested.items, nested.ordered, nested.start ?? 1, depth + 1)
           )
           .join('\n');
 
-        // Join with newline
-        return nestedContent ? `${renderedItem}\n${nestedContent}` : renderedItem;
+        // Join: item text, then block content, then nested lists
+        const parts = [renderedItem];
+        if (blockRendered) parts.push(blockRendered);
+        if (nestedRendered) parts.push(nestedRendered);
+        return parts.join('\n');
       })
       .join('\n');
   }

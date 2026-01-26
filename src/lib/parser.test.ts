@@ -129,3 +129,64 @@ describe('nested lists', () => {
     expect(result).toContain('2.');
   });
 });
+
+describe('loose lists with block content', () => {
+  test('renders loose list with nested task items', async () => {
+    // Loose lists (blank lines between items) wrap content in paragraph tokens
+    const md = `- [ ] Parent task
+  - [x] Completed subtask
+  - [ ] Pending subtask
+
+- [ ] Another parent
+  - [x] Done`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('☐');
+    expect(result).toContain('☑');
+    expect(result).toContain('Parent task');
+    expect(result).toContain('Another parent');
+  });
+
+  test('renders list items containing code blocks', async () => {
+    const md = `1. First item with code
+
+   \`\`\`js
+   const x = 1;
+   \`\`\`
+
+2. Second item`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('1.');
+    expect(result).toContain('2.');
+    expect(result).toContain('const'); // Code is syntax highlighted
+    expect(result).toContain('javascript'); // Language label
+  });
+
+  test('renders list items containing blockquotes', async () => {
+    const md = `- Item with quote
+
+  > This is a blockquote inside a list
+
+- Next item`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('•');
+    expect(result).toContain('Item with quote');
+    expect(result).toContain('blockquote');
+    expect(result).toContain('Next item');
+  });
+
+  test('renders list items containing tables', async () => {
+    const md = `- Item with table
+
+  | Col1 | Col2 |
+  |------|------|
+  | A    | B    |
+
+- Next item`;
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('•');
+    expect(result).toContain('Item with table');
+    expect(result).toContain('Col1');
+    expect(result).toContain('A');
+    expect(result).toContain('Next item');
+  });
+});
