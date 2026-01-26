@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-01-26
+
+### Added
+- Add interactive fuzzy file picker for selecting Markdown files
+- Add truecolor support and ability to override via config
+- Add box title transition style that preserves title colors
+
+### Fixed
+- Fix text wrapping that previously broke ANSI inline styles
+
 ## [0.2.1] - 2026-01-25
 
 ### Added
