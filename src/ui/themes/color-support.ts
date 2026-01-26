@@ -29,6 +29,14 @@ initColorEnvironment();
 export function setColorConfig(truecolor: boolean | 'auto'): void {
   configOverride = truecolor;
   cachedLevel = null;
+
+  // Sync to FORCE_COLOR so chalk/gradient-string respect our config
+  if (truecolor === true) {
+    Bun.env.FORCE_COLOR = '3';
+  } else if (truecolor === false) {
+    Bun.env.FORCE_COLOR = '2';
+  }
+  // 'auto' leaves FORCE_COLOR as-is for natural detection
 }
 
 /**

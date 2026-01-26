@@ -9,7 +9,6 @@ import { calculateLayout } from './lib/layout';
 import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } from './lib/pager';
 import { render } from './lib/render';
 import { getRawTerminalWidth, getTerminalHeight, getTerminalWidth } from './lib/width';
-import { showBanner } from './ui/banner';
 import { showFilePicker } from './ui/picker';
 import { availableThemes, isValidTheme, loadTheme } from './ui/themes';
 import { setColorConfig } from './ui/themes/color-support';
@@ -76,6 +75,7 @@ async function main(): Promise<void> {
   const colors = getHexColors();
 
   if (flags.version) {
+    const { showBanner } = await import('./ui/banner');
     await showBanner();
     console.log(
       boxen(pc.dim(`v${version}`), {
@@ -88,6 +88,7 @@ async function main(): Promise<void> {
   }
 
   if (flags.help) {
+    const { showBanner } = await import('./ui/banner');
     await showBanner();
     console.log(pc.dim(`v${version}`));
     console.log();
@@ -133,6 +134,7 @@ ${h('Examples:')}
   const stdinTTY = process.stdin.isTTY ?? true;
 
   if (filePaths.length === 0 && !hasStdin) {
+    const { showBanner } = await import('./ui/banner');
     await showBanner();
     const selected = await showFilePicker();
     if (selected.length === 0) {
