@@ -118,10 +118,11 @@ describe('createFuzzyFilter', () => {
     expect(result[0]?.label).toBe('docs/guide.md');
   });
 
-  test('filters with fuzzy matching (transposition)', async () => {
+  test('filters with subsequence matching across path separators', async () => {
     const { createFuzzyFilter } = await import('./picker');
     const filter = createFuzzyFilter();
-    const result = filter('giude', options); // transposed 'u' and 'i'
+    // fzf-style: characters in order, gaps allowed (e.g., across /)
+    const result = filter('docsguide', options);
     expect(result.some((r) => r.label === 'docs/guide.md')).toBe(true);
   });
 

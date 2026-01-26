@@ -1,5 +1,5 @@
 import * as p from '@clack/prompts';
-import uFuzzy from '@leeoniya/ufuzzy';
+import fuzzysort from 'fuzzysort';
 import { getTerminalHeight } from '../lib/width';
 import { getMutedColor } from './themes/semantic';
 
@@ -43,27 +43,19 @@ export async function findMarkdownFiles(): Promise<string[]> {
 
 /**
  * Create a fuzzy filter function for use with @clack/prompts autocomplete.
- * Uses uFuzzy for fast, typo-tolerant matching.
+ * Uses fuzzysort for fast, subsequence-based matching (like fzf/SublimeText).
  */
 export function createFuzzyFilter() {
-  const uf = new uFuzzy({
-    intraDel: 1, // Allow deletions (e.g., "tst" matches "test")
-    intraMode: 1, // Enable single-error tolerance per term
-    intraSlice: [0, Infinity], // Allow errors on first char too
-    intraSub: 1, // Allow substitutions (e.g., "tset" matches "test")
-    intraTrn: 1 // Allow transpositions (e.g., "tset" matches "test")
-  });
-
   return (input: string, options: Option[]): Option[] => {
     if (!input.trim()) return options;
 
-    const haystack = options.map((o) => o.label);
-    // outOfOrder: 2 allows up to 2 terms to be matched in any order
-    const [idxs] = uf.search(haystack, input, 2);
+    const results = fuzzysort.go(input, options, {
+      key: 'label',
+      limit: 100,
+      threshold: 0.2
+    });
 
-    if (!idxs || idxs.length === 0) return [];
-
-    return idxs.map((i) => options[i]).filter((o): o is Option => o !== undefined);
+    return results.map((r) => r.obj);
   };
 }
 

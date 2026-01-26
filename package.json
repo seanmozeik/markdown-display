@@ -17,11 +17,11 @@
   },
   "dependencies": {
     "@clack/prompts": "1.0.0-alpha.9",
-    "@leeoniya/ufuzzy": "^1.0.19",
     "@shikijs/cli": "^3.21.0",
     "boxen": "^8.0.1",
     "console-table-printer": "^2.15.0",
     "figlet": "^1.9.4",
+    "fuzzysort": "^3.1.0",
     "gradient-string": "^3.0.0",
     "hyphen": "^1.14.1",
     "marked": "^17.0.1",
