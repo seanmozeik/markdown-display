@@ -1,4 +1,5 @@
 // src/ui/themes/ansi.ts
+import { getColorLevel } from './color-support';
 
 /**
  * ANSI 256-color palette RGB values.
@@ -43,7 +44,7 @@ function getAnsi256Color(code: number): [number, number, number] {
   return [gray, gray, gray];
 }
 
-function hexToRgb(hex: string): [number, number, number] {
+export function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '').toLowerCase();
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
@@ -72,37 +73,65 @@ export function hexToAnsi256(hex: string): number {
 }
 
 export function ansiFg(hex: string): (text: string) => string {
+  if (getColorLevel() >= 3) {
+    const [r, g, b] = hexToRgb(hex);
+    return (text: string) => `\x1b[38;2;${r};${g};${b}m${text}\x1b[0m`;
+  }
   const code = hexToAnsi256(hex);
   return (text: string) => `\x1b[38;5;${code}m${text}\x1b[0m`;
 }
 
 export function ansiBg(hex: string): (text: string) => string {
+  if (getColorLevel() >= 3) {
+    const [r, g, b] = hexToRgb(hex);
+    return (text: string) => `\x1b[48;2;${r};${g};${b}m${text}\x1b[0m`;
+  }
   const code = hexToAnsi256(hex);
   return (text: string) => `\x1b[48;5;${code}m${text}\x1b[0m`;
 }
 
 export function ansiFgBg(fgHex: string, bgHex: string): (text: string) => string {
+  if (getColorLevel() >= 3) {
+    const [fgR, fgG, fgB] = hexToRgb(fgHex);
+    const [bgR, bgG, bgB] = hexToRgb(bgHex);
+    return (text: string) =>
+      `\x1b[38;2;${fgR};${fgG};${fgB};48;2;${bgR};${bgG};${bgB}m${text}\x1b[0m`;
+  }
   const fgCode = hexToAnsi256(fgHex);
   const bgCode = hexToAnsi256(bgHex);
   return (text: string) => `\x1b[38;5;${fgCode};48;5;${bgCode}m${text}\x1b[0m`;
 }
 
 export function ansiBold(hex: string): (text: string) => string {
+  if (getColorLevel() >= 3) {
+    const [r, g, b] = hexToRgb(hex);
+    return (text: string) => `\x1b[1;38;2;${r};${g};${b}m${text}\x1b[0m`;
+  }
   const code = hexToAnsi256(hex);
   return (text: string) => `\x1b[1;38;5;${code}m${text}\x1b[0m`;
 }
 
 export function ansiItalic(hex: string): (text: string) => string {
+  if (getColorLevel() >= 3) {
+    const [r, g, b] = hexToRgb(hex);
+    return (text: string) => `\x1b[3;38;2;${r};${g};${b}m${text}\x1b[0m`;
+  }
   const code = hexToAnsi256(hex);
   return (text: string) => `\x1b[3;38;5;${code}m${text}\x1b[0m`;
 }
 
 /**
  * Style text with foreground color, transitioning to another color instead of resetting.
- * Uses truecolor (24-bit) to match libraries like chalk/boxen that use RGB values.
+ * Useful for styled text embedded in colored contexts (like box titles in borders).
  */
 export function ansiFgTransition(fgHex: string, transitionHex: string): (text: string) => string {
-  const [fgR, fgG, fgB] = hexToRgb(fgHex);
-  const [trR, trG, trB] = hexToRgb(transitionHex);
-  return (text: string) => `\x1b[38;2;${fgR};${fgG};${fgB}m${text}\x1b[38;2;${trR};${trG};${trB}m`;
+  if (getColorLevel() >= 3) {
+    const [fgR, fgG, fgB] = hexToRgb(fgHex);
+    const [trR, trG, trB] = hexToRgb(transitionHex);
+    return (text: string) =>
+      `\x1b[38;2;${fgR};${fgG};${fgB}m${text}\x1b[38;2;${trR};${trG};${trB}m`;
+  }
+  const fgCode = hexToAnsi256(fgHex);
+  const trCode = hexToAnsi256(transitionHex);
+  return (text: string) => `\x1b[38;5;${fgCode}m${text}\x1b[38;5;${trCode}m`;
 }

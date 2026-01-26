@@ -1,6 +1,7 @@
 # src/lib/default-config.toml
 theme = "frappe"
 width = "auto"
+truecolor = "auto"   # "auto" | true | false
 nerd_fonts = "auto"  # "auto" | true | false
 
 [display]

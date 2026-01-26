@@ -20,7 +20,9 @@ A markdown viewer for the terminal.
 
 **Fast** — Bun. Standalone binary. No runtime dependencies.
 
-**Standards** — Respects `NO_COLOR`. Runs on macOS, Linux, Windows.
+**Truecolor** — 24-bit RGB when supported, degrades to 256-color on older terminals. Auto-detected.
+
+**Standards** — Respects `NO_COLOR` and `--no-color`. Runs on macOS, Linux, Windows.
 
 ```bash
 md README.md
@@ -70,6 +72,7 @@ Multiple files are concatenated with filename headers.
 --list-themes       Show available themes
 -p, --plain         No colors
 -r, --raw           Pass through unrendered
+--no-color          Disable colors (same as NO_COLOR=1)
 --no-pager          Print directly, skip pager
 --scroll            Horizontal scroll for code
 --wrap              Wrap code (default)
@@ -82,6 +85,7 @@ Multiple files are concatenated with filename headers.
 ```toml
 theme = "frappe"
 width = "auto"
+truecolor = "auto"
 nerd_fonts = "auto"
 
 [display]
@@ -109,6 +113,7 @@ args = ["-r", "-F", "-K", "-X"]
 |---------|-------------|
 | `theme` | Color scheme. `md --list-themes` for options. |
 | `width` | Output width. `"auto"` uses terminal (max 120). |
+| `truecolor` | 24-bit color. `"auto"` detects, `true` forces, `false` uses 256-color. |
 | `nerd_fonts` | Icon support. `"auto"` detects. |
 | `display.padding` | Margins based on terminal width. |
 | `display.maxWidth` | Content width limit. 0 for full width. |

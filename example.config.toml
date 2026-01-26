@@ -11,6 +11,12 @@ theme = "frappe"
 #   <number> = fixed width (minimum 40)
 width = "auto"
 
+# Truecolor (24-bit RGB) support
+#   "auto" = detect terminal capability
+#   true   = force truecolor output
+#   false  = use 256-color mode
+truecolor = "auto"
+
 # Nerd Font icons for code block language labels
 #   "auto" = disabled (opt-in required)
 #   true   = show icons (e.g.,  for TypeScript,  for Python)

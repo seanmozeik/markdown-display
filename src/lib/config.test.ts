@@ -53,4 +53,8 @@ describe('DEFAULT_CONFIG', () => {
     expect(DEFAULT_CONFIG.display.padding).toBe(true);
     expect(DEFAULT_CONFIG.display.maxWidth).toBe(0);
   });
+
+  test('has truecolor config with auto default', () => {
+    expect(DEFAULT_CONFIG.truecolor).toBe('auto');
+  });
 });

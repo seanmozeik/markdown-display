@@ -11,6 +11,7 @@ import { render } from './lib/render';
 import { getRawTerminalWidth, getTerminalHeight, getTerminalWidth } from './lib/width';
 import { showBanner } from './ui/banner';
 import { availableThemes, isValidTheme, loadTheme } from './ui/themes';
+import { setColorConfig } from './ui/themes/color-support';
 import {
   getAccentColor,
   getErrorColor,
@@ -35,6 +36,7 @@ function getArgValue(args: string[], flag: string): string | undefined {
 const flags = {
   help: args.includes('--help') || args.includes('-h'),
   listThemes: args.includes('--list-themes'),
+  noColor: args.includes('--no-color'),
   noPager: args.includes('--no-pager'),
   plain: args.includes('--plain') || args.includes('-p'),
   raw: args.includes('--raw') || args.includes('-r'),
@@ -48,6 +50,9 @@ const flags = {
 async function main(): Promise<void> {
   // Load config and initialize theme early so it's available for --version and --help
   const config = await loadConfig(getConfigPath());
+
+  // Initialize color support based on config
+  setColorConfig(config.truecolor);
 
   // Handle --list-themes before loading theme (doesn't need theme colors)
   if (flags.listThemes) {

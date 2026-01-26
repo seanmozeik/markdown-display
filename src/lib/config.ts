@@ -4,6 +4,7 @@ import defaultToml from './default-config.toml';
 export interface Config {
   theme: string;
   width: 'auto' | number;
+  truecolor: 'auto' | boolean;
   nerd_fonts: 'auto' | boolean;
   display: {
     padding: boolean;
