@@ -1,6 +1,6 @@
 // src/ui/themes/semantic.ts
 
-import { ansiBold, ansiFg, ansiFgBg, ansiItalic } from './ansi';
+import { ansiBold, ansiFg, ansiFgBg, ansiFgTransition, ansiItalic } from './ansi';
 import { theme } from './index';
 
 type StyleFn = (text: string) => string;
@@ -92,6 +92,14 @@ export function getHexColors() {
     h1: t.overrides?.h1 ?? t.overrides?.heading ?? t.colors.accent,
     subtle: t.colors.subtle
   };
+}
+
+/** Style box title that transitions back to border color instead of resetting */
+export function getBoxTitleStyle(): StyleFn {
+  const t = theme();
+  const titleColor = t.overrides?.link ?? t.colors.accent;
+  const borderColor = t.colors.subtle;
+  return ansiFgTransition(titleColor, borderColor);
 }
 
 /** Get gradient color arrays for gradient-string library */

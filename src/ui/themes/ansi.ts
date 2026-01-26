@@ -96,3 +96,13 @@ export function ansiItalic(hex: string): (text: string) => string {
   const code = hexToAnsi256(hex);
   return (text: string) => `\x1b[3;38;5;${code}m${text}\x1b[0m`;
 }
+
+/**
+ * Style text with foreground color, transitioning to another color instead of resetting.
+ * Uses truecolor (24-bit) to match libraries like chalk/boxen that use RGB values.
+ */
+export function ansiFgTransition(fgHex: string, transitionHex: string): (text: string) => string {
+  const [fgR, fgG, fgB] = hexToRgb(fgHex);
+  const [trR, trG, trB] = hexToRgb(transitionHex);
+  return (text: string) => `\x1b[38;2;${fgR};${fgG};${fgB}m${text}\x1b[38;2;${trR};${trG};${trB}m`;
+}

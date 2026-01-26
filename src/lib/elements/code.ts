@@ -2,9 +2,9 @@
 import boxen from 'boxen';
 import { theme } from '../../ui/themes';
 import {
+  getBoxTitleStyle,
   getHexColors,
   getInlineCodeStyle,
-  getLinkColor,
   getMutedColor,
   getSubtleColor
 } from '../../ui/themes/semantic';
@@ -342,7 +342,7 @@ export async function renderCodeBlock(
     borderColor: getHexColors().subtle,
     borderStyle: 'round',
     padding: { bottom: 0, left: 1, right: 1, top: 0 },
-    title: title ? getLinkColor()(title) : undefined,
+    title: title ? getBoxTitleStyle()(title) : undefined,
     titleAlignment: 'left',
     width: config.width
   });
