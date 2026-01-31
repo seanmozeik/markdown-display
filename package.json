@@ -27,7 +27,6 @@
     "marked": "^17.0.1",
     "picocolors": "^1.1.1",
     "shiki": "^3.21.0",
-    "string-width": "^8.1.0",
     "supports-color": "^10.2.2"
   },
   "devDependencies": {

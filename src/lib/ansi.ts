@@ -16,5 +16,5 @@ export function stripInvisible(str: string): string {
 }
 
 export function visibleLength(str: string): number {
-  return stripInvisible(str).length;
+  return Bun.stringWidth(stripInvisible(str));
 }
