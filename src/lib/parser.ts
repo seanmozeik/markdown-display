@@ -82,6 +82,9 @@ export function createRenderer(
             inlineTokens.push(...(t.tokens as Token[]));
           } else if (t.type === 'space') {
             // Whitespace between block content - skip
+          } else if (t.type === 'html' && 'block' in t && !t.block) {
+            // Inline HTML (e.g. <br>) should be parsed inline
+            inlineTokens.push(t);
           } else if (INLINE_TYPES.has(t.type)) {
             // Known inline token
             inlineTokens.push(t);
@@ -126,6 +129,9 @@ export function createRenderer(
       const text = this.parser.parse(tokens);
       return `${renderBlockquote(text.trim(), { hyphenation: options.hyphenation, width: options.width })}\n\n`;
     },
+    br(): string {
+      return '\n';
+    },
 
     checkbox(): string {
       // Return empty - we render checkboxes in renderListItem based on task/checked flags
@@ -154,6 +160,14 @@ export function createRenderer(
 
     hr(): string {
       return `\n${'─'.repeat(options.width)}\n\n`;
+    },
+
+    html({ text }: { text: string }): string {
+      // Render inline HTML line breaks as terminal line breaks
+      if (/^<br\s*\/?>$/i.test(text.trim())) {
+        return '\n';
+      }
+      return text;
     },
 
     link(this: RendererThis, { href, tokens }: { href: string; tokens: Token[] }): string {

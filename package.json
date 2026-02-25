@@ -1,40 +1,44 @@
 {
-  "name": "markdown-display",
+  "name": "@seanmozeik/markdown-display",
   "version": "0.3.4",
   "description": "Beautiful terminal markdown viewer",
   "module": "src/index.ts",
   "type": "module",
   "private": true,
+  "bin": {
+    "md": "dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "bun test",
     "dev": "bun run src/index.ts",
     "build": "bun build ./src/index.ts --compile --outfile md --minify",
-    "bundle": "bun build ./src/index.ts --outdir dist --target=bun --minify",
+    "bundle": "bun build ./src/index.ts --outfile dist/index.js --target=bun --minify",
     "lint": "biome lint src/",
     "format": "biome format --write src/",
     "check": "biome check --write --unsafe src/",
     "tc": "tsc --noEmit"
   },
   "dependencies": {
-    "@clack/prompts": "1.0.0-alpha.9",
-    "@shikijs/cli": "^3.21.0",
+    "@clack/prompts": "1.0.1",
+    "@shikijs/cli": "^3.23.0",
     "boxen": "^8.0.1",
     "console-table-printer": "^2.15.0",
-    "figlet": "^1.9.4",
     "fuzzysort": "^3.1.0",
     "gradient-string": "^3.0.0",
     "hyphen": "^1.14.1",
-    "marked": "^17.0.1",
+    "marked": "^17.0.3",
     "picocolors": "^1.1.1",
-    "shiki": "^3.21.0",
+    "shiki": "^3.23.0",
     "supports-color": "^10.2.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.11",
-    "@types/bun": "latest",
-    "@types/figlet": "^1.7.0",
+    "@biomejs/biome": "^2.4.4",
+    "@types/bun": "1.3.9",
     "@types/gradient-string": "^1.1.6",
-    "@types/hyphen": "^1.6.7",
+    "@types/hyphen": "^1.14.0",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {

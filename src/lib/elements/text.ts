@@ -138,52 +138,60 @@ function trySplitWordToFill(
 export function wrapText(text: string, width: number, options?: WrapOptions): string {
   const shouldHyphenate = options?.hyphenation ?? false;
 
-  // Hyphenate only non-ANSI text to protect inline code from being split
-  const processedText = shouldHyphenate ? hyphenatePreservingAnsi(text) : text;
+  function wrapSingleLine(line: string): string {
+    // Hyphenate only non-ANSI text to protect inline code from being split
+    const processedLine = shouldHyphenate ? hyphenatePreservingAnsi(line) : line;
 
-  // Use ANSI-aware split to keep styled content (like inline code) atomic
-  const words = splitPreservingAnsi(processedText);
-  const lines: string[] = [];
-  let currentLine = '';
+    // Use ANSI-aware split to keep styled content (like inline code) atomic
+    const words = splitPreservingAnsi(processedLine);
+    const lines: string[] = [];
+    let currentLine = '';
 
-  for (const word of words) {
-    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
 
-    if (visibleLength(testLine) <= width) {
-      // Word fits - strip soft hyphens since we don't need to break here
-      const cleanWord = stripSoftHyphens(word);
-      currentLine = currentLine ? `${currentLine} ${cleanWord}` : cleanWord;
-    } else if (currentLine) {
-      // Word doesn't fit - try to split it to fill current line
-      const remainingSpace = width - visibleLength(currentLine) - 1; // -1 for space
-      const split = shouldHyphenate ? trySplitWordToFill(word, remainingSpace, width) : null;
+      if (visibleLength(testLine) <= width) {
+        // Word fits - strip soft hyphens since we don't need to break here
+        const cleanWord = stripSoftHyphens(word);
+        currentLine = currentLine ? `${currentLine} ${cleanWord}` : cleanWord;
+      } else if (currentLine) {
+        // Word doesn't fit - try to split it to fill current line
+        const remainingSpace = width - visibleLength(currentLine) - 1; // -1 for space
+        const split = shouldHyphenate ? trySplitWordToFill(word, remainingSpace, width) : null;
 
-      if (split) {
-        // Fill current line with first part of word
-        const [firstPart, remainder] = split;
-        lines.push(`${stripSoftHyphens(currentLine)} ${firstPart}`);
-        // Continue with remainder (may need further breaking)
-        currentLine = breakWord(remainder, width);
+        if (split) {
+          // Fill current line with first part of word
+          const [firstPart, remainder] = split;
+          lines.push(`${stripSoftHyphens(currentLine)} ${firstPart}`);
+          // Continue with remainder (may need further breaking)
+          currentLine = breakWord(remainder, width);
+        } else {
+          // Can't split usefully - push current line and start fresh
+          lines.push(stripSoftHyphens(currentLine));
+          currentLine = breakWord(word, width);
+        }
       } else {
-        // Can't split usefully - push current line and start fresh
-        lines.push(stripSoftHyphens(currentLine));
-        currentLine = breakWord(word, width);
+        // Word alone is too long - break it
+        const broken = breakWord(word, width);
+        const brokenLines = broken.split('\n');
+        lines.push(...brokenLines.slice(0, -1));
+        currentLine = brokenLines[brokenLines.length - 1] ?? '';
       }
-    } else {
-      // Word alone is too long - break it
-      const broken = breakWord(word, width);
-      const brokenLines = broken.split('\n');
-      lines.push(...brokenLines.slice(0, -1));
-      currentLine = brokenLines[brokenLines.length - 1] ?? '';
     }
+
+    if (currentLine) {
+      // Strip any remaining soft hyphens from the last line
+      lines.push(stripSoftHyphens(currentLine));
+    }
+
+    return lines.join('\n');
   }
 
-  if (currentLine) {
-    // Strip any remaining soft hyphens from the last line
-    lines.push(stripSoftHyphens(currentLine));
-  }
-
-  return lines.join('\n');
+  // Preserve explicit line breaks (e.g. Markdown <br> / hard breaks)
+  return text
+    .split('\n')
+    .map((line) => wrapSingleLine(line))
+    .join('\n');
 }
 
 function breakWord(word: string, width: number): string {

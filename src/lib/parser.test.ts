@@ -68,6 +68,20 @@ describe('parseMarkdown', () => {
     expect(result).not.toContain('**');
     expect(result).not.toContain('***');
   });
+
+  test('renders inline HTML br as line break', async () => {
+    const md = 'line1<br>line2';
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('line1\nline2');
+    expect(result).not.toContain('<br>');
+  });
+
+  test('renders self-closing inline HTML br as line break', async () => {
+    const md = 'line1<br />line2';
+    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    expect(result).toContain('line1\nline2');
+    expect(result).not.toContain('<br />');
+  });
 });
 
 describe('ordered list start number', () => {
