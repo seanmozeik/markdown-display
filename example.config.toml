@@ -21,7 +21,7 @@ truecolor = "auto"
 #   "auto" = disabled (opt-in required)
 #   true   = show icons (e.g.,  for TypeScript,  for Python)
 #   false  = show text labels (e.g., "ts", "python")
-nerd_fonts = false  # set to true if you have a Nerd Font installed
+nerd_fonts = false # set to true if you have a Nerd Font installed
 
 
 [display]

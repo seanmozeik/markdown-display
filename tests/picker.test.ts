@@ -22,7 +22,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'README.md'), '# Hello');
     await Bun.write(join(tempDir, 'CHANGELOG.md'), '# Changes');
 
-    const { findMarkdownFiles } = await import('./picker');
+    const { findMarkdownFiles } = await import('../src/ui/picker');
     const files = await findMarkdownFiles();
 
     expect(files).toContain('README.md');
@@ -33,7 +33,7 @@ describe('findMarkdownFiles', () => {
   test('finds markdown files in subdirectories', async () => {
     await Bun.write(join(tempDir, 'docs/guide.md'), '# Guide');
 
-    const { findMarkdownFiles } = await import('./picker');
+    const { findMarkdownFiles } = await import('../src/ui/picker');
     const files = await findMarkdownFiles();
 
     expect(files).toContain('docs/guide.md');
@@ -43,7 +43,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'README.md'), '# Hello');
     await Bun.write(join(tempDir, 'node_modules/pkg/README.md'), '# Pkg');
 
-    const { findMarkdownFiles } = await import('./picker');
+    const { findMarkdownFiles } = await import('../src/ui/picker');
     const files = await findMarkdownFiles();
 
     expect(files).toContain('README.md');
@@ -54,7 +54,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'README.md'), '# Hello');
     await Bun.write(join(tempDir, '.git/hooks/readme.md'), '# Hooks');
 
-    const { findMarkdownFiles } = await import('./picker');
+    const { findMarkdownFiles } = await import('../src/ui/picker');
     const files = await findMarkdownFiles();
 
     expect(files).toContain('README.md');
@@ -65,7 +65,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'README.md'), '# Hello');
     await Bun.write(join(tempDir, '.hidden/secret.md'), '# Secret');
 
-    const { findMarkdownFiles } = await import('./picker');
+    const { findMarkdownFiles } = await import('../src/ui/picker');
     const files = await findMarkdownFiles();
 
     expect(files).toContain('README.md');
@@ -75,7 +75,7 @@ describe('findMarkdownFiles', () => {
   test('returns empty array when no markdown files exist', async () => {
     await Bun.write(join(tempDir, 'file.txt'), 'text');
 
-    const { findMarkdownFiles } = await import('./picker');
+    const { findMarkdownFiles } = await import('../src/ui/picker');
     const files = await findMarkdownFiles();
 
     expect(files).toEqual([]);
@@ -87,7 +87,7 @@ describe('findMarkdownFiles', () => {
     await new Promise((r) => setTimeout(r, 50)); // Small delay
     await Bun.write(join(tempDir, 'new.md'), '# New');
 
-    const { findMarkdownFiles } = await import('./picker');
+    const { findMarkdownFiles } = await import('../src/ui/picker');
     const files = await findMarkdownFiles();
 
     expect(files[0]).toBe('new.md');
@@ -100,18 +100,18 @@ describe('createFuzzyFilter', () => {
     { label: 'README.md', value: 'README.md' },
     { label: 'docs/guide.md', value: 'docs/guide.md' },
     { label: 'docs/api.md', value: 'docs/api.md' },
-    { label: 'src/lib/parser.md', value: 'src/lib/parser.md' }
+    { label: 'src/lib/parser.md', value: 'src/lib/parser.md' },
   ];
 
   test('returns all options when input is empty', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
     const result = filter('', options);
     expect(result).toEqual(options);
   });
 
   test('filters by exact substring match', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
     const result = filter('guide', options);
     expect(result).toHaveLength(1);
@@ -119,22 +119,22 @@ describe('createFuzzyFilter', () => {
   });
 
   test('filters with subsequence matching across path separators', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
-    // fzf-style: characters in order, gaps allowed (e.g., across /)
+    // Fzf-style: characters in order, gaps allowed (e.g., across /)
     const result = filter('docsguide', options);
     expect(result.some((r) => r.label === 'docs/guide.md')).toBe(true);
   });
 
   test('filters with fuzzy matching (deletion)', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
-    const result = filter('gude', options); // missing 'i'
+    const result = filter('gude', options); // Missing 'i'
     expect(result.some((r) => r.label === 'docs/guide.md')).toBe(true);
   });
 
   test('filters case-insensitively', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
     const result = filter('README', options);
     expect(result).toHaveLength(1);
@@ -142,21 +142,21 @@ describe('createFuzzyFilter', () => {
   });
 
   test('returns empty array when no matches', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
     const result = filter('xyz123', options);
     expect(result).toEqual([]);
   });
 
   test('matches partial paths', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
     const result = filter('docs/api', options);
     expect(result.some((r) => r.label === 'docs/api.md')).toBe(true);
   });
 
   test('matches out-of-order terms', async () => {
-    const { createFuzzyFilter } = await import('./picker');
+    const { createFuzzyFilter } = await import('../src/ui/picker');
     const filter = createFuzzyFilter();
     const result = filter('api docs', options);
     expect(result.some((r) => r.label === 'docs/api.md')).toBe(true);
@@ -181,7 +181,7 @@ describe('showFilePicker', () => {
   test('returns empty array when no markdown files found', async () => {
     await Bun.write(join(tempDir, 'file.txt'), 'text');
 
-    const { showFilePicker } = await import('./picker');
+    const { showFilePicker } = await import('../src/ui/picker');
     const result = await showFilePicker();
 
     expect(result).toEqual([]);

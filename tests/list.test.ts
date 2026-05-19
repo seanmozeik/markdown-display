@@ -1,7 +1,8 @@
-// src/lib/elements/list.test.ts
+// Src/lib/elements/list.test.ts
 import { describe, expect, test } from 'bun:test';
-import { visibleLength } from '../ansi';
-import { renderList, renderListItem } from './list';
+
+import { visibleLength } from '../src/lib/ansi';
+import { renderList, renderListItem } from '../src/lib/elements/list';
 
 describe('renderListItem', () => {
   test('renders bullet item with bullet character', () => {
@@ -20,8 +21,8 @@ describe('renderListItem', () => {
     const depth0 = renderListItem('Top', false, 0);
     const depth1 = renderListItem('Nested', false, 1);
 
-    const indent0 = depth0.match(/^(\s*)/)?.[1]?.length ?? 0;
-    const indent1 = depth1.match(/^(\s*)/)?.[1]?.length ?? 0;
+    const indent0 = (/^(\s*)/.exec(depth0))?.[1]?.length ?? 0;
+    const indent1 = (/^(\s*)/.exec(depth1))?.[1]?.length ?? 0;
 
     expect(indent1).toBeGreaterThan(indent0);
   });
@@ -65,21 +66,21 @@ describe('task list items', () => {
     const unchecked = renderListItem('Todo', false, 0, undefined, {
       checked: false,
       nerdFonts: true,
-      task: true
+      task: true,
     });
     const checked = renderListItem('Done', false, 0, undefined, {
       checked: true,
       nerdFonts: true,
-      task: true
+      task: true,
     });
-    expect(unchecked).toContain('󰄱'); // nf-md-checkbox_blank_outline
-    expect(checked).toContain('󰱒'); // nf-md-checkbox_marked
+    expect(unchecked).toContain('󰄱'); // Nf-md-checkbox_blank_outline
+    expect(checked).toContain('󰱒'); // Nf-md-checkbox_marked
   });
 
   test('mutes text for completed tasks', () => {
     const result = renderListItem('Done item', false, 0, undefined, { checked: true, task: true });
     // Should contain muted ANSI color code (the muted color from theme)
-    expect(result).toContain('\x1b[38;5;');
+    expect(result).toContain('\u001b[38;5;');
   });
 });
 

@@ -1,74 +1,77 @@
 ---
 description: markdown-display (md) - Beautiful terminal markdown viewer
-globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
+globs: '*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json'
 alwaysApply: false
 ---
 
 # markdown-display
 
-A terminal markdown viewer, short name `md`.
+A terminal markdown viewer, short name `md`. Built with Bun and Effect v4.
+
+## Effect Best Practices
+
+Always consult effect-solutions before writing Effect code:
+
+1. `effect-solutions list`
+2. `effect-solutions show <topic>...`
+3. Search `~/.local/share/effect-solutions/effect` for real implementations.
+
+Never guess at Effect patterns.
 
 ## Windows Compatibility
 
 The binary is named `md` on macOS/Linux but `mdown` on Windows to avoid conflict with the built-in Windows `md` (mkdir) command.
 
 **Windows users:** Add a PowerShell alias to use `md`:
+
 ```powershell
 Set-Alias md mdown
-```
-
-Or add to your PowerShell profile (`$PROFILE`):
-```powershell
-Set-Alias -Name md -Value mdown -Option AllScope
 ```
 
 ## Development
 
 Default to using Bun instead of Node.js.
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+- `bun run dev` - Run CLI in development (`src/cli.ts`)
+- `bun run build` - Bundle + tarball + formula (`scripts/build.ts`)
+- `bun run build:bundle` - `dist/md.js` only (fast iteration)
+- `bun run build:themes` - Regenerate theme files
+- `bun run check` - Format + lint fix + typecheck
+- `bun run lint` / `bun run format` - oxlint / oxfmt
+- `bun run test` - `bun test`
+- `bun run typecheck` / `bun run tc` - `tsc --noEmit`
+- `just dev README.md` - convenience wrapper
 
-### Scripts
-
-- `bun run dev` - Run in development
-- `bun run build` - Build standalone binary
-- `bun run lint` - Lint with Biome
-- `bun run format` - Format with Biome
-- `bun run check` - Lint + format check
-- `bun run tc` - TypeScript type checking
-
-## Bun APIs
-
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- `Bun.$\`ls\`` instead of execa.
+Tooling matches `bun-cli-template`: oxfmt, oxlint (strict, type-aware), Effect language service.
 
 ## Project Structure
 
 ```
 src/
-├── index.ts          # CLI entry point
-├── lib/              # Core logic
-└── ui/               # UI components
-    ├── banner.ts     # ASCII banner
-    └── theme.ts      # Catppuccin Frappe theme
+├── cli.ts           # Effect CLI entry (BunRuntime.runMain)
+├── cli/options.ts   # Effect CLI flags
+├── index.ts         # Library exports
+├── config/          # TOML config + Effect loaders
+├── app/             # CLI orchestration (run-md, errors)
+├── lib/             # Parser, render, pager, layout
+└── ui/              # Themes, banner, picker
+scripts/
+├── build.ts         # dist bundle, tarball, formula, Windows zip
+└── build-themes.ts
+tests/               # bun:test suites
 ```
 
 ## Theme
 
-Uses Catppuccin Frappe palette consistently with other CLI tools (aic, s3up, changelog, dots).
+Uses Catppuccin Frappé palette consistently with other CLI tools (aic, s3up, changelog, dots).
 
 ## Release
 
-Use `aic release` to build cross-platform binaries.
-Use `aic publish` to create GitHub release and update Homebrew tap.
+Bundled output is minified `dist/md.js` with `#!/usr/bin/env bun` (run via Bun; Homebrew formula uses `depends_on "bun"`).
+
+```bash
+aic release                      # full build (tarball + formula) — never --no-formula
+aic publish                      # GitHub release + tap (see .aic)
+just release                     # same as aic release
+bun run build:bundle             # dist bundle only (dev)
+```

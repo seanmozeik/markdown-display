@@ -4,7 +4,7 @@ class Md < Formula
   version "0.3.5"
   license "MIT"
 
-  # URL to bundled source (single JS file)
+  # Built by `bun run build` → `artifacts/md-{version}.tar.gz`; checksum patched from that file.
   url "https://github.com/seanmozeik/markdown-display/releases/download/v#{version}/md-#{version}.tar.gz"
   sha256 "48ef957fe9fb227953b48d7a12e11e1851f06b63613ab5483c196eed3ab1cbb7"
 
@@ -14,10 +14,10 @@ class Md < Formula
     # Install all bundled files to libexec
     libexec.install Dir["*"]
 
-    # Create wrapper script
+    # Create wrapper script (matches npm pack layout: dist/md.js)
     (bin/"md").write <<~EOS
       #!/bin/bash
-      exec "#{Formula["bun"].opt_bin}/bun" "#{libexec}/index.js" "$@"
+      exec "#{Formula["bun"].opt_bin}/bun" "#{libexec}/dist/md.js" "$@"
     EOS
   end
 

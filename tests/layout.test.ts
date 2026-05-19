@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { applyPadding, calculateLayout } from './layout';
+
+import { applyPadding, calculateLayout } from '../src/lib/layout';
 
 describe('calculateLayout', () => {
   describe('with maxWidth set (readability mode)', () => {

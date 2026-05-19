@@ -1,17 +1,18 @@
-// src/lib/elements/table.test.ts
+// Src/lib/elements/table.test.ts
 import { describe, expect, test } from 'bun:test';
-import { renderTable } from './table';
+
+import { renderTable } from '../src/lib/elements/table';
 
 function stripAnsi(str: string): string {
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: ESC character required for ANSI stripping
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
+  // Biome-ignore lint/suspicious/noControlCharactersInRegex: ESC character required for ANSI stripping
+  return str.replaceAll(/\x1B\[[0-9;]*m/g, '');
 }
 
 describe('renderTable', () => {
   test('renders table with proper grid borders', () => {
     const result = renderTable(['Col1', 'Col2'], [['A', 'B']]);
 
-    // console-table-printer uses box-drawing characters
+    // Console-table-printer uses box-drawing characters
     expect(result).toContain('┌');
     expect(result).toContain('┐');
     expect(result).toContain('└');
@@ -43,8 +44,8 @@ describe('renderTable', () => {
       ['Name', 'Value'],
       [
         ['Short', 'X'],
-        ['Much Longer Name', 'Y']
-      ]
+        ['Much Longer Name', 'Y'],
+      ],
     );
     // All rows should be aligned
     const lines = stripAnsi(result)

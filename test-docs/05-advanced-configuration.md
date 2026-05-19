@@ -413,6 +413,7 @@ done
 ### Optimization Tips
 
 1. **For Large Files**
+
    ```bash
    # Disable syntax highlighting for faster rendering
    md large-file.md -p
@@ -425,6 +426,7 @@ done
    ```
 
 2. **For Slow Terminals**
+
    ```bash
    # Disable colors
    md file.md -p
@@ -437,6 +439,7 @@ done
    ```
 
 3. **For Fast Rendering**
+
    ```bash
    # Enable caching
    # Set cache = true in config

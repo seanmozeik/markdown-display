@@ -1,4 +1,4 @@
-// src/ui/themes/ansi.ts
+// Src/ui/themes/ansi.ts
 import { getColorLevel } from './color-support';
 
 /**
@@ -25,9 +25,9 @@ function getAnsi256Color(code: number): [number, number, number] {
       [0, 0, 255],
       [255, 0, 255],
       [0, 255, 255],
-      [255, 255, 255]
+      [255, 255, 255],
     ];
-    // biome-ignore lint/style/noNonNullAssertion: code is guaranteed 0-15 by guard above
+    // Biome-ignore lint/style/noNonNullAssertion: code is guaranteed 0-15 by guard above
     return standard[code]!;
   }
 
@@ -46,12 +46,12 @@ function getAnsi256Color(code: number): [number, number, number] {
 
 export function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '').toLowerCase();
-  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  return [Number.parseInt(h.slice(0, 2), 16), Number.parseInt(h.slice(2, 4), 16), Number.parseInt(h.slice(4, 6), 16)];
 }
 
 function colorDistance(
   [r1, g1, b1]: [number, number, number],
-  [r2, g2, b2]: [number, number, number]
+  [r2, g2, b2]: [number, number, number],
 ): number {
   return (r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2;
 }
@@ -75,19 +75,19 @@ export function hexToAnsi256(hex: string): number {
 export function ansiFg(hex: string): (text: string) => string {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\x1b[38;2;${r};${g};${b}m${text}\x1b[0m`;
+    return (text: string) => `\u001b[38;2;${r};${g};${b}m${text}\x1B[0m`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\x1b[38;5;${code}m${text}\x1b[0m`;
+  return (text: string) => `\x1B[38;5;${code}m${text}\x1B[0m`;
 }
 
 export function ansiBg(hex: string): (text: string) => string {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\x1b[48;2;${r};${g};${b}m${text}\x1b[0m`;
+    return (text: string) => `\x1B[48;2;${r};${g};${b}m${text}\u001b[0m`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\x1b[48;5;${code}m${text}\x1b[0m`;
+  return (text: string) => `\u001b[48;5;${code}m${text}\u001b[0m`;
 }
 
 export function ansiFgBg(fgHex: string, bgHex: string): (text: string) => string {
@@ -95,29 +95,29 @@ export function ansiFgBg(fgHex: string, bgHex: string): (text: string) => string
     const [fgR, fgG, fgB] = hexToRgb(fgHex);
     const [bgR, bgG, bgB] = hexToRgb(bgHex);
     return (text: string) =>
-      `\x1b[38;2;${fgR};${fgG};${fgB};48;2;${bgR};${bgG};${bgB}m${text}\x1b[0m`;
+      `\u001b[38;2;${fgR};${fgG};${fgB};48;2;${bgR};${bgG};${bgB}m${text}\u001b[0m`;
   }
   const fgCode = hexToAnsi256(fgHex);
   const bgCode = hexToAnsi256(bgHex);
-  return (text: string) => `\x1b[38;5;${fgCode};48;5;${bgCode}m${text}\x1b[0m`;
+  return (text: string) => `\u001b[38;5;${fgCode};48;5;${bgCode}m${text}\x1B[0m`;
 }
 
 export function ansiBold(hex: string): (text: string) => string {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\x1b[1;38;2;${r};${g};${b}m${text}\x1b[0m`;
+    return (text: string) => `\x1B[1;38;2;${r};${g};${b}m${text}\x1B[0m`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\x1b[1;38;5;${code}m${text}\x1b[0m`;
+  return (text: string) => `\x1B[1;38;5;${code}m${text}\u001b[0m`;
 }
 
 export function ansiItalic(hex: string): (text: string) => string {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\x1b[3;38;2;${r};${g};${b}m${text}\x1b[0m`;
+    return (text: string) => `\x1B[3;38;2;${r};${g};${b}m${text}\u001b[0m`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\x1b[3;38;5;${code}m${text}\x1b[0m`;
+  return (text: string) => `\u001b[3;38;5;${code}m${text}\u001b[0m`;
 }
 
 /**
@@ -129,9 +129,9 @@ export function ansiFgTransition(fgHex: string, transitionHex: string): (text: s
     const [fgR, fgG, fgB] = hexToRgb(fgHex);
     const [trR, trG, trB] = hexToRgb(transitionHex);
     return (text: string) =>
-      `\x1b[38;2;${fgR};${fgG};${fgB}m${text}\x1b[38;2;${trR};${trG};${trB}m`;
+      `\x1B[38;2;${fgR};${fgG};${fgB}m${text}\u001b[38;2;${trR};${trG};${trB}m`;
   }
   const fgCode = hexToAnsi256(fgHex);
   const trCode = hexToAnsi256(transitionHex);
-  return (text: string) => `\x1b[38;5;${fgCode}m${text}\x1b[38;5;${trCode}m`;
+  return (text: string) => `\u001b[38;5;${fgCode}m${text}\u001b[38;5;${trCode}m`;
 }

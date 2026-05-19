@@ -1,6 +1,7 @@
-// src/lib/elements/code.test.ts
+// Src/lib/elements/code.test.ts
 import { describe, expect, test } from 'bun:test';
-import { renderCodeBlock, renderInlineCode, wrapCodeLines } from './code';
+
+import { renderCodeBlock, renderInlineCode, wrapCodeLines } from '../src/lib/elements/code';
 
 describe('wrapCodeLines', () => {
   test('wraps long lines with continuation marker', () => {
@@ -21,23 +22,23 @@ describe('wrapCodeLines', () => {
   test('preserves ANSI state across wrapped lines', () => {
     // Simulate syntax-highlighted string that wraps
     // \x1b[32m = basic green foreground
-    const greenText = `\x1b[32m${'x'.repeat(100)}\x1b[0m`;
+    const greenText = `\u001b[32m${'x'.repeat(100)}\u001b[0m`;
     const result = wrapCodeLines(greenText, 50, '→');
 
     const lines = result.split('\n');
     expect(lines.length).toBeGreaterThan(1);
 
     // First line should have reset at the end
-    expect(lines[0]).toContain('\x1b[0m');
+    expect(lines[0]).toContain('\u001b[0m');
 
     // Second line content should have the green color re-applied
     // (after the continuation marker which has its own styling)
-    expect(lines[1]).toContain('\x1b[32m');
+    expect(lines[1]).toContain('\u001b[32m');
   });
 
   test('handles multiple ANSI styles (bold + color)', () => {
     // Bold (1) + green (32)
-    const styledText = `\x1b[1;32m${'x'.repeat(100)}\x1b[0m`;
+    const styledText = `\x1B[1;32m${'x'.repeat(100)}\u001b[0m`;
     const result = wrapCodeLines(styledText, 50, '→');
 
     const lines = result.split('\n');
@@ -45,7 +46,7 @@ describe('wrapCodeLines', () => {
 
     // Second line should have both bold and color re-applied
     // The state is reconstructed as "1;32" (styles then color)
-    expect(lines[1]).toContain('\x1b['); // Has ANSI escape
+    expect(lines[1]).toContain('\u001b['); // Has ANSI escape
     expect(lines[1]).toContain('1;'); // Has bold code
     expect(lines[1]).toContain('32'); // Has green code
   });
@@ -53,24 +54,24 @@ describe('wrapCodeLines', () => {
   test('preserves 256-color syntax highlighting (Shiki style)', () => {
     // Shiki uses 256-color mode: \x1b[38;5;Nm for foreground
     // Simulate a highlighted string literal in color 114 (light green)
-    const shikiStyled = `\x1b[38;5;114m"this is a long string"${'x'.repeat(80)}\x1b[0m`;
+    const shikiStyled = `\u001b[38;5;114m"this is a long string"${'x'.repeat(80)}\u001b[0m`;
     const result = wrapCodeLines(shikiStyled, 50, '→');
 
     const lines = result.split('\n');
     expect(lines.length).toBeGreaterThan(1);
 
     // First line ends with reset
-    expect(lines[0]).toContain('\x1b[0m');
+    expect(lines[0]).toContain('\u001b[0m');
 
     // Second line should re-apply the 256-color: \x1b[38;5;114m
-    expect(lines[1]).toContain('\x1b[38;5;114m');
+    expect(lines[1]).toContain('\u001b[38;5;114m');
   });
 });
 
 describe('renderInlineCode', () => {
   test('applies inline code styling', () => {
     const result = renderInlineCode('const x = 1');
-    expect(result).toContain('\x1b[');
+    expect(result).toContain('\u001b[');
     expect(result).toContain('const x = 1');
   });
 });
@@ -82,7 +83,7 @@ describe('renderCodeBlock', () => {
       theme: 'catppuccin-frappe',
       useNerdFonts: false,
       width: 60,
-      wrap: true
+      wrap: true,
     });
 
     expect(result).toContain('const');
@@ -96,10 +97,10 @@ describe('renderCodeBlock', () => {
       theme: 'catppuccin-frappe',
       useNerdFonts: false,
       width: 60,
-      wrap: true
+      wrap: true,
     });
 
-    expect(result).toContain('py'); // text label when nerd fonts disabled
+    expect(result).toContain('py'); // Text label when nerd fonts disabled
   });
 
   test('handles unknown language gracefully', async () => {
@@ -108,7 +109,7 @@ describe('renderCodeBlock', () => {
       theme: 'catppuccin-frappe',
       useNerdFonts: false,
       width: 60,
-      wrap: true
+      wrap: true,
     });
 
     expect(result).toContain('some code');
@@ -120,7 +121,7 @@ describe('renderCodeBlock', () => {
       theme: 'catppuccin-frappe',
       useNerdFonts: false,
       width: 60,
-      wrap: true
+      wrap: true,
     });
 
     const lines = result.split('\n');
@@ -138,7 +139,7 @@ describe('renderCodeBlock', () => {
       theme: 'catppuccin-frappe',
       useNerdFonts: false,
       width: 60,
-      wrap: true
+      wrap: true,
     });
 
     expect(result.endsWith('\n')).toBe(true);

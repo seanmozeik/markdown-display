@@ -1,16 +1,22 @@
-// src/lib/languages.test.ts
+// Src/lib/languages.test.ts
 import { afterEach, describe, expect, test } from 'bun:test';
-import { getLanguageLabel, LANGUAGES, resolveNerdFonts, supportsNerdFonts } from './languages';
+
+import {
+  getLanguageLabel,
+  LANGUAGES,
+  resolveNerdFonts,
+  supportsNerdFonts,
+} from '../src/lib/languages';
 
 describe('supportsNerdFonts', () => {
   const originalTermProgram = Bun.env.TERM_PROGRAM;
   const originalNerdFont = Bun.env.NERD_FONTS;
 
   afterEach(() => {
-    if (originalTermProgram) Bun.env.TERM_PROGRAM = originalTermProgram;
-    else delete Bun.env.TERM_PROGRAM;
-    if (originalNerdFont) Bun.env.NERD_FONTS = originalNerdFont;
-    else delete Bun.env.NERD_FONTS;
+    if (originalTermProgram) {Bun.env.TERM_PROGRAM = originalTermProgram;}
+    else {delete Bun.env.TERM_PROGRAM;}
+    if (originalNerdFont) {Bun.env.NERD_FONTS = originalNerdFont;}
+    else {delete Bun.env.NERD_FONTS;}
   });
 
   test('returns true when NERD_FONTS env is set', () => {
@@ -55,7 +61,7 @@ describe('LANGUAGES', () => {
       'markdown',
       'html',
       'css',
-      'sql'
+      'sql',
     ];
     for (const lang of expected) {
       expect(LANGUAGES[lang]).toBeDefined();
@@ -65,8 +71,8 @@ describe('LANGUAGES', () => {
 
 describe('getLanguageLabel', () => {
   test('returns icon when nerdFonts enabled and icon exists', () => {
-    const tsLang = LANGUAGES.typescript;
-    if (!tsLang) throw new Error('typescript should be in LANGUAGES');
+    const tsLang = LANGUAGES['typescript'];
+    if (!tsLang) {throw new Error('typescript should be in LANGUAGES');}
     const result = getLanguageLabel('typescript', true);
     expect(result).toBe(tsLang.icon);
     expect(result.length).toBeGreaterThan(0);

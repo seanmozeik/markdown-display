@@ -1,5 +1,6 @@
-// src/lib/elements/text.ts
+// Src/lib/elements/text.ts
 import { hyphenateSync } from 'hyphen/en';
+
 import { getTextColor } from '../../ui/themes/semantic';
 import { visibleLength } from '../ansi';
 
@@ -18,13 +19,13 @@ const SOFT_HYPHEN = '\u00AD';
 const SOFT_HYPHEN_REGEX = /\u00AD/g;
 
 // ANSI escape character - used to build regex dynamically to satisfy linter
-const ESC = '\x1b';
+const ESC = '\u001b';
 
 // Matches ANSI-styled content: \x1b[...m (content) \x1b[0m
 const ANSI_STYLED_BLOCK = new RegExp(`${ESC}\\[[0-9;]*m[^${ESC}]*${ESC}\\[0m`, 'g');
 
 // Marker for preserving ANSI blocks during splitting (uses NUL which won't appear in text)
-const NUL = '\x00';
+const NUL = '\u0000';
 const MARKER_REGEX = new RegExp(`${NUL}ANSI(\\d+)${NUL}`, 'g');
 
 /**
@@ -41,7 +42,7 @@ function splitPreservingAnsi(text: string): string[] {
   const parts = markedText.split(/\s+/);
 
   return parts.map((part) =>
-    part.replace(MARKER_REGEX, (_, idx) => styledBlocks[Number(idx)] ?? '')
+    part.replace(MARKER_REGEX, (_, idx) => styledBlocks[Number(idx)] ?? ''),
   );
 }
 
@@ -121,16 +122,16 @@ function findBestBreakPoint(text: string, maxWidth: number): number {
 function trySplitWordToFill(
   word: string,
   remainingSpace: number,
-  width: number
+  width: number,
 ): [string, string] | null {
   // More aggressive hyphenation for narrow widths
   // Narrow (< 50): fill even with 2 chars
   // Wide (>= 50): need at least 3 chars to be worth it
   const minFragment = width < 50 ? 2 : 3;
-  if (remainingSpace < minFragment) return null;
+  if (remainingSpace < minFragment) {return null;}
 
   const breakAt = findBestBreakPoint(word, remainingSpace);
-  if (breakAt <= 0) return null;
+  if (breakAt <= 0) {return null;}
 
   return [`${stripSoftHyphens(word.slice(0, breakAt))}-`, word.slice(breakAt + 1)];
 }
@@ -175,7 +176,7 @@ export function wrapText(text: string, width: number, options?: WrapOptions): st
         const broken = breakWord(word, width);
         const brokenLines = broken.split('\n');
         lines.push(...brokenLines.slice(0, -1));
-        currentLine = brokenLines[brokenLines.length - 1] ?? '';
+        currentLine = brokenLines.at(-1) ?? '';
       }
     }
 
@@ -220,7 +221,7 @@ function breakWord(word: string, width: number): string {
 export function renderText(text: string, config: TextConfig): string {
   const wrapped = wrapText(text, config.width, {
     hyphenation: config.hyphenation,
-    locale: config.locale ?? 'en-us'
+    locale: config.locale ?? 'en-us',
   });
   const textColor = getTextColor();
   return `${textColor(wrapped)}\n`;

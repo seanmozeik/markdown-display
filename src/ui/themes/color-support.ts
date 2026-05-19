@@ -1,4 +1,4 @@
-// src/ui/themes/color-support.ts
+// Src/ui/themes/color-support.ts
 import supportsColor from 'supports-color';
 
 export type ColorLevel = 0 | 1 | 2 | 3;
@@ -46,12 +46,45 @@ export function resetColorCache(): void {
   cachedLevel = null;
 }
 
+const detectAutoColorLevel = (): ColorLevel => {
+  const force = Bun.env.FORCE_COLOR;
+  if (force === '0') {
+    return 0;
+  }
+  if (force === '1') {
+    return 1;
+  }
+  if (force === '2') {
+    return 2;
+  }
+  if (force === '3') {
+    return 3;
+  }
+
+  if (!process.stdout.isTTY) {
+    return 0;
+  }
+
+  const colorterm = Bun.env['COLORTERM'];
+  if (colorterm === 'truecolor' || colorterm === '24bit') {
+    return 3;
+  }
+
+  const term = Bun.env['TERM'] ?? '';
+  if (term.includes('256color')) {
+    return 2;
+  }
+
+  const detected = supportsColor.stdout;
+  return detected ? (detected.level as ColorLevel) : 0;
+};
+
 /**
  * Get the current color level.
  * @returns 0 (no color), 1 (basic), 2 (256), or 3 (truecolor)
  */
 export function getColorLevel(): ColorLevel {
-  if (cachedLevel !== null) return cachedLevel;
+  if (cachedLevel !== null) {return cachedLevel;}
 
   let level: ColorLevel;
 
@@ -63,9 +96,7 @@ export function getColorLevel(): ColorLevel {
   } else if (configOverride === false) {
     level = 2;
   } else {
-    // Auto-detect via supports-color
-    const detected = supportsColor.stdout;
-    level = detected ? (detected.level as ColorLevel) : 0;
+    level = detectAutoColorLevel();
   }
 
   cachedLevel = level;

@@ -1,9 +1,10 @@
 import * as p from '@clack/prompts';
 import fuzzysort from 'fuzzysort';
+
 import { getTerminalHeight } from '../lib/width';
 import { getMutedColor } from './themes/semantic';
 
-type Option = { label: string; value: string };
+interface Option { label: string; value: string }
 
 /**
  * Find all markdown files in current directory, sorted by modification time.
@@ -13,10 +14,7 @@ export async function findMarkdownFiles(): Promise<string[]> {
   const glob = new Bun.Glob('**/*.md');
   const files: string[] = [];
 
-  for await (const file of glob.scan({
-    cwd: '.',
-    onlyFiles: true
-  })) {
+  for await (const file of glob.scan({ cwd: '.', onlyFiles: true })) {
     // Skip ignored directories
     if (
       file.includes('node_modules/') ||
@@ -30,10 +28,7 @@ export async function findMarkdownFiles(): Promise<string[]> {
 
   // Sort by modification time (most recent first)
   const filesWithMtime = await Promise.all(
-    files.map(async (file) => ({
-      file,
-      mtime: (await Bun.file(file).stat()).mtime
-    }))
+    files.map(async (file) => ({ file, mtime: (await Bun.file(file).stat()).mtime })),
   );
 
   filesWithMtime.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
@@ -47,13 +42,9 @@ export async function findMarkdownFiles(): Promise<string[]> {
  */
 export function createFuzzyFilter() {
   return (input: string, options: Option[]): Option[] => {
-    if (!input.trim()) return options;
+    if (!input.trim()) {return options;}
 
-    const results = fuzzysort.go(input, options, {
-      key: 'label',
-      limit: 100,
-      threshold: 0.2
-    });
+    const results = fuzzysort.go(input, options, { key: 'label', limit: 100, threshold: 0.2 });
 
     return results.map((r) => r.obj);
   };
@@ -82,7 +73,7 @@ export async function showFilePicker(): Promise<string[]> {
       // Dynamic filtering based on user input
       const input = this.userInput || '';
       return filter(input, allOptions);
-    }
+    },
   });
 
   if (p.isCancel(selected)) {

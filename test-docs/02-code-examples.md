@@ -49,11 +49,7 @@ class UserRepository {
   private nextId: number = 1;
 
   addUser(userData: Omit<User, 'id' | 'createdAt'>): User {
-    const user: User = {
-      id: this.nextId++,
-      ...userData,
-      createdAt: new Date(),
-    };
+    const user: User = { id: this.nextId++, ...userData, createdAt: new Date() };
 
     this.users.set(user.id, user);
     return user;
@@ -270,49 +266,49 @@ HTML structure with nested elements:
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Markdown Viewer Demo</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <header class="navbar">
-        <nav class="container">
-            <div class="logo">md</div>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#themes">Themes</a></li>
-                <li><a href="#docs">Documentation</a></li>
-            </ul>
-        </nav>
+      <nav class="container">
+        <div class="logo">md</div>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#themes">Themes</a></li>
+          <li><a href="#docs">Documentation</a></li>
+        </ul>
+      </nav>
     </header>
 
     <main class="content">
-        <section id="hero" class="hero">
-            <h1>Terminal Markdown Viewer</h1>
-            <p>Beautiful markdown rendering in your terminal</p>
-            <button class="btn btn-primary">Get Started</button>
-        </section>
+      <section id="hero" class="hero">
+        <h1>Terminal Markdown Viewer</h1>
+        <p>Beautiful markdown rendering in your terminal</p>
+        <button class="btn btn-primary">Get Started</button>
+      </section>
 
-        <section id="features" class="features">
-            <div class="feature-grid">
-                <article class="feature-card">
-                    <h3>Syntax Highlighting</h3>
-                    <p>70+ programming languages with theme-matched colors</p>
-                </article>
-                <article class="feature-card">
-                    <h3>31+ Themes</h3>
-                    <p>Choose from popular color schemes like Dracula and Catppuccin</p>
-                </article>
-                <article class="feature-card">
-                    <h3>Smart Wrapping</h3>
-                    <p>Intelligent text wrapping with optional hyphenation</p>
-                </article>
-            </div>
-        </section>
+      <section id="features" class="features">
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>Syntax Highlighting</h3>
+            <p>70+ programming languages with theme-matched colors</p>
+          </article>
+          <article class="feature-card">
+            <h3>31+ Themes</h3>
+            <p>Choose from popular color schemes like Dracula and Catppuccin</p>
+          </article>
+          <article class="feature-card">
+            <h3>Smart Wrapping</h3>
+            <p>Intelligent text wrapping with optional hyphenation</p>
+          </article>
+        </div>
+      </section>
     </main>
-</body>
+  </body>
 </html>
 ```
 
@@ -320,74 +316,74 @@ HTML structure with nested elements:
 
 ```css
 :root {
-    --color-primary: #1e66f5;
-    --color-secondary: #04a5e5;
-    --color-background: #eff1f5;
-    --color-text: #4c4f69;
-    --color-border: #bcc0cc;
-    --spacing-unit: 0.5rem;
+  --color-primary: #1e66f5;
+  --color-secondary: #04a5e5;
+  --color-background: #eff1f5;
+  --color-text: #4c4f69;
+  --color-border: #bcc0cc;
+  --spacing-unit: 0.5rem;
 }
 
 body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu;
-    color: var(--color-text);
-    background-color: var(--color-background);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu;
+  color: var(--color-text);
+  background-color: var(--color-background);
 }
 
 .navbar {
-    background: white;
-    border-bottom: 1px solid var(--color-border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  background: white;
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: var(--spacing-unit) calc(var(--spacing-unit) * 2);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-unit) calc(var(--spacing-unit) * 2);
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--color-primary);
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-primary);
 }
 
 .nav-links {
-    list-style: none;
-    display: flex;
-    gap: calc(var(--spacing-unit) * 2);
+  list-style: none;
+  display: flex;
+  gap: calc(var(--spacing-unit) * 2);
 }
 
 .nav-links a {
-    text-decoration: none;
-    color: var(--color-text);
-    transition: color 0.2s;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: color 0.2s;
 }
 
 .nav-links a:hover {
-    color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: calc(var(--spacing-unit) * 3);
-    margin-top: calc(var(--spacing-unit) * 2);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: calc(var(--spacing-unit) * 3);
+  margin-top: calc(var(--spacing-unit) * 2);
 }
 
 .feature-card {
-    padding: calc(var(--spacing-unit) * 2);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    transition: all 0.3s;
+  padding: calc(var(--spacing-unit) * 2);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: all 0.3s;
 }
 
 .feature-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 ```
 
@@ -567,9 +563,7 @@ log_info "Setup complete!"
   "version": "0.3.2",
   "description": "Terminal markdown viewer",
   "type": "module",
-  "bin": {
-    "md": "./dist/index.js"
-  },
+  "bin": { "md": "./dist/index.js" },
   "scripts": {
     "dev": "bun run src/index.ts",
     "build": "bun build src/index.ts --outfile dist/index.js --minify",
@@ -578,24 +572,11 @@ log_info "Setup complete!"
     "check": "biome check src/",
     "tc": "tsc --noEmit"
   },
-  "keywords": [
-    "markdown",
-    "terminal",
-    "viewer",
-    "cli",
-    "syntax-highlighting"
-  ],
+  "keywords": ["markdown", "terminal", "viewer", "cli", "syntax-highlighting"],
   "author": "Your Name",
   "license": "MIT",
-  "dependencies": {
-    "marked": "^11.0.0",
-    "shiki": "^0.14.0",
-    "hyphen": "^1.18.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "latest",
-    "typescript": "^5.0.0"
-  }
+  "dependencies": { "marked": "^11.0.0", "shiki": "^0.14.0", "hyphen": "^1.18.0" },
+  "devDependencies": { "@biomejs/biome": "latest", "typescript": "^5.0.0" }
 }
 ```
 
@@ -613,7 +594,7 @@ services:
       dockerfile: Dockerfile
     container_name: markdown-viewer
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - LOG_LEVEL=info
@@ -623,7 +604,7 @@ services:
       - ./docs:/app/docs:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -633,8 +614,8 @@ services:
     image: nginx:alpine
     container_name: markdown-viewer-proxy
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro

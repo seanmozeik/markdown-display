@@ -119,22 +119,22 @@ command = ""
 args = ["-r", "-F", "-K", "-X"]
 ```
 
-| Setting | Description |
-|---------|-------------|
-| `theme` | Color scheme. `md --list-themes` for options. |
-| `width` | Output width. `"auto"` uses terminal (max 120). |
-| `truecolor` | 24-bit color. `"auto"` detects, `true` forces, `false` uses 256-color. |
-| `nerd_fonts` | Icon support. `"auto"` detects. |
-| `display.padding` | Margins based on terminal width. |
-| `display.maxWidth` | Content width limit. 0 for full width. |
-| `code.wrap` | Wrap long lines. `false` for horizontal scroll. |
-| `code.continuation` | Character at line breaks. |
-| `text.hyphenation` | Break words at syllables. |
-| `text.locale` | Hyphenation language. |
-| `links.osc8` | Clickable hyperlinks. |
-| `links.show_urls` | Print URL after link text. |
-| `pager.command` | Custom pager. Empty uses `$MD_PAGER`, `$PAGER`, or `less`. |
-| `pager.args` | Pager arguments. |
+| Setting             | Description                                                            |
+| ------------------- | ---------------------------------------------------------------------- |
+| `theme`             | Color scheme. `md --list-themes` for options.                          |
+| `width`             | Output width. `"auto"` uses terminal (max 120).                        |
+| `truecolor`         | 24-bit color. `"auto"` detects, `true` forces, `false` uses 256-color. |
+| `nerd_fonts`        | Icon support. `"auto"` detects.                                        |
+| `display.padding`   | Margins based on terminal width.                                       |
+| `display.maxWidth`  | Content width limit. 0 for full width.                                 |
+| `code.wrap`         | Wrap long lines. `false` for horizontal scroll.                        |
+| `code.continuation` | Character at line breaks.                                              |
+| `text.hyphenation`  | Break words at syllables.                                              |
+| `text.locale`       | Hyphenation language.                                                  |
+| `links.osc8`        | Clickable hyperlinks.                                                  |
+| `links.show_urls`   | Print URL after link text.                                             |
+| `pager.command`     | Custom pager. Empty uses `$MD_PAGER`, `$PAGER`, or `less`.             |
+| `pager.args`        | Pager arguments.                                                       |
 
 ## Build
 

@@ -21,14 +21,14 @@ A fast, opinionated markdown pager. Not a TUI, not a browser - just a pager.
 
 ### Differentiators from glow
 
-| glow | md |
-|------|-----|
-| Full TUI with file browser | Just a pager |
-| Custom built-in pager | Uses `$PAGER`/`less` |
-| Forced background colors | Terminal background |
-| Width detection issues | Reliable auto-detect |
-| Basic code highlighting | Shiki-powered (VS Code quality) |
-| Plain links | OSC 8 clickable hyperlinks |
+| glow                       | md                              |
+| -------------------------- | ------------------------------- |
+| Full TUI with file browser | Just a pager                    |
+| Custom built-in pager      | Uses `$PAGER`/`less`            |
+| Forced background colors   | Terminal background             |
+| Width detection issues     | Reliable auto-detect            |
+| Basic code highlighting    | Shiki-powered (VS Code quality) |
+| Plain links                | OSC 8 clickable hyperlinks      |
 
 ## Architecture
 
@@ -105,14 +105,20 @@ stdout is TTY?
 
 ```typescript
 const renderer = {
-  heading(text, level) { return renderHeading(text, level, theme) },
-  code(code, lang)     { return renderCode(code, lang, config) },
-  link(href, title, text) { return renderLink(href, text) },
+  heading(text, level) {
+    return renderHeading(text, level, theme);
+  },
+  code(code, lang) {
+    return renderCode(code, lang, config);
+  },
+  link(href, title, text) {
+    return renderLink(href, text);
+  },
   // ... etc
-}
+};
 
-marked.use({ renderer })
-const output = marked.parse(markdown)
+marked.use({ renderer });
+const output = marked.parse(markdown);
 ```
 
 Each element renderer is a pure function: `(content, options) → ANSI string`
@@ -159,9 +165,9 @@ Unicode box-drawing characters. Auto-size columns to content, respect max width.
 
 ```typescript
 // OSC 8 hyperlink escape sequence
-const osc8 = `\x1b]8;;${url}\x07${text}\x1b]8;;\x07`
+const osc8 = `\x1b]8;;${url}\x07${text}\x1b]8;;\x07`;
 // Plain style for terminals without OSC 8 support
-const plain = `${text} (${dim(url)})`
+const plain = `${text} (${dim(url)})`;
 ```
 
 Auto-detect OSC 8 support via `$TERM_PROGRAM` or config flag.
@@ -221,14 +227,12 @@ args = ["-R", "-F", "-X"]  # -R: ANSI, -F: quit if fits, -X: no clear
 ### Loading with Bun
 
 ```typescript
-import defaultConfig from './default-config.toml'
+import defaultConfig from './default-config.toml';
 
-const configPath = `${Bun.env.XDG_CONFIG_HOME || '~/.config'}/md/config.toml`
-const userConfig = await Bun.file(configPath).exists()
-  ? await import(configPath)
-  : {}
+const configPath = `${Bun.env.XDG_CONFIG_HOME || '~/.config'}/md/config.toml`;
+const userConfig = (await Bun.file(configPath).exists()) ? await import(configPath) : {};
 
-const config = deepMerge(defaultConfig, userConfig)
+const config = deepMerge(defaultConfig, userConfig);
 ```
 
 ## CLI Interface
@@ -256,15 +260,15 @@ Options:
 
 ### Behavior Matrix
 
-| Scenario | Pager | Colors |
-|----------|-------|--------|
-| `md README.md` (long) | Yes | Yes |
-| `md README.md` (short) | No | Yes |
-| `md README.md --no-pager` | No | Yes |
-| `md README.md --plain` | Yes | No |
-| `cat README.md \| md` | Yes | Yes |
-| `md README.md \| grep` | No | No |
-| `md README.md > out.txt` | No | No |
+| Scenario                  | Pager | Colors |
+| ------------------------- | ----- | ------ |
+| `md README.md` (long)     | Yes   | Yes    |
+| `md README.md` (short)    | No    | Yes    |
+| `md README.md --no-pager` | No    | Yes    |
+| `md README.md --plain`    | Yes   | No     |
+| `cat README.md \| md`     | Yes   | Yes    |
+| `md README.md \| grep`    | No    | No     |
+| `md README.md > out.txt`  | No    | No     |
 
 When stdout isn't a TTY, disable pager and colors automatically.
 
@@ -272,12 +276,12 @@ When stdout isn't a TTY, disable pager and colors automatically.
 
 ### Runtime
 
-| Package | Purpose | Size |
-|---------|---------|------|
-| `marked` | Markdown parsing | ~40KB |
-| `shiki` | Syntax highlighting | ~2MB (lazy loaded) |
-| `hyphen` | Soft hyphenation | ~200KB |
-| `picocolors` | ANSI colors | ~3KB |
+| Package      | Purpose             | Size               |
+| ------------ | ------------------- | ------------------ |
+| `marked`     | Markdown parsing    | ~40KB              |
+| `shiki`      | Syntax highlighting | ~2MB (lazy loaded) |
+| `hyphen`     | Soft hyphenation    | ~200KB             |
+| `picocolors` | ANSI colors         | ~3KB               |
 
 ### Build
 

@@ -6,7 +6,7 @@ Comprehensive guide to all formatting elements supported by the markdown viewer.
 
 ### Basic Formatting
 
-This section demonstrates **bold text**, *italic text*, and ***bold italic text***. You can also use `inline code` within sentences for highlighting specific terms like `function names` or `variable names`.
+This section demonstrates **bold text**, _italic text_, and **_bold italic text_**. You can also use `inline code` within sentences for highlighting specific terms like `function names` or `variable names`.
 
 The viewer intelligently handles text wrapping with support for hyphenation. This means long paragraphs will wrap gracefully at word boundaries and, when enabled in configuration, break at syllable boundaries for better justification.
 
@@ -15,10 +15,10 @@ The viewer intelligently handles text wrapping with support for hyphenation. Thi
 Use formatting strategically:
 
 - **Important Notice**: This is a critical piece of information
-- ***Very Important***: This requires immediate attention
+- **_Very Important_**: This requires immediate attention
 - `const x = 5;` - Inline code examples
 - **`function_name()`** - Bold code for highlighting API functions
-- ***Highlighted and emphasized*** - Maximum attention
+- **_Highlighted and emphasized_** - Maximum attention
 
 ## Lists
 
@@ -94,39 +94,39 @@ Task lists are useful for:
 
 Tables display with borders and proper column alignment:
 
-| Feature | Version | Status | Notes |
-|---------|---------|--------|-------|
-| Syntax Highlighting | 0.3.2 | ✓ Stable | 70+ languages supported |
-| Theme Support | 0.3.2 | ✓ Stable | 31+ themes available |
-| Text Wrapping | 0.3.2 | ✓ Stable | Hyphenation enabled |
-| Code Wrapping | 0.3.2 | ✓ Stable | Configurable line continuation |
-| Interactive Picker | 0.3.2 | ✓ Stable | Fuzzy search included |
+| Feature             | Version | Status   | Notes                          |
+| ------------------- | ------- | -------- | ------------------------------ |
+| Syntax Highlighting | 0.3.2   | ✓ Stable | 70+ languages supported        |
+| Theme Support       | 0.3.2   | ✓ Stable | 31+ themes available           |
+| Text Wrapping       | 0.3.2   | ✓ Stable | Hyphenation enabled            |
+| Code Wrapping       | 0.3.2   | ✓ Stable | Configurable line continuation |
+| Interactive Picker  | 0.3.2   | ✓ Stable | Fuzzy search included          |
 
 ### Feature Comparison Table
 
 A more complex table comparing different aspects:
 
-| Theme | Type | Language Support | File Size | Performance |
-|-------|------|-----------------|-----------|-------------|
-| Catppuccin Frappe | Warm | Modern, dark | Small | Fast |
-| Dracula Soft | Cool | Retro, dark | Small | Fast |
-| GitHub Dark | Professional | Modern, dark | Small | Fast |
-| Rose Pine Moon | Creative | Modern, dark | Small | Fast |
-| Gruvbox Dark | Classic | Retro, dark | Small | Fast |
-| Material Theme | Material Design | Modern, dark | Medium | Fast |
-| Solarized Dark | Scientific | Classic, dark | Small | Fast |
+| Theme             | Type            | Language Support | File Size | Performance |
+| ----------------- | --------------- | ---------------- | --------- | ----------- |
+| Catppuccin Frappe | Warm            | Modern, dark     | Small     | Fast        |
+| Dracula Soft      | Cool            | Retro, dark      | Small     | Fast        |
+| GitHub Dark       | Professional    | Modern, dark     | Small     | Fast        |
+| Rose Pine Moon    | Creative        | Modern, dark     | Small     | Fast        |
+| Gruvbox Dark      | Classic         | Retro, dark      | Small     | Fast        |
+| Material Theme    | Material Design | Modern, dark     | Medium    | Fast        |
+| Solarized Dark    | Scientific      | Classic, dark    | Small     | Fast        |
 
 ### Configuration Comparison
 
-| Option | Default | Range | Impact |
-|--------|---------|-------|--------|
-| `width` | auto | auto or 40-200 | Controls output width |
-| `theme` | frappe | 31+ options | Affects all colors |
-| `truecolor` | auto | auto/true/false | 24-bit RGB color support |
-| `nerd_fonts` | auto | auto/true/false | Icon and symbol display |
-| `wrap` | true | true/false | Code line behavior |
-| `padding` | true | true/false | Responsive content padding |
-| `maxWidth` | 0 | 0 or 80-200 | Maximum content width |
+| Option       | Default | Range           | Impact                     |
+| ------------ | ------- | --------------- | -------------------------- |
+| `width`      | auto    | auto or 40-200  | Controls output width      |
+| `theme`      | frappe  | 31+ options     | Affects all colors         |
+| `truecolor`  | auto    | auto/true/false | 24-bit RGB color support   |
+| `nerd_fonts` | auto    | auto/true/false | Icon and symbol display    |
+| `wrap`       | true    | true/false      | Code line behavior         |
+| `padding`    | true    | true/false      | Responsive content padding |
+| `maxWidth`   | 0       | 0 or 80-200     | Maximum content width      |
 
 ## Blockquotes
 
@@ -248,12 +248,12 @@ The history of terminal colors spans decades:
 
 Modern terminals support:
 
-| Generation | Colors | Use Case | Status |
-|-----------|--------|----------|--------|
-| Legacy | 8 colors | Basic terminals | Works everywhere |
-| Extended | 16 colors | Improved contrast | Widely supported |
-| 256-color | 256 colors | Better gradients | Commonly available |
-| True color | 16.7M colors | Photo-quality | Recommended |
+| Generation | Colors       | Use Case          | Status             |
+| ---------- | ------------ | ----------------- | ------------------ |
+| Legacy     | 8 colors     | Basic terminals   | Works everywhere   |
+| Extended   | 16 colors    | Improved contrast | Widely supported   |
+| 256-color  | 256 colors   | Better gradients  | Commonly available |
+| True color | 16.7M colors | Photo-quality     | Recommended        |
 
 > The markdown viewer automatically detects your terminal's color capability and adjusts accordingly, ensuring beautiful output whether you're using a legacy terminal or the latest terminal emulator.
 
@@ -281,10 +281,10 @@ The markdown viewer handles special characters correctly:
 
 When Nerd Fonts are enabled, additional symbols are available:
 
--  Editor icon
--  Settings icon
--  Code brackets icon
--  Theme icon
+- Editor icon
+- Settings icon
+- Code brackets icon
+- Theme icon
 
 ## Typography and Layout
 

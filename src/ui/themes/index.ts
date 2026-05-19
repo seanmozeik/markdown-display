@@ -1,4 +1,4 @@
-// src/ui/themes/index.ts
+// Src/ui/themes/index.ts
 import { type ThemeId, themeIds, themes } from './generated';
 import type { ThemePalette } from './types';
 
@@ -8,12 +8,12 @@ export { ansiBg, ansiBold, ansiFg, ansiFgBg, ansiItalic, hexToAnsi256 } from './
 
 const DEFAULT_THEME: ThemeId = 'catppuccin-frappe';
 
-// biome-ignore lint/style/noNonNullAssertion: DEFAULT_THEME is guaranteed to exist in themes
+// Biome-ignore lint/style/noNonNullAssertion: DEFAULT_THEME is guaranteed to exist in themes
 let activeTheme: ThemePalette = themes[DEFAULT_THEME]!;
 
 /** Get a theme by ID, returns default theme if not found */
 export function getTheme(id: string): ThemePalette {
-  // biome-ignore lint/style/noNonNullAssertion: DEFAULT_THEME is guaranteed to exist in themes
+  // Biome-ignore lint/style/noNonNullAssertion: DEFAULT_THEME is guaranteed to exist in themes
   return themes[id as ThemeId] ?? themes[DEFAULT_THEME]!;
 }
 

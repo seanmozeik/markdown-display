@@ -17,7 +17,7 @@ export const themes: Record<string, ThemePalette> = {
       success: '#a6d189',
       surface: '#292c3c',
       text: '#c6d0f5',
-      warning: '#ef9f76'
+      warning: '#ef9f76',
     },
     id: 'catppuccin-frappe',
     name: 'Catppuccin Frappe',
@@ -27,14 +27,11 @@ export const themes: Record<string, ThemePalette> = {
       h2: '#babbf1',
       h3: '#8caaee',
       h4: '#81c8be',
-      inlineCode: {
-        bg: '#292c3c',
-        fg: '#f2d5cf'
-      },
-      italic: '#99d1db'
+      inlineCode: { bg: '#292c3c', fg: '#f2d5cf' },
+      italic: '#99d1db',
     },
     shikiTheme: 'catppuccin-frappe',
-    type: 'dark'
+    type: 'dark',
   },
   'catppuccin-latte': {
     colors: {
@@ -49,7 +46,7 @@ export const themes: Record<string, ThemePalette> = {
       success: '#40a02b',
       surface: '#e6e9ef',
       text: '#4c4f69',
-      warning: '#fe640b'
+      warning: '#fe640b',
     },
     id: 'catppuccin-latte',
     name: 'Catppuccin Latte',
@@ -59,14 +56,11 @@ export const themes: Record<string, ThemePalette> = {
       h2: '#7287fd',
       h3: '#1e66f5',
       h4: '#179299',
-      inlineCode: {
-        bg: '#e6e9ef',
-        fg: '#dc8a78'
-      },
-      italic: '#04a5e5'
+      inlineCode: { bg: '#e6e9ef', fg: '#dc8a78' },
+      italic: '#04a5e5',
     },
     shikiTheme: 'catppuccin-latte',
-    type: 'light'
+    type: 'light',
   },
   'catppuccin-macchiato': {
     colors: {
@@ -81,7 +75,7 @@ export const themes: Record<string, ThemePalette> = {
       success: '#a6da95',
       surface: '#1e2030',
       text: '#cad3f5',
-      warning: '#f5a97f'
+      warning: '#f5a97f',
     },
     id: 'catppuccin-macchiato',
     name: 'Catppuccin Macchiato',
@@ -91,14 +85,11 @@ export const themes: Record<string, ThemePalette> = {
       h2: '#b7bdf8',
       h3: '#8aadf4',
       h4: '#8bd5ca',
-      inlineCode: {
-        bg: '#1e2030',
-        fg: '#f4dbd6'
-      },
-      italic: '#91d7e3'
+      inlineCode: { bg: '#1e2030', fg: '#f4dbd6' },
+      italic: '#91d7e3',
     },
     shikiTheme: 'catppuccin-macchiato',
-    type: 'dark'
+    type: 'dark',
   },
   'catppuccin-mocha': {
     colors: {
@@ -113,7 +104,7 @@ export const themes: Record<string, ThemePalette> = {
       success: '#a6e3a1',
       surface: '#181825',
       text: '#cdd6f4',
-      warning: '#fab387'
+      warning: '#fab387',
     },
     id: 'catppuccin-mocha',
     name: 'Catppuccin Mocha',
@@ -123,14 +114,11 @@ export const themes: Record<string, ThemePalette> = {
       h2: '#b4befe',
       h3: '#89b4fa',
       h4: '#94e2d5',
-      inlineCode: {
-        bg: '#181825',
-        fg: '#f5e0dc'
-      },
-      italic: '#89dceb'
+      inlineCode: { bg: '#181825', fg: '#f5e0dc' },
+      italic: '#89dceb',
     },
     shikiTheme: 'catppuccin-mocha',
-    type: 'dark'
+    type: 'dark',
   },
   dracula: {
     colors: {
@@ -145,19 +133,13 @@ export const themes: Record<string, ThemePalette> = {
       success: '#50FA7B',
       surface: '#21222C',
       text: '#F8F8F2',
-      warning: '#8BE9FD'
+      warning: '#8BE9FD',
     },
     id: 'dracula',
     name: 'Dracula',
-    overrides: {
-      bold: '#ff79c6',
-      h1: '#bd93f9',
-      h2: '#ff79c6',
-      h3: '#8be9fd',
-      italic: '#8be9fd'
-    },
+    overrides: { bold: '#ff79c6', h1: '#bd93f9', h2: '#ff79c6', h3: '#8be9fd', italic: '#8be9fd' },
     shikiTheme: 'dracula',
-    type: 'dark'
+    type: 'dark',
   },
   'dracula-soft': {
     colors: {
@@ -172,19 +154,13 @@ export const themes: Record<string, ThemePalette> = {
       success: '#62e884',
       surface: '#262626',
       text: '#f6f6f4',
-      warning: '#97e1f1'
+      warning: '#97e1f1',
     },
     id: 'dracula-soft',
     name: 'Dracula Soft',
-    overrides: {
-      bold: '#ff79c6',
-      h1: '#bd93f9',
-      h2: '#ff79c6',
-      h3: '#8be9fd',
-      italic: '#8be9fd'
-    },
+    overrides: { bold: '#ff79c6', h1: '#bd93f9', h2: '#ff79c6', h3: '#8be9fd', italic: '#8be9fd' },
     shikiTheme: 'dracula-soft',
-    type: 'dark'
+    type: 'dark',
   },
   'github-dark': {
     colors: {
@@ -199,12 +175,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#34d058',
       surface: '#1f2428',
       text: '#e1e4e8',
-      warning: '#ffea7f'
+      warning: '#ffea7f',
     },
     id: 'github-dark',
     name: 'GitHub Dark',
     shikiTheme: 'github-dark',
-    type: 'dark'
+    type: 'dark',
   },
   'github-dark-default': {
     colors: {
@@ -219,12 +195,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#3fb950',
       surface: '#161b22',
       text: '#e6edf3',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'github-dark-default',
     name: 'GitHub Dark Default',
     shikiTheme: 'github-dark-default',
-    type: 'dark'
+    type: 'dark',
   },
   'github-dark-dimmed': {
     colors: {
@@ -239,12 +215,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#57ab5a',
       surface: '#2d333b',
       text: '#adbac7',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'github-dark-dimmed',
     name: 'GitHub Dark Dimmed',
     shikiTheme: 'github-dark-dimmed',
-    type: 'dark'
+    type: 'dark',
   },
   'github-dark-high-contrast': {
     colors: {
@@ -259,12 +235,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#26cd4d',
       surface: '#272b33',
       text: '#f0f3f6',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'github-dark-high-contrast',
     name: 'GitHub Dark High Contrast',
     shikiTheme: 'github-dark-high-contrast',
-    type: 'dark'
+    type: 'dark',
   },
   'github-light': {
     colors: {
@@ -279,12 +255,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#28a745',
       surface: '#f6f8fa',
       text: '#24292e',
-      warning: '#f9c513'
+      warning: '#f9c513',
     },
     id: 'github-light',
     name: 'GitHub Light',
     shikiTheme: 'github-light',
-    type: 'light'
+    type: 'light',
   },
   'github-light-default': {
     colors: {
@@ -299,12 +275,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#1a7f37',
       surface: '#ffffff',
       text: '#1f2328',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'github-light-default',
     name: 'GitHub Light Default',
     shikiTheme: 'github-light-default',
-    type: 'light'
+    type: 'light',
   },
   'github-light-high-contrast': {
     colors: {
@@ -319,12 +295,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#055d20',
       surface: '#ffffff',
       text: '#0e1116',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'github-light-high-contrast',
     name: 'GitHub Light High Contrast',
     shikiTheme: 'github-light-high-contrast',
-    type: 'light'
+    type: 'light',
   },
   'gruvbox-dark-hard': {
     colors: {
@@ -339,12 +315,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#ebdbb2',
       surface: '#1d2021',
       text: '#ebdbb2',
-      warning: '#d79921'
+      warning: '#d79921',
     },
     id: 'gruvbox-dark-hard',
     name: 'Gruvbox Dark Hard',
     shikiTheme: 'gruvbox-dark-hard',
-    type: 'dark'
+    type: 'dark',
   },
   'gruvbox-dark-medium': {
     colors: {
@@ -359,12 +335,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#ebdbb2',
       surface: '#282828',
       text: '#ebdbb2',
-      warning: '#d79921'
+      warning: '#d79921',
     },
     id: 'gruvbox-dark-medium',
     name: 'Gruvbox Dark Medium',
     shikiTheme: 'gruvbox-dark-medium',
-    type: 'dark'
+    type: 'dark',
   },
   'gruvbox-dark-soft': {
     colors: {
@@ -379,12 +355,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#ebdbb2',
       surface: '#32302f',
       text: '#ebdbb2',
-      warning: '#d79921'
+      warning: '#d79921',
     },
     id: 'gruvbox-dark-soft',
     name: 'Gruvbox Dark Soft',
     shikiTheme: 'gruvbox-dark-soft',
-    type: 'dark'
+    type: 'dark',
   },
   'gruvbox-light-hard': {
     colors: {
@@ -399,12 +375,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#3c3836',
       surface: '#f9f5d7',
       text: '#3c3836',
-      warning: '#d79921'
+      warning: '#d79921',
     },
     id: 'gruvbox-light-hard',
     name: 'Gruvbox Light Hard',
     shikiTheme: 'gruvbox-light-hard',
-    type: 'light'
+    type: 'light',
   },
   'gruvbox-light-medium': {
     colors: {
@@ -419,12 +395,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#3c3836',
       surface: '#fbf1c7',
       text: '#3c3836',
-      warning: '#d79921'
+      warning: '#d79921',
     },
     id: 'gruvbox-light-medium',
     name: 'Gruvbox Light Medium',
     shikiTheme: 'gruvbox-light-medium',
-    type: 'light'
+    type: 'light',
   },
   'gruvbox-light-soft': {
     colors: {
@@ -439,12 +415,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#3c3836',
       surface: '#f2e5bc',
       text: '#3c3836',
-      warning: '#d79921'
+      warning: '#d79921',
     },
     id: 'gruvbox-light-soft',
     name: 'Gruvbox Light Soft',
     shikiTheme: 'gruvbox-light-soft',
-    type: 'light'
+    type: 'light',
   },
   'material-theme': {
     colors: {
@@ -459,12 +435,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#C3E88D',
       surface: '#263238',
       text: '#EEFFFF',
-      warning: '#FFCB6B'
+      warning: '#FFCB6B',
     },
     id: 'material-theme',
     name: 'Material Theme',
     shikiTheme: 'material-theme',
-    type: 'dark'
+    type: 'dark',
   },
   'material-theme-darker': {
     colors: {
@@ -479,12 +455,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#C3E88D',
       surface: '#212121',
       text: '#EEFFFF',
-      warning: '#FFCB6B'
+      warning: '#FFCB6B',
     },
     id: 'material-theme-darker',
     name: 'Material Theme Darker',
     shikiTheme: 'material-theme-darker',
-    type: 'dark'
+    type: 'dark',
   },
   'material-theme-lighter': {
     colors: {
@@ -499,12 +475,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#91B859',
       surface: '#FAFAFA',
       text: '#90A4AE',
-      warning: '#E2931D'
+      warning: '#E2931D',
     },
     id: 'material-theme-lighter',
     name: 'Material Theme Lighter',
     shikiTheme: 'material-theme-lighter',
-    type: 'light'
+    type: 'light',
   },
   'material-theme-ocean': {
     colors: {
@@ -519,12 +495,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#C3E88D',
       surface: '#0F111A',
       text: '#babed8',
-      warning: '#FFCB6B'
+      warning: '#FFCB6B',
     },
     id: 'material-theme-ocean',
     name: 'Material Theme Ocean',
     shikiTheme: 'material-theme-ocean',
-    type: 'dark'
+    type: 'dark',
   },
   'material-theme-palenight': {
     colors: {
@@ -539,12 +515,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#C3E88D',
       surface: '#292D3E',
       text: '#babed8',
-      warning: '#FFCB6B'
+      warning: '#FFCB6B',
     },
     id: 'material-theme-palenight',
     name: 'Material Theme Palenight',
     shikiTheme: 'material-theme-palenight',
-    type: 'dark'
+    type: 'dark',
   },
   nord: {
     colors: {
@@ -559,19 +535,13 @@ export const themes: Record<string, ThemePalette> = {
       success: '#a3be8c',
       surface: '#2e3440',
       text: '#d8dee9',
-      warning: '#ebcb8b'
+      warning: '#ebcb8b',
     },
     id: 'nord',
     name: 'Nord',
-    overrides: {
-      bold: '#88c0d0',
-      h1: '#88c0d0',
-      h2: '#81a1c1',
-      h3: '#5e81ac',
-      italic: '#81a1c1'
-    },
+    overrides: { bold: '#88c0d0', h1: '#88c0d0', h2: '#81a1c1', h3: '#5e81ac', italic: '#81a1c1' },
     shikiTheme: 'nord',
-    type: 'dark'
+    type: 'dark',
   },
   'one-dark-pro': {
     colors: {
@@ -586,12 +556,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#8cc265',
       surface: '#21252b',
       text: '#abb2bf',
-      warning: '#d19a66'
+      warning: '#d19a66',
     },
     id: 'one-dark-pro',
     name: 'One Dark Pro',
     shikiTheme: 'one-dark-pro',
-    type: 'dark'
+    type: 'dark',
   },
   'one-light': {
     colors: {
@@ -606,12 +576,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#888888',
       surface: '#EAEAEB',
       text: '#383A42',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'one-light',
     name: 'One Light',
     shikiTheme: 'one-light',
-    type: 'light'
+    type: 'light',
   },
   'rose-pine': {
     colors: {
@@ -626,19 +596,13 @@ export const themes: Record<string, ThemePalette> = {
       success: '#9ccfd8',
       surface: '#1f1d2e',
       text: '#e0def4',
-      warning: '#f6c177'
+      warning: '#f6c177',
     },
     id: 'rose-pine',
     name: 'Rose Pine',
-    overrides: {
-      bold: '#ebbcba',
-      h1: '#c4a7e7',
-      h2: '#ebbcba',
-      h3: '#9ccfd8',
-      italic: '#9ccfd8'
-    },
+    overrides: { bold: '#ebbcba', h1: '#c4a7e7', h2: '#ebbcba', h3: '#9ccfd8', italic: '#9ccfd8' },
     shikiTheme: 'rose-pine',
-    type: 'dark'
+    type: 'dark',
   },
   'rose-pine-dawn': {
     colors: {
@@ -653,19 +617,13 @@ export const themes: Record<string, ThemePalette> = {
       success: '#56949f',
       surface: '#fffaf3',
       text: '#575279',
-      warning: '#ea9d34'
+      warning: '#ea9d34',
     },
     id: 'rose-pine-dawn',
     name: 'Rose Pine Dawn',
-    overrides: {
-      bold: '#d7827e',
-      h1: '#907aa9',
-      h2: '#d7827e',
-      h3: '#56949f',
-      italic: '#56949f'
-    },
+    overrides: { bold: '#d7827e', h1: '#907aa9', h2: '#d7827e', h3: '#56949f', italic: '#56949f' },
     shikiTheme: 'rose-pine-dawn',
-    type: 'light'
+    type: 'light',
   },
   'rose-pine-moon': {
     colors: {
@@ -680,19 +638,13 @@ export const themes: Record<string, ThemePalette> = {
       success: '#9ccfd8',
       surface: '#2a273f',
       text: '#e0def4',
-      warning: '#f6c177'
+      warning: '#f6c177',
     },
     id: 'rose-pine-moon',
     name: 'Rose Pine Moon',
-    overrides: {
-      bold: '#ebbcba',
-      h1: '#c4a7e7',
-      h2: '#ebbcba',
-      h3: '#9ccfd8',
-      italic: '#9ccfd8'
-    },
+    overrides: { bold: '#ebbcba', h1: '#c4a7e7', h2: '#ebbcba', h3: '#9ccfd8', italic: '#9ccfd8' },
     shikiTheme: 'rose-pine-moon',
-    type: 'dark'
+    type: 'dark',
   },
   'solarized-dark': {
     colors: {
@@ -707,12 +659,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#859900',
       surface: '#00212B',
       text: '#839496',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'solarized-dark',
     name: 'Solarized Dark',
     shikiTheme: 'solarized-dark',
-    type: 'dark'
+    type: 'dark',
   },
   'solarized-light': {
     colors: {
@@ -727,12 +679,12 @@ export const themes: Record<string, ThemePalette> = {
       success: '#859900',
       surface: '#EEE8D5',
       text: '#657B83',
-      warning: '#888888'
+      warning: '#888888',
     },
     id: 'solarized-light',
     name: 'Solarized Light',
     shikiTheme: 'solarized-light',
-    type: 'light'
+    type: 'light',
   },
   'tokyo-night': {
     colors: {
@@ -747,20 +699,14 @@ export const themes: Record<string, ThemePalette> = {
       success: '#449dab',
       surface: '#16161e',
       text: '#a9b1d6',
-      warning: '#e0af68'
+      warning: '#e0af68',
     },
     id: 'tokyo-night',
     name: 'Tokyo Night',
-    overrides: {
-      bold: '#bb9af7',
-      h1: '#bb9af7',
-      h2: '#7aa2f7',
-      h3: '#7dcfff',
-      italic: '#7dcfff'
-    },
+    overrides: { bold: '#bb9af7', h1: '#bb9af7', h2: '#7aa2f7', h3: '#7dcfff', italic: '#7dcfff' },
     shikiTheme: 'tokyo-night',
-    type: 'dark'
-  }
+    type: 'dark',
+  },
 };
 
 export const themeIds = [
@@ -796,7 +742,7 @@ export const themeIds = [
   'material-theme-darker',
   'material-theme-lighter',
   'material-theme-ocean',
-  'material-theme-palenight'
+  'material-theme-palenight',
 ] as const;
 
 export type ThemeId = (typeof themeIds)[number];

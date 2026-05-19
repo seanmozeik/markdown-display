@@ -1,4 +1,4 @@
-// src/lib/elements/table.ts
+// Src/lib/elements/table.ts
 import { Table } from 'console-table-printer';
 
 // Catppuccin Frappe colors for table styling
@@ -6,7 +6,7 @@ const TABLE_STYLE = {
   headerBottom: { left: '├', mid: '┼', other: '─', right: '┤' },
   headerTop: { left: '┌', mid: '┬', other: '─', right: '┐' },
   tableBottom: { left: '└', mid: '┴', other: '─', right: '┘' },
-  vertical: '│'
+  vertical: '│',
 };
 
 const ROW_COLOR = 'white';
@@ -33,21 +33,24 @@ export function renderTable(headers: string[], rows: string[][], options?: Table
 
   const table = new Table({
     colorMap: {
-      custom_header: '\x1b[38;5;189m\x1b[1m', // frappe.text + bold
-      custom_row: '\x1b[38;5;146m' // frappe.subtext1
+      custom_header: '\u001b[38;5;189m\u001b[1m', // Frappe.text + bold
+      custom_row: '\u001b[38;5;146m', // Frappe.subtext1
     },
-    columns: headers.map((header, i) => ({
-      alignment: 'left' as const,
-      color: ROW_COLOR,
-      maxLen: columnMaxLens?.[i],
-      name: header
-    })),
+    columns: headers.map((header, i) => {
+      const maxLen = columnMaxLens?.[i];
+      return {
+        alignment: 'left' as const,
+        color: ROW_COLOR,
+        name: header,
+        ...(maxLen !== undefined ? { maxLen } : {}),
+      };
+    }),
     style: {
       headerBottom: TABLE_STYLE.headerBottom,
       headerTop: TABLE_STYLE.headerTop,
       tableBottom: TABLE_STYLE.tableBottom,
-      vertical: TABLE_STYLE.vertical
-    }
+      vertical: TABLE_STYLE.vertical,
+    },
   });
 
   for (const row of rows) {

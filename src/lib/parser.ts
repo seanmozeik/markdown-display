@@ -1,14 +1,18 @@
-// src/lib/parser.ts
+// Src/lib/parser.ts
+import { Effect } from 'effect';
 import { Marked, type Token } from 'marked';
+
 import { theme } from '../ui/themes';
 import { getBoldStyle, getItalicStyle } from '../ui/themes/semantic';
 import { renderBlockquote } from './elements/blockquote';
-import { renderCodeBlock, renderInlineCode } from './elements/code';
+import type { CodeConfig } from './elements/code';
+import { renderInlineCode } from './elements/code';
 import { renderHeading } from './elements/heading';
 import { renderLink } from './elements/link';
 import { renderListItem } from './elements/list';
 import { renderTable } from './elements/table';
 import { renderText } from './elements/text';
+import { renderCodeBlocksParallel } from './render-code-blocks';
 
 interface ParseOptions {
   width: number;
@@ -21,22 +25,19 @@ interface ParseOptions {
 
 // Type for marked renderer context (this binding)
 interface RendererThis {
-  parser: {
-    parse(tokens: Token[]): string;
-    parseInline(tokens: Token[]): string;
-  };
+  parser: { parse(tokens: Token[]): string; parseInline(tokens: Token[]): string };
 }
 
 export function createRenderer(
   options: ParseOptions,
-  codeBlocks: Map<string, { code: string; lang: string }>
+  codeBlocks: Map<string, { code: string; lang: string }>,
 ) {
   function renderListWithDepth(
     parser: RendererThis['parser'],
-    items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>,
+    items: { tokens: Token[]; task?: boolean; checked?: boolean }[],
     ordered: boolean,
     start: number,
-    depth: number
+    depth: number,
   ): string {
     // Inline token types that can be passed to parseInline
     const INLINE_TYPES = new Set([
@@ -49,7 +50,7 @@ export function createRenderer(
       'br',
       'del',
       'escape',
-      'checkbox'
+      'checkbox',
     ]);
 
     return items
@@ -61,11 +62,11 @@ export function createRenderer(
         // - List: handle recursively for nesting
         // - Other block tokens (blockquote, table, heading, hr, html): render with parse()
         const inlineTokens: Token[] = [];
-        const nestedLists: Array<{
+        const nestedLists: {
           items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>;
           ordered: boolean;
           start?: number;
-        }> = [];
+        }[] = [];
         const blockContent: Token[] = [];
 
         for (const t of item.tokens) {
@@ -79,7 +80,7 @@ export function createRenderer(
             blockContent.push({ raw: id, text: id, type: 'html' } as Token);
           } else if (t.type === 'paragraph' && 'tokens' in t) {
             // Paragraph wraps inline content in loose lists - extract inner tokens
-            inlineTokens.push(...(t.tokens as Token[]));
+            inlineTokens.push(...(t.tokens));
           } else if (t.type === 'space') {
             // Whitespace between block content - skip
           } else if (t.type === 'html' && 'block' in t && !t.block) {
@@ -97,11 +98,11 @@ export function createRenderer(
         // Render the item's inline content
         const text = parser.parseInline(inlineTokens);
         const renderedItem = renderListItem(text, ordered, depth, start + i, {
-          checked: item.checked,
-          hyphenation: options.hyphenation,
-          nerdFonts: options.nerdFonts,
-          task: item.task,
-          width: options.width
+          width: options.width,
+          ...(item.checked !== undefined ? { checked: item.checked } : {}),
+          ...(item.task !== undefined ? { task: item.task } : {}),
+          ...(options.hyphenation !== undefined ? { hyphenation: options.hyphenation } : {}),
+          ...(options.nerdFonts !== undefined ? { nerdFonts: options.nerdFonts } : {}),
         });
 
         // Render any block content (tables, blockquotes, code blocks, etc.)
@@ -110,14 +111,14 @@ export function createRenderer(
         // Recursively render nested lists
         const nestedRendered = nestedLists
           .map((nested) =>
-            renderListWithDepth(parser, nested.items, nested.ordered, nested.start ?? 1, depth + 1)
+            renderListWithDepth(parser, nested.items, nested.ordered, nested.start ?? 1, depth + 1),
           )
           .join('\n');
 
         // Join: item text, then block content, then nested lists
         const parts = [renderedItem];
-        if (blockRendered) parts.push(blockRendered);
-        if (nestedRendered) parts.push(nestedRendered);
+        if (blockRendered) {parts.push(blockRendered);}
+        if (nestedRendered) {parts.push(nestedRendered);}
         return parts.join('\n');
       })
       .join('\n');
@@ -127,7 +128,11 @@ export function createRenderer(
     blockquote(this: RendererThis, { tokens }: { tokens: Token[] }): string {
       // Blockquotes contain block-level tokens (paragraphs, lists, etc.), not inline
       const text = this.parser.parse(tokens);
-      return `${renderBlockquote(text.trim(), { hyphenation: options.hyphenation, width: options.width })}\n\n`;
+      const blockquoteConfig: { width: number; hyphenation?: boolean } = { width: options.width };
+      if (options.hyphenation !== undefined) {
+        blockquoteConfig.hyphenation = options.hyphenation;
+      }
+      return `${renderBlockquote(text.trim(), blockquoteConfig)}\n\n`;
     },
     br(): string {
       return '\n';
@@ -180,12 +185,12 @@ export function createRenderer(
       {
         items,
         ordered,
-        start
+        start,
       }: {
-        items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>;
+        items: { tokens: Token[]; task?: boolean; checked?: boolean }[];
         ordered: boolean;
         start: number | '';
-      }
+      },
     ): string {
       return `${renderListWithDepth(this.parser, items, ordered, start || 1, 0)}\n`;
     },
@@ -206,17 +211,17 @@ export function createRenderer(
 
     table({
       header,
-      rows
+      rows,
     }: {
-      header: Array<{ text: string }>;
-      rows: Array<Array<{ text: string }>>;
+      header: { text: string }[];
+      rows: Array<{ text: string }>[];
     }): string {
       return `${renderTable(
         header.map((h) => h.text),
         rows.map((row) => row.map((c) => c.text)),
-        { width: options.width }
+        { width: options.width },
       )}\n`;
-    }
+    },
   };
 }
 
@@ -226,11 +231,11 @@ const HTML_ENTITIES: Record<string, string> = {
   '&amp;': '&',
   '&gt;': '>',
   '&lt;': '<',
-  '&quot;': '"'
+  '&quot;': '"',
 };
 
 function decodeHtmlEntities(text: string): string {
-  return text.replace(/&#?\w+;/g, (entity) => HTML_ENTITIES[entity] ?? entity);
+  return text.replaceAll(/&#?\w+;/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }
 
 export async function parseMarkdown(markdown: string, options: ParseOptions): Promise<string> {
@@ -244,15 +249,24 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
   // Decode HTML entities since we're outputting to terminal, not HTML
   result = decodeHtmlEntities(result);
 
-  for (const [id, { code, lang }] of codeBlocks) {
-    const rendered = await renderCodeBlock(code, lang, {
+  if (codeBlocks.size > 0) {
+    const codeConfig: CodeConfig = {
       continuation: options.continuation ?? '→',
       theme: theme().shikiTheme,
-      useNerdFonts: options.nerdFonts,
       width: options.width,
-      wrap: options.wrap ?? true
-    });
-    result = result.replace(id, rendered);
+      wrap: options.wrap ?? true,
+      ...(options.nerdFonts !== undefined ? { useNerdFonts: options.nerdFonts } : {}),
+    };
+
+    const refs = [...codeBlocks.entries()].map(([id, { code, lang }]) => ({ code, id, lang }));
+
+    const renderedById = await Effect.runPromise(
+      renderCodeBlocksParallel(refs, codeConfig, theme().shikiTheme),
+    );
+
+    for (const [id, rendered] of renderedById) {
+      result = result.replace(id, rendered);
+    }
   }
 
   return result;

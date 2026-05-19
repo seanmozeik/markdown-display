@@ -1,7 +1,8 @@
-// src/lib/render.test.ts
+// Src/lib/render.test.ts
 import { describe, expect, test } from 'bun:test';
-import { DEFAULT_CONFIG } from './config';
-import { render } from './render';
+
+import { DEFAULT_CONFIG } from '../src/config';
+import { render } from '../src/lib/render';
 
 describe('render', () => {
   test('renders markdown string to ANSI', async () => {
@@ -10,7 +11,7 @@ describe('render', () => {
 
     expect(result).toContain('Hello');
     expect(result).toContain('World');
-    expect(result).toContain('\x1b[');
+    expect(result).toContain('\u001b[');
   });
 
   test('handles empty input', async () => {

@@ -1,12 +1,12 @@
 # src/lib/default-config.toml
 theme = "frappe"
 width = "auto"
-truecolor = "auto"   # "auto" | true | false
-nerd_fonts = "auto"  # "auto" | true | false
+truecolor = "auto" # "auto" | true | false
+nerd_fonts = "auto" # "auto" | true | false
 
 [display]
-padding = true       # responsive padding based on terminal width
-maxWidth = 0         # 0 = full width, 80-120 = constrain & center
+padding = true # responsive padding based on terminal width
+maxWidth = 0 # 0 = full width, 80-120 = constrain & center
 
 [code]
 wrap = true

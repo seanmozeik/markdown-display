@@ -1,4 +1,4 @@
-// src/ui/themes/semantic.ts
+// Src/ui/themes/semantic.ts
 
 import { ansiBold, ansiFg, ansiFgBg, ansiFgTransition, ansiItalic } from './ansi';
 import { theme } from './index';
@@ -35,16 +35,21 @@ export function getHeadingColor(level: number): StyleFn {
   const heading = o?.heading;
 
   switch (level) {
-    case 1:
+    case 1: {
       return ansiFg(o?.h1 ?? heading ?? t.colors.accent);
-    case 2:
+    }
+    case 2: {
       return ansiFg(o?.h2 ?? heading ?? t.colors.accent);
-    case 3:
+    }
+    case 3: {
       return ansiFg(o?.h3 ?? heading ?? t.colors.info);
-    case 4:
+    }
+    case 4: {
       return ansiFg(o?.h4 ?? heading ?? t.colors.auxiliary);
-    default:
+    }
+    default: {
       return ansiFg(t.colors.muted);
+    }
   }
 }
 
@@ -90,7 +95,7 @@ export function getHexColors() {
   return {
     accent: t.colors.accent,
     h1: t.overrides?.h1 ?? t.overrides?.heading ?? t.colors.accent,
-    subtle: t.colors.subtle
+    subtle: t.colors.subtle,
   };
 }
 
@@ -112,7 +117,7 @@ export function getGradientColors() {
   const banner = [
     o?.h1 ?? o?.heading ?? t.colors.accent,
     o?.bold ?? o?.h2 ?? t.colors.emphasis,
-    o?.h2 ?? t.colors.info
+    o?.h2 ?? t.colors.info,
   ];
 
   // Status gradients

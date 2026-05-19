@@ -1,4 +1,4 @@
-// src/lib/width.ts
+// Src/lib/width.ts
 const MIN_WIDTH = 40;
 const MAX_AUTO_WIDTH = 120; // Cap for readability (from glow)
 const DEFAULT_WIDTH = 80;

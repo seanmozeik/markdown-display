@@ -1,4 +1,4 @@
-// src/ui/themes/types.ts
+// Src/ui/themes/types.ts
 
 /** Core color roles for markdown rendering */
 export interface ThemeColors {

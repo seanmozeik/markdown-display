@@ -1,6 +1,7 @@
-// src/ui/themes/index.test.ts
+// Src/ui/themes/index.test.ts
 import { describe, expect, test } from 'bun:test';
-import { getTheme, isValidTheme, loadTheme, theme } from './index';
+
+import { getTheme, isValidTheme, loadTheme, theme } from '../src/ui/themes/index';
 
 describe('theme registry', () => {
   test('getTheme returns catppuccin-frappe by default', () => {

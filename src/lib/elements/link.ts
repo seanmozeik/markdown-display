@@ -1,4 +1,4 @@
-// src/lib/elements/link.ts
+// Src/lib/elements/link.ts
 import { getLinkColor, getSubtleColor } from '../../ui/themes/semantic';
 
 interface LinkConfig {
@@ -19,7 +19,7 @@ export function renderLink(text: string, url: string, config: LinkConfig): strin
   const styledText = linkColor(text);
 
   if (useOsc8) {
-    const hyperlink = `\x1b]8;;${url}\x07${styledText}\x1b]8;;\x07`;
+    const hyperlink = `\u001b]8;;${url}\u0007${styledText}\u001b]8;;\u0007`;
     if (config.show_urls && text !== url) {
       return `${hyperlink} ${getSubtleColor()(`(${url})`)}`;
     }

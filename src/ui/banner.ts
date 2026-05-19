@@ -1,4 +1,5 @@
 import gradient from 'gradient-string';
+
 import { getGradientColors } from './themes/semantic';
 
 // Create gradient lazily to pick up theme changes

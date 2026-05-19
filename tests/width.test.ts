@@ -1,6 +1,7 @@
-// src/lib/width.test.ts
+// Src/lib/width.test.ts
 import { afterEach, describe, expect, test } from 'bun:test';
-import { getTerminalWidth } from './width';
+
+import { getTerminalWidth } from '../src/lib/width';
 
 describe('getTerminalWidth', () => {
   const originalColumns = process.stdout.columns;

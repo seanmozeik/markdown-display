@@ -1,8 +1,8 @@
-// src/lib/layout.ts
+// Src/lib/layout.ts
 
 export interface LayoutConfig {
   maxWidth: number; // 0 = disabled, 80-120 = constrain & center
-  padding: boolean; // enable responsive padding
+  padding: boolean; // Enable responsive padding
 }
 
 export interface LayoutResult {
@@ -13,13 +13,13 @@ export interface LayoutResult {
 export function calculateLayout(
   terminalWidth: number,
   defaultContentWidth: number,
-  config: LayoutConfig
+  config: LayoutConfig,
 ): LayoutResult {
   const { maxWidth, padding } = config;
 
   // Readability mode: constrain to maxWidth and center on actual terminal
   if (maxWidth > 0) {
-    const contentWidth = Math.min(maxWidth, terminalWidth - 2); // min 1 padding each side
+    const contentWidth = Math.min(maxWidth, terminalWidth - 2); // Min 1 padding each side
     const sidePadding = Math.floor((terminalWidth - contentWidth) / 2);
     return { contentWidth, sidePadding };
   }
@@ -30,16 +30,13 @@ export function calculateLayout(
   }
 
   // Responsive padding breakpoints based on default content width
-  const sidePadding = defaultContentWidth < 60 ? 1 : defaultContentWidth <= 100 ? 2 : 3;
+  const sidePadding = defaultContentWidth < 60 ? 1 : (defaultContentWidth <= 100 ? 2 : 3);
 
-  return {
-    contentWidth: defaultContentWidth - sidePadding * 2,
-    sidePadding
-  };
+  return { contentWidth: defaultContentWidth - sidePadding * 2, sidePadding };
 }
 
 export function applyPadding(content: string, sidePadding: number): string {
-  if (sidePadding === 0) return content;
+  if (sidePadding === 0) {return content;}
 
   const paddingStr = ' '.repeat(sidePadding);
   return content

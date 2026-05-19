@@ -119,32 +119,32 @@ The latest stable release includes:
 
 ### Performance Features
 
-| Feature | Status | Priority | Notes |
-|---------|--------|----------|-------|
-| Lazy rendering | Planned | High | For files over 10MB |
-| Streaming output | Planned | High | Reduce memory footprint |
-| Cache system | Planned | Medium | Speed up repeated renders |
-| Async processing | Research | Low | Not critical for most users |
+| Feature          | Status   | Priority | Notes                       |
+| ---------------- | -------- | -------- | --------------------------- |
+| Lazy rendering   | Planned  | High     | For files over 10MB         |
+| Streaming output | Planned  | High     | Reduce memory footprint     |
+| Cache system     | Planned  | Medium   | Speed up repeated renders   |
+| Async processing | Research | Low      | Not critical for most users |
 
 ### User Experience Features
 
-| Feature | Status | Priority | Notes |
-|---------|--------|----------|-------|
-| Theme builder | Planned | High | User customization essential |
-| Cross-file search | Planned | High | Discovery feature needed |
-| Bookmarks | Planned | Medium | For navigation |
-| Recent files | In progress | Medium | Quick access |
-| Settings UI | Planned | Medium | GUI configuration |
+| Feature           | Status      | Priority | Notes                        |
+| ----------------- | ----------- | -------- | ---------------------------- |
+| Theme builder     | Planned     | High     | User customization essential |
+| Cross-file search | Planned     | High     | Discovery feature needed     |
+| Bookmarks         | Planned     | Medium   | For navigation               |
+| Recent files      | In progress | Medium   | Quick access                 |
+| Settings UI       | Planned     | Medium   | GUI configuration            |
 
 ### Quality & Reliability
 
-| Feature | Status | Priority | Notes |
-|---------|--------|----------|-------|
-| Unit test coverage | In progress | High | Current: 65% |
-| Integration tests | In progress | High | Needs expansion |
-| Performance tests | Planned | High | Benchmark suite |
-| Error handling | Complete | High | Comprehensive |
-| Documentation | In progress | High | Almost done |
+| Feature            | Status      | Priority | Notes           |
+| ------------------ | ----------- | -------- | --------------- |
+| Unit test coverage | In progress | High     | Current: 65%    |
+| Integration tests  | In progress | High     | Needs expansion |
+| Performance tests  | Planned     | High     | Benchmark suite |
+| Error handling     | Complete    | High     | Comprehensive   |
+| Documentation      | In progress | High     | Almost done     |
 
 ## Development Process
 
@@ -285,11 +285,11 @@ Before submitting a contribution:
 
 Some terminals have limitations:
 
-| Terminal | Issue | Workaround |
-|----------|-------|-----------|
-| Legacy xterm | No true color | Use 256-color mode |
-| Very old terminals | Limited ANSI support | Use plain text mode with `-p` |
-| SSH connections | Color detection may fail | Explicitly set color mode |
+| Terminal           | Issue                    | Workaround                    |
+| ------------------ | ------------------------ | ----------------------------- |
+| Legacy xterm       | No true color            | Use 256-color mode            |
+| Very old terminals | Limited ANSI support     | Use plain text mode with `-p` |
+| SSH connections    | Color detection may fail | Explicitly set color mode     |
 
 ### Platform-Specific Issues
 

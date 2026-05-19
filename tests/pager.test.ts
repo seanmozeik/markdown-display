@@ -1,35 +1,36 @@
-// src/lib/pager.test.ts
+// Src/lib/pager.test.ts
 import { afterEach, describe, expect, test } from 'bun:test';
-import { countLines, getPagerCommand, PagingMode, shouldUsePager } from './pager';
+
+import { countLines, getPagerCommand, PagingMode, shouldUsePager } from '../src/lib/pager';
 
 describe('shouldUsePager', () => {
   test('returns Never when stdout is not TTY', () => {
     expect(shouldUsePager({ height: 50, lines: 100, stdinTTY: true, stdoutTTY: false })).toBe(
-      PagingMode.Never
+      PagingMode.Never,
     );
   });
 
   test('returns Never when content fits in terminal', () => {
     expect(shouldUsePager({ height: 50, lines: 10, stdinTTY: true, stdoutTTY: true })).toBe(
-      PagingMode.Never
+      PagingMode.Never,
     );
   });
 
   test('returns QuitIfOneScreen when content exceeds height', () => {
     expect(shouldUsePager({ height: 50, lines: 100, stdinTTY: true, stdoutTTY: true })).toBe(
-      PagingMode.QuitIfOneScreen
+      PagingMode.QuitIfOneScreen,
     );
   });
 
   test('returns Never when noPager flag is true', () => {
     expect(
-      shouldUsePager({ height: 50, lines: 100, noPager: true, stdinTTY: true, stdoutTTY: true })
+      shouldUsePager({ height: 50, lines: 100, noPager: true, stdinTTY: true, stdoutTTY: true }),
     ).toBe(PagingMode.Never);
   });
 
   test('returns QuitIfOneScreen for piped stdin with TTY stdout (bat pattern)', () => {
     expect(shouldUsePager({ height: 50, lines: 100, stdinTTY: false, stdoutTTY: true })).toBe(
-      PagingMode.QuitIfOneScreen
+      PagingMode.QuitIfOneScreen,
     );
   });
 });
@@ -39,10 +40,10 @@ describe('getPagerCommand', () => {
   const originalMdPager = Bun.env.MD_PAGER;
 
   afterEach(() => {
-    if (originalPager) Bun.env.PAGER = originalPager;
-    else delete Bun.env.PAGER;
-    if (originalMdPager) Bun.env.MD_PAGER = originalMdPager;
-    else delete Bun.env.MD_PAGER;
+    if (originalPager) {Bun.env.PAGER = originalPager;}
+    else {delete Bun.env.PAGER;}
+    if (originalMdPager) {Bun.env.MD_PAGER = originalMdPager;}
+    else {delete Bun.env.MD_PAGER;}
   });
 
   test('uses config command if provided', () => {
@@ -69,7 +70,7 @@ describe('getPagerCommand', () => {
     delete Bun.env.MD_PAGER;
     const result = getPagerCommand({ args: [], command: '' });
     expect(result.command).toBe('less');
-    expect(result.args).toContain('-r'); // raw control chars (for nerd fonts)
+    expect(result.args).toContain('-r'); // Raw control chars (for nerd fonts)
   });
 });
 

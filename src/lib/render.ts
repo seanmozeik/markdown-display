@@ -1,4 +1,4 @@
-// src/lib/render.ts
+// Src/lib/render.ts
 
 import type { Config } from './config';
 import { resolveNerdFonts } from './languages';
@@ -7,17 +7,17 @@ import { parseMarkdown } from './parser';
 import { getRawTerminalWidth, getTerminalWidth } from './width';
 
 export async function render(markdown: string, config: Config): Promise<string> {
-  if (!markdown.trim()) return '';
+  if (!markdown.trim()) {return '';}
 
   const contentWidth =
-    config.width === 'auto' ? getTerminalWidth() : getTerminalWidth(config.width as number);
+    config.width === 'auto' ? getTerminalWidth() : getTerminalWidth(config.width);
 
   // Use raw terminal width for centering (not capped), but capped width for content
   const rawTerminalWidth = getRawTerminalWidth();
 
   const layout = calculateLayout(rawTerminalWidth, contentWidth, {
     maxWidth: config.display.maxWidth,
-    padding: config.display.padding
+    padding: config.display.padding,
   });
 
   const content = await parseMarkdown(markdown, {
@@ -26,7 +26,7 @@ export async function render(markdown: string, config: Config): Promise<string> 
     nerdFonts: resolveNerdFonts(config.nerd_fonts),
     osc8: config.links.osc8,
     width: layout.contentWidth,
-    wrap: config.code.wrap
+    wrap: config.code.wrap,
   });
 
   return applyPadding(content, layout.sidePadding);

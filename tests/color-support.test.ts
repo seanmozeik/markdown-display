@@ -1,6 +1,7 @@
-// src/ui/themes/color-support.test.ts
+// Src/ui/themes/color-support.test.ts
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { getColorLevel, resetColorCache, setColorConfig } from './color-support';
+
+import { getColorLevel, resetColorCache, setColorConfig } from '../src/ui/themes/color-support';
 
 describe('getColorLevel', () => {
   const originalNoColor = Bun.env.NO_COLOR;
@@ -12,10 +13,10 @@ describe('getColorLevel', () => {
 
   afterEach(() => {
     // Restore environment
-    if (originalNoColor !== undefined) Bun.env.NO_COLOR = originalNoColor;
-    else delete Bun.env.NO_COLOR;
-    if (originalForceColor !== undefined) Bun.env.FORCE_COLOR = originalForceColor;
-    else delete Bun.env.FORCE_COLOR;
+    if (originalNoColor !== undefined) {Bun.env.NO_COLOR = originalNoColor;}
+    else {delete Bun.env.NO_COLOR;}
+    if (originalForceColor !== undefined) {Bun.env.FORCE_COLOR = originalForceColor;}
+    else {delete Bun.env.FORCE_COLOR;}
     resetColorCache();
     setColorConfig('auto');
   });
@@ -70,7 +71,30 @@ describe('getColorLevel', () => {
 });
 
 describe('setColorConfig', () => {
+  let restoreEnv: (() => void) | undefined;
+
+  beforeEach(() => {
+    const savedNoColor = Bun.env.NO_COLOR;
+    const savedForce = Bun.env.FORCE_COLOR;
+    delete Bun.env.NO_COLOR;
+    delete Bun.env.FORCE_COLOR;
+    restoreEnv = () => {
+      if (savedNoColor !== undefined) {
+        Bun.env.NO_COLOR = savedNoColor;
+      } else {
+        delete Bun.env.NO_COLOR;
+      }
+      if (savedForce !== undefined) {
+        Bun.env.FORCE_COLOR = savedForce;
+      } else {
+        delete Bun.env.FORCE_COLOR;
+      }
+    };
+    resetColorCache();
+  });
+
   afterEach(() => {
+    restoreEnv?.();
     resetColorCache();
     setColorConfig('auto');
   });

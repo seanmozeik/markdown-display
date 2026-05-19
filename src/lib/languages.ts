@@ -1,4 +1,4 @@
-// src/lib/languages.ts
+// Src/lib/languages.ts
 
 interface LanguageInfo {
   icon: string;
@@ -55,7 +55,7 @@ export const LANGUAGES: Record<string, LanguageInfo> = {
   vue: { color: '#8DC149', icon: '', label: 'vue' },
   xml: { color: '#E37933', icon: '󰗀', label: 'xml' },
   yaml: { color: '#6D8086', icon: '', label: 'yaml' },
-  zig: { color: '#F69A1B', icon: '', label: 'zig' }
+  zig: { color: '#F69A1B', icon: '', label: 'zig' },
 };
 
 // Aliases for common short names and variants
@@ -83,7 +83,7 @@ const LANG_ALIASES: Record<string, string> = {
   sh: 'bash',
   shell: 'bash',
   ts: 'typescript',
-  yml: 'yaml'
+  yml: 'yaml',
 };
 
 export function normalizeLang(lang: string): string {

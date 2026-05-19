@@ -1,17 +1,20 @@
-// src/lib/elements/code.ts
+// Src/lib/elements/code.ts
 import boxen from 'boxen';
+import { Effect } from 'effect';
+
 import { theme } from '../../ui/themes';
 import {
   getBoxTitleStyle,
   getHexColors,
   getInlineCodeStyle,
   getMutedColor,
-  getSubtleColor
+  getSubtleColor,
 } from '../../ui/themes/semantic';
 import { visibleLength } from '../ansi';
 import { getLanguageLabel, normalizeLang, supportsNerdFonts } from '../languages';
+import { highlightCode } from '../shiki';
 
-interface CodeConfig {
+export interface CodeConfig {
   width: number;
   wrap: boolean;
   continuation: string;
@@ -19,96 +22,11 @@ interface CodeConfig {
   useNerdFonts?: boolean;
 }
 
-const MAX_LINE_LENGTH = 16 * 1024; // Skip highlighting very long lines (bat pattern)
-
-// Supported languages for syntax highlighting
-const SUPPORTED_LANGS = new Set([
-  // Core languages
-  'typescript',
-  'javascript',
-  'python',
-  'rust',
-  'go',
-  'java',
-  'c',
-  'cpp',
-  'csharp',
-  'ruby',
-  'php',
-  'swift',
-  'kotlin',
-  'scala',
-  'lua',
-  'perl',
-  // Shell
-  'bash',
-  'shell',
-  'zsh',
-  'fish',
-  'powershell',
-  // Web
-  'html',
-  'css',
-  'scss',
-  'sass',
-  'less',
-  'vue',
-  'svelte',
-  'jsx',
-  'tsx',
-  // Data formats
-  'json',
-  'yaml',
-  'toml',
-  'xml',
-  'csv',
-  // Markup
-  'markdown',
-  'latex',
-  'tex',
-  // Config
-  'dockerfile',
-  'nginx',
-  'apache',
-  'ini',
-  'env',
-  // Database
-  'sql',
-  'plsql',
-  'graphql',
-  'prisma',
-  // Functional
-  'haskell',
-  'ocaml',
-  'fsharp',
-  'elixir',
-  'erlang',
-  'clojure',
-  'lisp',
-  'scheme',
-  // Systems
-  'zig',
-  'nim',
-  'crystal',
-  'julia',
-  'r',
-  'matlab',
-  // Other
-  'vim',
-  'diff',
-  'git-commit',
-  'git-rebase',
-  'makefile',
-  'cmake',
-  'regex',
-  'http',
-  'jsonc',
-  'jsonl',
-  'wasm'
-]);
+/** Skip Shiki for very long blocks (bat / claudewatch pattern). */
+export const MAX_CODE_BLOCK_HIGHLIGHT_LENGTH = 16 * 1024;
 
 // ESC character for ANSI escape sequence parsing (avoid literal \x1b for linter)
-const ESC = String.fromCharCode(0x1b);
+const ESC = String.fromCodePoint(0x1B);
 const ANSI_RESET = `${ESC}[0m`;
 const ANSI_SGR_PATTERN = new RegExp(`${ESC}\\[([0-9;]*)m`);
 
@@ -119,7 +37,7 @@ const ANSI_SGR_PATTERN = new RegExp(`${ESC}\\[([0-9;]*)m`);
  * 40-47/100-107 = bg color, 48;5;N = 256 bg, 48;2;R;G;B = RGB bg
  */
 class AnsiState {
-  private styles: Set<string> = new Set();
+  private styles = new Set<string>();
   private fgColor: string | null = null;
   private bgColor: string | null = null;
 
@@ -130,7 +48,7 @@ class AnsiState {
 
     while (i < params.length) {
       const param = params[i];
-      if (!param) break;
+      if (!param) {break;}
       const code = Number.parseInt(param, 10);
 
       if (code === 0) {
@@ -180,8 +98,8 @@ class AnsiState {
 
   toSequence(): string {
     const parts = [...this.styles];
-    if (this.fgColor) parts.push(this.fgColor);
-    if (this.bgColor) parts.push(this.bgColor);
+    if (this.fgColor) {parts.push(this.fgColor);}
+    if (this.bgColor) {parts.push(this.bgColor);}
     return parts.length === 0 ? '' : `${ESC}[${parts.join(';')}m`;
   }
 
@@ -220,7 +138,7 @@ function sliceByVisible(str: string, start: number, end?: number): [string, stri
     ansiRegex.lastIndex = i;
     const match = ansiRegex.exec(str);
 
-    if (match && match.index === i) {
+    if (match?.index === i) {
       // Found ANSI sequence at current position - update state
       state.apply(match[0]);
       i += match[0].length;
@@ -299,54 +217,53 @@ export function renderInlineCode(code: string): string {
   return getInlineCodeStyle()(` ${code} `);
 }
 
-export async function renderCodeBlock(
-  code: string,
+/** Box + wrap already-highlighted source (no Shiki). */
+export const formatCodeBlockBox = (
+  highlighted: string,
   lang: string,
-  config: CodeConfig
-): Promise<string> {
+  config: CodeConfig,
+): string => {
   const useNerdFonts = config.useNerdFonts ?? supportsNerdFonts();
-  let highlighted: string;
-
-  try {
-    // Skip syntax highlighting for very long content (bat pattern)
-    if (code.length > MAX_LINE_LENGTH) {
-      highlighted = getMutedColor()(code);
-    } else {
-      const langId = normalizeLang(lang);
-
-      if (SUPPORTED_LANGS.has(langId)) {
-        const { codeToANSI } = await import('@shikijs/cli');
-        highlighted = await codeToANSI(
-          code,
-          langId as import('shiki').BundledLanguage,
-          theme().shikiTheme as import('shiki').BundledTheme
-        );
-        // Shiki adds a trailing newline - remove it to avoid extra empty line in boxen
-        highlighted = highlighted.replace(/\n$/, '');
-      } else {
-        highlighted = getMutedColor()(code);
-      }
-    }
-  } catch {
-    highlighted = getMutedColor()(code);
-  }
-
   const wrapped = config.wrap
     ? wrapCodeLines(highlighted, config.width - 4, config.continuation)
     : highlighted;
 
-  // Build header with language label (icon when nerd fonts enabled, name otherwise)
   const title = lang ? getLanguageLabel(lang, useNerdFonts) : undefined;
 
   const box = boxen(wrapped, {
     borderColor: getHexColors().subtle,
     borderStyle: 'round',
     padding: { bottom: 0, left: 1, right: 1, top: 0 },
-    title: title ? getBoxTitleStyle()(title) : undefined,
+    ...(title !== undefined ? { title: getBoxTitleStyle()(title) } : {}),
     titleAlignment: 'left',
-    width: config.width
+    width: config.width,
   });
 
-  // Add trailing newline for proper spacing after code block
   return `${box}\n`;
+};
+
+export const highlightCodeBlockSource = Effect.fn('md.highlight-code-block')(
+  (code: string, lang: string, themeId: string) =>
+    Effect.gen(function* highlightCodeBlockSourceGen() {
+      if (code.length > MAX_CODE_BLOCK_HIGHLIGHT_LENGTH) {
+        return getMutedColor()(code);
+      }
+      const langId = normalizeLang(lang);
+      const highlighted = yield* highlightCode(code, langId, themeId);
+      if (!highlighted.includes('\u001B[')) {
+        return getMutedColor()(code);
+      }
+      return highlighted;
+    }),
+);
+
+export async function renderCodeBlock(
+  code: string,
+  lang: string,
+  config: CodeConfig,
+): Promise<string> {
+  const highlighted = await Effect.runPromise(
+    highlightCodeBlockSource(code, lang, theme().shikiTheme),
+  );
+  return formatCodeBlockBox(highlighted, lang, config);
 }

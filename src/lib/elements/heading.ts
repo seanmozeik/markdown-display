@@ -1,4 +1,5 @@
 import boxen from 'boxen';
+
 import { getHeadingColor, getHexColors, getSubtleColor } from '../../ui/themes/semantic';
 
 export function renderHeading(text: string, level: number, width: number): string {
@@ -11,7 +12,7 @@ export function renderHeading(text: string, level: number, width: number): strin
         borderStyle: 'round',
         padding: { bottom: 0, left: 2, right: 2, top: 0 },
         textAlignment: 'center',
-        width: Math.min(width, cleanText.length + 8)
+        width: Math.min(width, cleanText.length + 8),
       });
       return `\n\n${boxed}\n\n`;
     }
@@ -19,11 +20,14 @@ export function renderHeading(text: string, level: number, width: number): strin
       const line = getSubtleColor()('─'.repeat(Math.max(0, width - cleanText.length - 2)));
       return `\n${getHeadingColor(2)(cleanText)} ${line}\n`;
     }
-    case 3:
+    case 3: {
       return `\n${getHeadingColor(3)(cleanText)}\n`;
-    case 4:
+    }
+    case 4: {
       return `\n${getHeadingColor(4)(cleanText)}\n`;
-    default:
+    }
+    default: {
       return `\n${getHeadingColor(5)(cleanText)}\n`;
+    }
   }
 }

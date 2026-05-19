@@ -1,4 +1,4 @@
-// src/lib/elements/list.ts
+// Src/lib/elements/list.ts
 import { getAccentColor, getMutedColor } from '../../ui/themes/semantic';
 import { visibleLength } from '../ansi';
 import { wrapText } from './text';
@@ -8,14 +8,14 @@ const BULLETS = ['•', '◦', '▪'] as const;
 
 const CHECKBOXES = {
   checked: { nerd: '󰱒', unicode: '☑' },
-  unchecked: { nerd: '󰄱', unicode: '☐' }
+  unchecked: { nerd: '󰄱', unicode: '☐' },
 } as const;
 
 function getBullet(
   config: ListItemConfig | undefined,
   ordered: boolean,
   depth: number,
-  index: number | undefined
+  index: number | undefined,
 ): string {
   if (config?.task) {
     const style = config.checked ? CHECKBOXES.checked : CHECKBOXES.unchecked;
@@ -24,7 +24,7 @@ function getBullet(
   if (ordered) {
     return `${index ?? 1}.`;
   }
-  // biome-ignore lint/style/noNonNullAssertion: modulo guarantees valid index
+  // Biome-ignore lint/style/noNonNullAssertion: modulo guarantees valid index
   return BULLETS[depth % BULLETS.length]!;
 }
 
@@ -41,7 +41,7 @@ export function renderListItem(
   ordered: boolean,
   depth: number,
   index?: number,
-  config?: ListItemConfig
+  config?: ListItemConfig,
 ): string {
   const indent = ' '.repeat(depth * INDENT_SIZE);
   const bullet = getBullet(config, ordered, depth, index);
@@ -65,7 +65,7 @@ export function renderListItem(
   // Wrap the text (muting applied before wrapping so each line is styled)
   const wrapped = wrapText(styledText, textWidth, {
     hyphenation: config.hyphenation ?? false,
-    locale: 'en-us'
+    locale: 'en-us',
   });
 
   const lines = wrapped.split('\n');
@@ -85,7 +85,7 @@ export function renderList(
   items: string[],
   ordered: boolean,
   depth = 0,
-  config?: ListItemConfig
+  config?: ListItemConfig,
 ): string {
   return items.map((item, i) => renderListItem(item, ordered, depth, i + 1, config)).join('\n');
 }

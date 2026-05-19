@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { renderHeading } from './heading';
+
+import { renderHeading } from '../src/lib/elements/heading';
 
 describe('renderHeading', () => {
   test('h1 renders in boxen container', () => {

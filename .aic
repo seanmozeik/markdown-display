@@ -1,42 +1,20 @@
-# markdown-display Release Configuration
+# markdown-display release (build logic lives in scripts/build.ts)
+
+[ignore]
+dist/**
+artifacts/**
 
 [release]
-# Clean and create dist directory
-rm -rf dist && mkdir -p dist
-
-# Bundle to JS for macOS/Linux (via Homebrew with depends_on "bun")
-bun build ./src/index.ts --outfile dist/index.js --target=bun --minify
-
-# Build Windows binary (compiled, since no Homebrew)
-bun build ./src/index.ts --compile --target=bun-windows-x64 --outfile dist/mdown-windows-x64.exe --minify
-
-# Clean up bun build artifacts
-rm -f ./.*bun-build
-
-# Create source tarball with bundled files (exclude binaries and archives)
-VERSION=$(bun -p "require('./package.json').version") && \
-tar -czvf "dist/md-${VERSION}.tar.gz" -C dist --exclude='*.tar.gz' --exclude='*.exe' --exclude='*.zip' .
-
-# Create Windows zip
-cd dist && zip mdown-windows-x64.zip mdown-windows-x64.exe && rm mdown-windows-x64.exe
-
-# Generate checksums
-VERSION=$(bun -p "require('./package.json').version") && \
-bun -e 'for(const f of[`md-${process.argv[1]}.tar.gz`,"mdown-windows-x64.zip"]){console.log(new Bun.CryptoHasher("sha256").update(await Bun.file("dist/"+f).arrayBuffer()).digest("hex")+"  "+f)}' "$VERSION" > dist/checksums.txt && cat dist/checksums.txt
+bun run build
 
 [publish]
-# Create GitHub release with bundled tarball and Windows binary
-gh release create "v$(bun -p "require('./package.json').version")" dist/*.tar.gz dist/*.zip dist/checksums.txt --title "v$(bun -p "require('./package.json').version")" --notes "$(aic changelog-latest)"
+VERSION=$(bun -p 'require("./package.json").version') && \
+gh release create "v${VERSION}" \
+  artifacts/md-${VERSION}.tar.gz \
+  artifacts/checksums.txt \
+  --title "v${VERSION}" \
+  --notes "$(aic changelog-latest)"
 
-# Update Homebrew formula with new version and SHA256
-VERSION=$(bun -p "require('./package.json').version") && \
-SHA=$(bun -e 'console.log(new Bun.CryptoHasher("sha256").update(await Bun.file("dist/md-"+process.argv[1]+".tar.gz").arrayBuffer()).digest("hex"))' "$VERSION") && \
-sed -i '' "s/version \".*\"/version \"$VERSION\"/" Formula/md.rb && \
-sed -i '' "s/sha256 \".*\"/sha256 \"$SHA\"/" Formula/md.rb
-
-# Copy formula to tap and commit
-cp Formula/md.rb ~/workspace/tap/Formula/md.rb && \
-cd ~/workspace/tap && \
-git add Formula/md.rb && \
-git commit -m "md $(bun -p "require('$OLDPWD/package.json').version")" && \
-git push
+cp Formula/md.rb ../tap/Formula/md.rb && \
+cd ../tap && git add Formula/md.rb && \
+git commit -m "md ${VERSION}" && git push

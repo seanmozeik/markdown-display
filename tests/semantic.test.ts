@@ -1,6 +1,7 @@
-// src/ui/themes/semantic.test.ts
+// Src/ui/themes/semantic.test.ts
 import { beforeEach, describe, expect, test } from 'bun:test';
-import { loadTheme } from './index';
+
+import { loadTheme } from '../src/ui/themes/index';
 import {
   getBoldStyle,
   getHeadingColor,
@@ -8,8 +9,8 @@ import {
   getItalicStyle,
   getLinkColor,
   getMutedColor,
-  getTextColor
-} from './semantic';
+  getTextColor,
+} from '../src/ui/themes/semantic';
 
 describe('semantic colors', () => {
   beforeEach(() => {
@@ -18,20 +19,20 @@ describe('semantic colors', () => {
 
   test('getBoldStyle returns override when available', () => {
     const style = getBoldStyle();
-    expect(style('test')).toContain('\x1b[1;'); // bold
+    expect(style('test')).toContain('\u001b[1;'); // Bold
     expect(style('test')).toContain('test');
   });
 
   test('getItalicStyle returns override when available', () => {
     const style = getItalicStyle();
-    expect(style('test')).toContain('\x1b[3;'); // italic
+    expect(style('test')).toContain('\u001b[3;'); // Italic
   });
 
   test('getInlineCodeStyle returns fg+bg combination', () => {
     const style = getInlineCodeStyle();
     const result = style('code');
     expect(result).toContain('code');
-    expect(result).toContain('\x1b['); // has ANSI codes
+    expect(result).toContain('\u001b['); // Has ANSI codes
   });
 
   test('getHeadingColor returns level-appropriate colors', () => {

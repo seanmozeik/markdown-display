@@ -1,6 +1,7 @@
-// src/lib/parser.test.ts
+// Src/lib/parser.test.ts
 import { describe, expect, test } from 'bun:test';
-import { parseMarkdown } from './parser';
+
+import { parseMarkdown } from '../src/lib/parser';
 
 describe('parseMarkdown', () => {
   test('parses headings', async () => {
@@ -22,6 +23,28 @@ describe('parseMarkdown', () => {
     expect(result).toContain('─');
   });
 
+  test('parses multiple code blocks in one document', async () => {
+    const md = [
+      '```typescript',
+      'const a = 1',
+      '```',
+      '',
+      '```python',
+      'b = 2',
+      '```',
+      '',
+      '```rust',
+      'fn main() {}',
+      '```',
+    ].join('\n');
+    const result = await parseMarkdown(md, { width: 80 });
+    expect(result).toContain('const a');
+    expect(result).toContain('b = 2');
+    expect(result).toContain('fn main');
+    const boxes = result.match(/╭/gu) ?? [];
+    expect(boxes.length).toBeGreaterThanOrEqual(3);
+  });
+
   test('parses links', async () => {
     const md = '[Example](https://example.com)';
     const result = await parseMarkdown(md, { hyphenation: false, osc8: false, width: 80 });
@@ -40,7 +63,7 @@ describe('parseMarkdown', () => {
     const md = 'This is **bold** text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
     // Should contain ANSI bold+color codes (combined format), not literal asterisks
-    expect(result).toContain('\x1b[1;38;5;');
+    expect(result).toContain('\u001b[1;38;5;');
     expect(result).not.toContain('**');
   });
 
@@ -48,14 +71,14 @@ describe('parseMarkdown', () => {
     const md = 'This is *italic* text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
     // Should contain ANSI italic+color codes (combined format), not literal asterisks
-    expect(result).toContain('\x1b[3;38;5;');
+    expect(result).toContain('\u001b[3;38;5;');
     expect(result).not.toContain('*italic*');
   });
 
   test('renders bold in list items', async () => {
     const md = '- Item with **bold** text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
-    expect(result).toContain('\x1b[1;38;5;');
+    expect(result).toContain('\u001b[1;38;5;');
     expect(result).not.toContain('**');
   });
 
@@ -63,8 +86,8 @@ describe('parseMarkdown', () => {
     const md = 'This is ***bold italic*** text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
     // Should contain both bold and italic ANSI codes, not literal asterisks
-    expect(result).toContain('\x1b[1;38;5;'); // bold
-    expect(result).toContain('\x1b[3;38;5;'); // italic
+    expect(result).toContain('\u001b[1;38;5;'); // Bold
+    expect(result).toContain('\u001b[3;38;5;'); // Italic
     expect(result).not.toContain('**');
     expect(result).not.toContain('***');
   });

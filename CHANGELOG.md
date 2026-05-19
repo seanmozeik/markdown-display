@@ -8,83 +8,97 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.4] - 2026-01-26
 
 ### Changed
+
 - Improve rendering of nested bold and italic emphasis for better formatting.
 - Improve hyphenation handling to preserve ANSI formatting during line breaks.
 
 ## [0.3.3] - 2026-01-26
 
 ### Added
+
 - Add ability to render more types of elements within lists
 - Add loose list support for easier formatting
 
 ## [0.3.2] - 2026-01-26
 
 ### Changed
+
 - Improve fuzzy matching in the picker for faster and more accurate search
 
 ## [0.3.1] - 2026-01-26
 
 ### Changed
+
 - Make banner loading lazy to improve startup speed.
 - Align FORCE_COLOR with truecolor for accurate banner colors.
 
 ## [0.3.0] - 2026-01-26
 
 ### Added
+
 - Add interactive fuzzy file picker for selecting Markdown files
 - Add truecolor support and ability to override via config
 - Add box title transition style that preserves title colors
 
 ### Fixed
+
 - Fix text wrapping that previously broke ANSI inline styles
 
 ## [0.2.1] - 2026-01-25
 
 ### Added
+
 - Add ability to set a maximum width for tables, improving readability in narrow terminals.
 - Add file separators between table outputs for clearer visual separation.
 
 ## [0.2.0] - 2026-01-25
 
 ### Added
+
 - Add support for nested lists in Markdown parsing.
 - Add support for task list items, enabling ✅ lists to be rendered correctly.
 - Add the ability to pass multiple Markdown files to the md command.
 
 ### Changed
+
 - Improve rendering output to produce clearer formatting.
 
 ## [0.1.1] - 2026-01-23
 
 ### Added
+
 - Add a helpful banner shown when the CLI starts
 - Add responsive layout with a maximum width and padding to improve readability
 - Add full markdown rendering support for files and input streams
 
 ### Changed
+
 - Update ANSI handling so that wrapped lines inside code blocks keep correct styling
 - Update Nerd Fonts processing for consistent icon display
 
 ### Fixed
+
 - Fix layout width calculation on narrow screens
 - Fix ANSI state reset when wrapping lines inside code blocks
 
 ## [0.1.0] - 2026-01-23
 
 ### Added
-- Add a banner that displays on CLI start to welcome users.  
-- Add automatic paging of output to view long markdown files in a pager when terminal height is exceeded.  
-- Add responsive layout with a maximum width and padding to adapt markdown display to terminal size.  
-- Add a streamlined markdown rendering pipeline for consistent formatting when using the CLI.  
+
+- Add a banner that displays on CLI start to welcome users.
+- Add automatic paging of output to view long markdown files in a pager when terminal height is exceeded.
+- Add responsive layout with a maximum width and padding to adapt markdown display to terminal size.
+- Add a streamlined markdown rendering pipeline for consistent formatting when using the CLI.
 
 ### Improved
-- Improve ANSI processing in code blocks to display colors correctly.  
-- Improve theme system for easier customization of color schemes.  
-- Improve layout handling of blockquotes, lists, and other elements for better wrapping and width handling.  
-- Improve markdown rendering and code block formatting for cleaner output.  
-- Improve support for Nerd Fonts to display icons and symbols correctly.  
+
+- Improve ANSI processing in code blocks to display colors correctly.
+- Improve theme system for easier customization of color schemes.
+- Improve layout handling of blockquotes, lists, and other elements for better wrapping and width handling.
+- Improve markdown rendering and code block formatting for cleaner output.
+- Improve support for Nerd Fonts to display icons and symbols correctly.
 
 ### Fixed
-- Fix ANSI state reset when wrapping code blocks so colors are shown properly.  
-- Fix issues with Nerd Font rendering on supported terminals.
 
+- Fix ANSI state reset when wrapping code blocks so colors are shown properly.
+- Fix issues with Nerd Font rendering on supported terminals.

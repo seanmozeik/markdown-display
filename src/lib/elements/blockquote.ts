@@ -1,4 +1,4 @@
-// src/lib/elements/blockquote.ts
+// Src/lib/elements/blockquote.ts
 import { getMutedColor, getSubtleColor } from '../../ui/themes/semantic';
 import { wrapText } from './text';
 
@@ -16,9 +16,9 @@ export function renderBlockquote(text: string, config?: BlockquoteConfig, depth 
   // If width provided, re-wrap content to fit within blockquote
   const content =
     innerWidth > 0
-      ? wrapText(text.replace(/\n(?!\n)/g, ' ').replace(/ +/g, ' '), innerWidth, {
+      ? wrapText(text.replaceAll(/\n(?!\n)/g, ' ').replaceAll(/ +/g, ' '), innerWidth, {
           hyphenation: config?.hyphenation ?? true,
-          locale: 'en-us'
+          locale: 'en-us',
         })
       : text;
 
