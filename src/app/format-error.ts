@@ -6,6 +6,7 @@ import { getErrorColor } from '../ui/themes/semantic';
 import type { MdAppError } from './errors';
 import { FileNotFoundError } from './file-not-found-error';
 import { InvalidThemeError } from './invalid-theme-error';
+import { PagerError } from './pager-error';
 import { StdinReadError } from './stdin-read-error';
 
 const formatMdAppError = (error: MdAppError): string =>
@@ -18,6 +19,7 @@ const formatMdAppError = (error: MdAppError): string =>
       FileNotFoundError: (e) => getErrorColor()(`Error: File not found: ${e.path}`),
       InvalidThemeError: (e) =>
         getErrorColor()(`Invalid theme: ${e.theme}\nUse --list-themes to see available themes.`),
+      PagerError: (e) => getErrorColor()(`Pager error: ${String(e.cause)}`),
       StdinReadError: (e) => getErrorColor()(`Read error: ${String(e.cause)}`),
     }),
   );
@@ -27,6 +29,7 @@ const isMdAppError = (error: unknown): error is MdAppError =>
   error instanceof ConfigReadError ||
   error instanceof FileNotFoundError ||
   error instanceof InvalidThemeError ||
+  error instanceof PagerError ||
   error instanceof StdinReadError;
 
 export { formatMdAppError, isMdAppError };

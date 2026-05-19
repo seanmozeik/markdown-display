@@ -306,12 +306,14 @@ const highlightCodeBlockSource = Effect.fn('md.highlight-code-block')(
     }),
 );
 
-const renderCodeBlock = async (code: string, lang: string, config: CodeConfig): Promise<string> => {
-  const highlighted = await Effect.runPromise(
-    highlightCodeBlockSource(code, lang, theme().shikiTheme),
-  );
+const renderCodeBlock = Effect.fn('md.render-code-block')(function* renderCodeBlockGen(
+  code: string,
+  lang: string,
+  config: CodeConfig,
+) {
+  const highlighted = yield* highlightCodeBlockSource(code, lang, theme().shikiTheme);
   return formatCodeBlockBox(highlighted, lang, config);
-};
+});
 
 export {
   type CodeConfig,

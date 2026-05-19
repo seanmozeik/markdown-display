@@ -1,5 +1,11 @@
 // Src/lib/pager.ts
+import { Effect, Schema } from 'effect';
+
 import { stripAnsi } from './ansi';
+
+class PagerPipeError extends Schema.TaggedErrorClass<PagerPipeError>()('PagerPipeError', {
+  cause: Schema.Unknown,
+}) {}
 
 enum PagingMode {
   Always = 'always',
@@ -76,7 +82,10 @@ export const countLines = (content: string, width?: number): number => {
   return total;
 };
 
-export const pipeToLess = async (content: string, config: PagerConfig): Promise<void> => {
+export const pipeToLess = Effect.fn('md.pipe-to-less')(function* pipeToLessGen(
+  content: string,
+  config: PagerConfig,
+) {
   const { command, args, env } = getPagerCommand(config);
 
   const proc = Bun.spawn([command, ...args], {
@@ -86,11 +95,20 @@ export const pipeToLess = async (content: string, config: PagerConfig): Promise<
     stdout: 'inherit',
   });
 
-  await proc.stdin.write(content);
-  await proc.stdin.end();
+  yield* Effect.tryPromise({
+    catch: (cause) => new PagerPipeError({ cause }),
+    try: () => Promise.resolve(proc.stdin.write(content)),
+  });
+  yield* Effect.tryPromise({
+    catch: (cause) => new PagerPipeError({ cause }),
+    try: () => Promise.resolve(proc.stdin.end()),
+  });
 
-  await proc.exited;
-};
+  yield* Effect.tryPromise({
+    catch: (cause) => new PagerPipeError({ cause }),
+    try: () => proc.exited,
+  });
+});
 
 export const shouldUseColor = (): boolean => {
   // Respect NO_COLOR standard (bat pattern)
@@ -100,4 +118,4 @@ export const shouldUseColor = (): boolean => {
   return process.stdout.isTTY;
 };
 
-export { PagingMode };
+export { PagerPipeError, PagingMode };

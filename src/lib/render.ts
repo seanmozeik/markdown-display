@@ -1,12 +1,14 @@
 // Src/lib/render.ts
 
+import { Effect } from 'effect';
+
 import type { Config } from './config';
 import { resolveNerdFonts } from './languages';
 import { applyPadding, calculateLayout } from './layout';
 import { parseMarkdown } from './parser';
 import { getRawTerminalWidth, getTerminalWidth } from './width';
 
-export const render = async (markdown: string, config: Config): Promise<string> => {
+export const render = Effect.fn('md.render')(function* renderGen(markdown: string, config: Config) {
   if (!markdown.trim()) {
     return '';
   }
@@ -22,7 +24,7 @@ export const render = async (markdown: string, config: Config): Promise<string> 
     padding: config.display.padding,
   });
 
-  const content = await parseMarkdown(markdown, {
+  const content = yield* parseMarkdown(markdown, {
     continuation: config.code.continuation,
     hyphenation: config.text.hyphenation,
     nerdFonts: resolveNerdFonts(config.nerd_fonts),
@@ -32,4 +34,4 @@ export const render = async (markdown: string, config: Config): Promise<string> 
   });
 
   return applyPadding(content, layout.sidePadding);
-};
+});

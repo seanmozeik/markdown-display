@@ -1,4 +1,5 @@
 import { autocomplete, isCancel } from '@clack/prompts';
+import { Effect, Schema } from 'effect';
 import fuzzysort from 'fuzzysort';
 
 import { getTerminalHeight } from '../lib/width';
@@ -8,6 +9,10 @@ interface Option {
   label: string;
   value: string;
 }
+
+class PickerError extends Schema.TaggedErrorClass<PickerError>()('PickerError', {
+  cause: Schema.Unknown,
+}) {}
 
 const MIN_PICKER_ITEMS = 5;
 const PICKER_VERTICAL_RESERVE = 6;
@@ -23,7 +28,7 @@ const shouldSkipMarkdownPath = (file: string): boolean =>
  * Find all markdown files in current directory, sorted by modification time.
  * Ignores node_modules, .git, and hidden directories.
  */
-const findMarkdownFiles = async (): Promise<string[]> => {
+const scanMarkdownFiles = async (): Promise<string[]> => {
   const glob = new Bun.Glob('**/*.md');
   const files: string[] = [];
 
@@ -44,6 +49,13 @@ const findMarkdownFiles = async (): Promise<string[]> => {
 
   return filesWithMtime.map((entry) => entry.file);
 };
+
+const findMarkdownFiles = Effect.fn('md.find-markdown-files')(function* findMarkdownFilesGen() {
+  return yield* Effect.tryPromise({
+    catch: (cause) => new PickerError({ cause }),
+    try: () => scanMarkdownFiles(),
+  });
+});
 
 /**
  * Create a fuzzy filter function for use with @clack/prompts autocomplete.
@@ -67,11 +79,13 @@ const isStringSelection = (value: unknown): value is string => typeof value === 
  * Show interactive file picker for markdown files.
  * Returns array of selected file paths, or empty array if cancelled/no files.
  */
-const showFilePicker = async (): Promise<string[]> => {
-  const files = await findMarkdownFiles();
+const showFilePicker = Effect.fn('md.show-file-picker')(function* showFilePickerGen() {
+  const files = yield* findMarkdownFiles();
 
   if (files.length === 0) {
-    console.log(getMutedColor()('No markdown files found in current directory.'));
+    yield* Effect.sync(() => {
+      console.log(getMutedColor()('No markdown files found in current directory.'));
+    });
     return [];
   }
 
@@ -79,13 +93,17 @@ const showFilePicker = async (): Promise<string[]> => {
   const maxItems = Math.max(MIN_PICKER_ITEMS, getTerminalHeight() - PICKER_VERTICAL_RESERVE);
   const filter = createFuzzyFilter();
 
-  const selected = await autocomplete({
-    maxItems,
-    message: 'Select a markdown file',
-    options() {
-      const input = this.userInput || '';
-      return filter(input, allOptions);
-    },
+  const selected = yield* Effect.tryPromise({
+    catch: (cause) => new PickerError({ cause }),
+    try: () =>
+      autocomplete({
+        maxItems,
+        message: 'Select a markdown file',
+        options() {
+          const input = this.userInput || '';
+          return filter(input, allOptions);
+        },
+      }),
   });
 
   if (isCancel(selected)) {
@@ -97,6 +115,6 @@ const showFilePicker = async (): Promise<string[]> => {
   }
 
   return [selected];
-};
+});
 
-export { createFuzzyFilter, findMarkdownFiles, showFilePicker };
+export { createFuzzyFilter, findMarkdownFiles, PickerError, showFilePicker };

@@ -4,6 +4,8 @@ import { existsSync } from 'node:fs';
 import { mkdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { Effect } from 'effect';
+
 import { DEFAULT_CONFIG, loadConfigFile } from '../src/config/index';
 
 describe('loadConfigFile', () => {
@@ -21,7 +23,7 @@ describe('loadConfigFile', () => {
   });
 
   test('returns default config when no user config exists', async () => {
-    const config = await loadConfigFile('/nonexistent/path/config.toml');
+    const config = await Effect.runPromise(loadConfigFile('/nonexistent/path/config.toml'));
     expect(config.theme).toBe('frappe');
     expect(config.width).toBe('auto');
     expect(config.code.wrap).toBe(true);
@@ -29,7 +31,7 @@ describe('loadConfigFile', () => {
 
   test('merges user config with defaults', async () => {
     await Bun.write(testConfigPath, 'theme = "mocha"\nwidth = 100');
-    const config = await loadConfigFile(testConfigPath);
+    const config = await Effect.runPromise(loadConfigFile(testConfigPath));
     expect(config.theme).toBe('mocha');
     expect(config.width).toBe(100);
     expect(config.code.wrap).toBe(true); // Default preserved
@@ -37,7 +39,7 @@ describe('loadConfigFile', () => {
 
   test('deeply merges nested config', async () => {
     await Bun.write(testConfigPath, '[code]\nwrap = false');
-    const config = await loadConfigFile(testConfigPath);
+    const config = await Effect.runPromise(loadConfigFile(testConfigPath));
     expect(config.code.wrap).toBe(false);
     expect(config.code.continuation).toBe('→'); // Default preserved
   });

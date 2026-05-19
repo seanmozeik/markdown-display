@@ -10,7 +10,7 @@ import { showFilePicker } from '../ui/picker';
 import { availableThemes, isValidTheme, loadTheme } from '../ui/themes';
 import { setColorConfig } from '../ui/themes/color-support';
 import { getSubtleColor } from '../ui/themes/semantic';
-import { FileNotFoundError, InvalidThemeError, StdinReadError } from './errors';
+import { FileNotFoundError, InvalidThemeError, PagerError, StdinReadError } from './errors';
 
 interface MdCliOptions {
   readonly files: readonly string[];
@@ -34,7 +34,11 @@ const readStdin = Effect.fn('md.readStdin')(function* readStdinGen() {
 
 const readFile = Effect.fn('md.readFile')(function* readFileGen(filePath: string) {
   const file = Bun.file(filePath);
-  if (!(yield* Effect.promise(() => file.exists()))) {
+  const exists = yield* Effect.tryPromise({
+    catch: () => new FileNotFoundError({ path: filePath }),
+    try: () => file.exists(),
+  });
+  if (!exists) {
     return yield* new FileNotFoundError({ path: filePath });
   }
   const content = yield* Effect.tryPromise({
@@ -76,10 +80,34 @@ const listThemes = Effect.fn('md.listThemes')(function* listThemesGen() {
   });
 });
 
+const readFiles = Effect.fn('md.readFiles')((filePaths: readonly string[]) =>
+  Effect.forEach(filePaths, readFile, { concurrency: 8 }),
+);
+
+const renderFiles = Effect.fn('md.renderFiles')(
+  (
+    files: readonly { path: string; content: string }[],
+    config: MdConfig,
+    layout: ReturnType<typeof calculateLayout>,
+  ) =>
+    Effect.forEach(
+      files,
+      (file) =>
+        render(file.content, config).pipe(
+          Effect.map((rendered) =>
+            files.length > 1 ? `${renderFileHeader(file.path, layout)}\n\n${rendered}` : rendered,
+          ),
+        ),
+      { concurrency: 4 },
+    ),
+);
+
 export const runMd = Effect.fn('md.run')((flags: MdCliOptions) =>
   Effect.gen(function* runMdGen() {
     const config = yield* loadUserConfig();
-    setColorConfig(config.truecolor);
+    yield* Effect.sync(() => {
+      setColorConfig(config.truecolor);
+    });
 
     if (flags.listThemes) {
       yield* listThemes();
@@ -99,29 +127,26 @@ export const runMd = Effect.fn('md.run')((flags: MdCliOptions) =>
     const stdinTTY = process.stdin.isTTY;
 
     if (filePaths.length === 0 && !hasStdin) {
-      const { showBanner } = yield* Effect.promise(() => import('../ui/banner'));
+      const { showBanner } = yield* Effect.tryPromise({
+        catch: (cause) => new StdinReadError({ cause }),
+        try: () => import('../ui/banner'),
+      });
       yield* Effect.sync(() => {
         showBanner();
       });
-      const selected = yield* Effect.tryPromise({
-        catch: (cause) => new StdinReadError({ cause }),
-        try: () => showFilePicker(),
-      });
+      const selected = yield* showFilePicker().pipe(
+        Effect.mapError((cause) => new StdinReadError({ cause })),
+      );
       if (selected.length === 0) {
         return;
       }
       filePaths = [...selected];
     }
 
-    const files: { path: string; content: string }[] = [];
-    if (filePaths.length > 0) {
-      for (const filePath of filePaths) {
-        files.push(yield* readFile(filePath));
-      }
-    } else {
-      const content = yield* readStdin();
-      files.push({ content, path: '' });
-    }
+    const files: { path: string; content: string }[] =
+      filePaths.length > 0
+        ? yield* readFiles(filePaths)
+        : [{ content: yield* readStdin(), path: '' }];
 
     if (flags.raw) {
       yield* Effect.sync(() => {
@@ -140,15 +165,7 @@ export const runMd = Effect.fn('md.run')((flags: MdCliOptions) =>
       padding: resolvedConfig.display.padding,
     });
 
-    const outputs: string[] = [];
-    for (const file of files) {
-      const rendered = yield* Effect.promise(() => render(file.content, resolvedConfig));
-      if (files.length > 1) {
-        outputs.push(`${renderFileHeader(file.path, layout)}\n\n${rendered}`);
-      } else {
-        outputs.push(rendered);
-      }
-    }
+    const outputs = yield* renderFiles(files, resolvedConfig, layout);
     let output = outputs.join('\n\n');
 
     const useColor = shouldUseColor() && !flags.plain && !flags.noColor;
@@ -171,7 +188,9 @@ export const runMd = Effect.fn('md.run')((flags: MdCliOptions) =>
       ? Effect.sync(() => {
           console.log(output);
         })
-      : Effect.promise(() => pipeToLess(output, resolvedConfig.pager));
+      : pipeToLess(output, resolvedConfig.pager).pipe(
+          Effect.mapError((cause) => new PagerError({ cause })),
+        );
   }),
 );
 

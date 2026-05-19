@@ -3,13 +3,30 @@ import { type ThemeId, themeIds, themes } from './generated';
 import type { ThemePalette } from './types';
 
 const DEFAULT_THEME: ThemeId = 'catppuccin-frappe';
+const fallbackTheme: ThemePalette = {
+  colors: {
+    accent: '#8caaee',
+    auxiliary: '#232634',
+    bg: '#303446',
+    emphasis: '#c6d0f5',
+    error: '#e78284',
+    info: '#8caaee',
+    muted: '#838ba7',
+    subtle: '#51576d',
+    success: '#a6d189',
+    surface: '#292c3c',
+    text: '#c6d0f5',
+    warning: '#ef9f76',
+  },
+  id: DEFAULT_THEME,
+  name: 'Catppuccin Frappe',
+  shikiTheme: DEFAULT_THEME,
+  type: 'dark',
+};
 
 const requireTheme = (id: ThemeId): ThemePalette => {
   const palette = themes[id];
-  if (palette === undefined) {
-    throw new Error(`Theme not found: ${id}`);
-  }
-  return palette;
+  return palette ?? themes[DEFAULT_THEME] ?? fallbackTheme;
 };
 
 let activeTheme: ThemePalette = requireTheme(DEFAULT_THEME);

@@ -3,6 +3,8 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { Effect } from 'effect';
+
 describe('findMarkdownFiles', () => {
   let tempDir: string;
   let originalCwd: string;
@@ -23,7 +25,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'CHANGELOG.md'), '# Changes');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');
-    const files = await findMarkdownFiles();
+    const files = await Effect.runPromise(findMarkdownFiles());
 
     expect(files).toContain('README.md');
     expect(files).toContain('CHANGELOG.md');
@@ -34,7 +36,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'docs/guide.md'), '# Guide');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');
-    const files = await findMarkdownFiles();
+    const files = await Effect.runPromise(findMarkdownFiles());
 
     expect(files).toContain('docs/guide.md');
   });
@@ -44,7 +46,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'node_modules/pkg/README.md'), '# Pkg');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');
-    const files = await findMarkdownFiles();
+    const files = await Effect.runPromise(findMarkdownFiles());
 
     expect(files).toContain('README.md');
     expect(files).not.toContain('node_modules/pkg/README.md');
@@ -55,7 +57,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, '.git/hooks/readme.md'), '# Hooks');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');
-    const files = await findMarkdownFiles();
+    const files = await Effect.runPromise(findMarkdownFiles());
 
     expect(files).toContain('README.md');
     expect(files.some((f) => f.includes('.git'))).toBe(false);
@@ -66,7 +68,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, '.hidden/secret.md'), '# Secret');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');
-    const files = await findMarkdownFiles();
+    const files = await Effect.runPromise(findMarkdownFiles());
 
     expect(files).toContain('README.md');
     expect(files.some((f) => f.includes('.hidden'))).toBe(false);
@@ -76,7 +78,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'file.txt'), 'text');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');
-    const files = await findMarkdownFiles();
+    const files = await Effect.runPromise(findMarkdownFiles());
 
     expect(files).toEqual([]);
   });
@@ -88,7 +90,7 @@ describe('findMarkdownFiles', () => {
     await Bun.write(join(tempDir, 'new.md'), '# New');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');
-    const files = await findMarkdownFiles();
+    const files = await Effect.runPromise(findMarkdownFiles());
 
     expect(files[0]).toBe('new.md');
     expect(files[1]).toBe('old.md');
@@ -182,7 +184,7 @@ describe('showFilePicker', () => {
     await Bun.write(join(tempDir, 'file.txt'), 'text');
 
     const { showFilePicker } = await import('../src/ui/picker');
-    const result = await showFilePicker();
+    const result = await Effect.runPromise(showFilePicker());
 
     expect(result).toEqual([]);
   });

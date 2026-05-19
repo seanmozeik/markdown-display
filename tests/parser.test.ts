@@ -1,24 +1,26 @@
 // Src/lib/parser.test.ts
 import { describe, expect, test } from 'bun:test';
 
+import { Effect } from 'effect';
+
 import { parseMarkdown } from '../src/lib/parser';
 
 describe('parseMarkdown', () => {
   test('parses headings', async () => {
     const md = '# Hello World';
-    const result = await parseMarkdown(md, { width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { width: 80 }));
     expect(result).toContain('Hello World');
   });
 
   test('parses paragraphs', async () => {
     const md = 'This is a paragraph.';
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('This is a paragraph');
   });
 
   test('parses code blocks', async () => {
     const md = '```ts\nconst x = 1\n```';
-    const result = await parseMarkdown(md, { width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { width: 80 }));
     expect(result).toContain('const');
     expect(result).toContain('─');
   });
@@ -37,7 +39,7 @@ describe('parseMarkdown', () => {
       'fn main() {}',
       '```',
     ].join('\n');
-    const result = await parseMarkdown(md, { width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { width: 80 }));
     expect(result).toContain('const a');
     expect(result).toContain('b = 2');
     expect(result).toContain('fn main');
@@ -47,21 +49,23 @@ describe('parseMarkdown', () => {
 
   test('parses links', async () => {
     const md = '[Example](https://example.com)';
-    const result = await parseMarkdown(md, { hyphenation: false, osc8: false, width: 80 });
+    const result = await Effect.runPromise(
+      parseMarkdown(md, { hyphenation: false, osc8: false, width: 80 }),
+    );
     expect(result).toContain('Example');
     expect(result).toContain('example.com');
   });
 
   test('parses tables', async () => {
     const md = '| A | B |\n|---|---|\n| 1 | 2 |';
-    const result = await parseMarkdown(md, { width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { width: 80 }));
     expect(result).toContain('┌');
     expect(result).toContain('A');
   });
 
   test('renders bold text with ANSI codes', async () => {
     const md = 'This is **bold** text';
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     // Should contain ANSI bold+color codes (combined format), not literal asterisks
     expect(result).toContain('\u001B[1;38;5;');
     expect(result).not.toContain('**');
@@ -69,7 +73,7 @@ describe('parseMarkdown', () => {
 
   test('renders italic text with ANSI codes', async () => {
     const md = 'This is *italic* text';
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     // Should contain ANSI italic+color codes (combined format), not literal asterisks
     expect(result).toContain('\u001B[3;38;5;');
     expect(result).not.toContain('*italic*');
@@ -77,14 +81,14 @@ describe('parseMarkdown', () => {
 
   test('renders bold in list items', async () => {
     const md = '- Item with **bold** text';
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('\u001B[1;38;5;');
     expect(result).not.toContain('**');
   });
 
   test('renders bold italic text (***text***)', async () => {
     const md = 'This is ***bold italic*** text';
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     // Should contain both bold and italic ANSI codes, not literal asterisks
     expect(result).toContain('\u001B[1;38;5;'); // Bold
     expect(result).toContain('\u001B[3;38;5;'); // Italic
@@ -94,14 +98,14 @@ describe('parseMarkdown', () => {
 
   test('renders inline HTML br as line break', async () => {
     const md = 'line1<br>line2';
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('line1\nline2');
     expect(result).not.toContain('<br>');
   });
 
   test('renders self-closing inline HTML br as line break', async () => {
     const md = 'line1<br />line2';
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('line1\nline2');
     expect(result).not.toContain('<br />');
   });
@@ -112,7 +116,7 @@ describe('ordered list start number', () => {
     const md = `3. Third item
 4. Fourth item
 5. Fifth item`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('3.');
     expect(result).toContain('4.');
     expect(result).toContain('5.');
@@ -123,14 +127,14 @@ describe('ordered list start number', () => {
 describe('task lists', () => {
   test('renders unchecked task items', async () => {
     const md = `- [ ] Unchecked task`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('☐');
     expect(result).toContain('Unchecked task');
   });
 
   test('renders checked task items', async () => {
     const md = `- [x] Checked task`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('☑');
     expect(result).toContain('Checked task');
   });
@@ -139,7 +143,7 @@ describe('task lists', () => {
     const md = `- [ ] Parent task
   - [x] Completed subtask
   - [ ] Pending subtask`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('☐');
     expect(result).toContain('☑');
   });
@@ -150,7 +154,7 @@ describe('nested lists', () => {
     const md = `- Level 1
   - Level 2
     - Level 3`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     // Should have different bullets at each level
     expect(result).toContain('•'); // Level 1
     expect(result).toContain('◦'); // Level 2
@@ -161,7 +165,7 @@ describe('nested lists', () => {
     const md = `1. First
    1. Nested first
    2. Nested second`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('1.');
     expect(result).toContain('2.');
   });
@@ -170,7 +174,7 @@ describe('nested lists', () => {
     const md = `- Unordered
   1. Nested ordered
   2. Second ordered`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('•');
     expect(result).toContain('1.');
     expect(result).toContain('2.');
@@ -186,7 +190,7 @@ describe('loose lists with block content', () => {
 
 - [ ] Another parent
   - [x] Done`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('☐');
     expect(result).toContain('☑');
     expect(result).toContain('Parent task');
@@ -201,7 +205,7 @@ describe('loose lists with block content', () => {
    \`\`\`
 
 2. Second item`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('1.');
     expect(result).toContain('2.');
     expect(result).toContain('const'); // Code is syntax highlighted
@@ -214,7 +218,7 @@ describe('loose lists with block content', () => {
   > This is a blockquote inside a list
 
 - Next item`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('•');
     expect(result).toContain('Item with quote');
     expect(result).toContain('blockquote');
@@ -229,7 +233,7 @@ describe('loose lists with block content', () => {
   | A    | B    |
 
 - Next item`;
-    const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
+    const result = await Effect.runPromise(parseMarkdown(md, { hyphenation: false, width: 80 }));
     expect(result).toContain('•');
     expect(result).toContain('Item with table');
     expect(result).toContain('Col1');

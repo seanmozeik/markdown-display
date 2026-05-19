@@ -1,5 +1,5 @@
 import boxen from 'boxen';
-import { Effect } from 'effect';
+import { Effect, Schema } from 'effect';
 
 import { loadUserConfig } from '../config';
 import { loadTheme } from '../ui/themes';
@@ -12,16 +12,29 @@ import {
   getSuccessColor,
 } from '../ui/themes/semantic';
 
+class BannerImportError extends Schema.TaggedErrorClass<BannerImportError>()('BannerImportError', {
+  cause: Schema.Unknown,
+}) {}
+
+const loadBanner = Effect.fn('md.loadBanner')(function* loadBannerGen() {
+  return yield* Effect.tryPromise({
+    catch: (cause) => new BannerImportError({ cause }),
+    try: () => import('../ui/banner'),
+  });
+});
+
 const prepareThemedCli = Effect.fn('md.prepareThemedCli')(function* prepareThemedCliGen() {
   const config = yield* loadUserConfig();
-  setColorConfig(config.truecolor);
-  loadTheme(config.theme);
+  yield* Effect.sync(() => {
+    setColorConfig(config.truecolor);
+    loadTheme(config.theme);
+  });
 });
 
 export const showVersion = Effect.fn('md.showVersion')((version: string) =>
   Effect.gen(function* showVersionGen() {
     yield* prepareThemedCli();
-    const { showBanner } = yield* Effect.promise(() => import('../ui/banner'));
+    const { showBanner } = yield* loadBanner();
     yield* Effect.sync(() => {
       showBanner();
     });
@@ -39,7 +52,7 @@ export const showVersion = Effect.fn('md.showVersion')((version: string) =>
 export const showHelp = Effect.fn('md.showHelp')((version: string) =>
   Effect.gen(function* showHelpGen() {
     yield* prepareThemedCli();
-    const { showBanner } = yield* Effect.promise(() => import('../ui/banner'));
+    const { showBanner } = yield* loadBanner();
     yield* Effect.sync(() => {
       showBanner();
     });

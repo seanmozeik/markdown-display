@@ -38,7 +38,7 @@ rmSync(distDir, { force: true, recursive: true });
 mkdirSync(distDir, { recursive: true });
 
 const cli = Bun.spawnSync(
-  ['bun', 'build', entry, '--target', 'bun', '--outdir', 'dist', '--minify'],
+  ['bun', 'build', entry, '--target', 'bun', '--outdir', 'dist', '--minify', '--splitting'],
   { cwd: root, stderr: 'inherit', stdout: 'inherit' },
 );
 if (cli.exitCode !== 0) {

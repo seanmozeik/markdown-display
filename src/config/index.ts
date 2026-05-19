@@ -20,14 +20,7 @@ interface MdConfig {
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const assertPlainRecord = (value: unknown, label: string): Record<string, unknown> => {
-  if (!isPlainRecord(value)) {
-    throw new Error(`${label} must be a TOML table`);
-  }
-  return value;
-};
-
-const baseConfigRecord = assertPlainRecord(defaultToml, 'default-config.toml');
+const baseConfigRecord = isPlainRecord(defaultToml) ? defaultToml : {};
 
 const deepMerge = (
   target: Record<string, unknown>,
@@ -46,15 +39,19 @@ const deepMerge = (
   return result;
 };
 
-const parseTomlConfig = (text: string, path: string): Record<string, unknown> => {
-  let parsed: unknown;
-  try {
-    parsed = Bun.TOML.parse(text);
-  } catch (error) {
-    throw new ConfigParseError({ cause: error, path });
+const parseTomlConfig = Effect.fn('config.parse-toml')(function* parseTomlConfigGen(
+  text: string,
+  path: string,
+) {
+  const parsed = yield* Effect.try({
+    catch: (cause) => new ConfigParseError({ cause, path }),
+    try: () => Bun.TOML.parse(text),
+  });
+  if (!isPlainRecord(parsed)) {
+    return yield* new ConfigParseError({ cause: `${path} must be a TOML table`, path });
   }
-  return assertPlainRecord(parsed, path);
-};
+  return parsed;
+});
 
 const readBoolean = (value: unknown, fallback: boolean): boolean =>
   typeof value === 'boolean' ? value : fallback;
@@ -151,28 +148,31 @@ const normalizeConfig = (raw: Record<string, unknown>): MdConfig =>
 
 const DEFAULT_CONFIG: MdConfig = normalizeConfig({});
 
-const loadConfigFileImpl = async (configPath: string): Promise<MdConfig> => {
+const loadConfigFile = Effect.fn('config.load-file')(function* loadConfigFileGen(
+  configPath: string,
+) {
   const file = Bun.file(configPath);
-  if (!(await file.exists())) {
+  const exists = yield* Effect.tryPromise({
+    catch: (cause) => new ConfigReadError({ cause, path: configPath }),
+    try: () => file.exists(),
+  });
+  if (!exists) {
     return DEFAULT_CONFIG;
   }
-  const parsed = parseTomlConfig(await file.text(), configPath);
+  const text = yield* Effect.tryPromise({
+    catch: (cause) => new ConfigReadError({ cause, path: configPath }),
+    try: () => file.text(),
+  });
+  const parsed = yield* parseTomlConfig(text, configPath);
   return normalizeConfig(parsed);
-};
-
-/** Load config from an explicit path (used in tests). */
-const loadConfigFile = (configPath: string): Promise<MdConfig> => loadConfigFileImpl(configPath);
+});
 
 /**
  * Loads `~/.config/md/config.toml` when present; otherwise defaults.
  */
 const loadUserConfig = Effect.fn('config.load')(function* loadUserConfig() {
   const path = configTomlPath();
-  const config = yield* Effect.tryPromise({
-    catch: (cause) =>
-      cause instanceof ConfigParseError ? cause : new ConfigReadError({ cause, path }),
-    try: () => loadConfigFileImpl(path),
-  });
+  const config = yield* loadConfigFile(path);
   yield* Effect.annotateCurrentSpan({ path });
   return config;
 });

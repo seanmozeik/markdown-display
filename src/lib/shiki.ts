@@ -3,7 +3,7 @@
  * Patterns from claudewatch/src/render/shiki.ts.
  */
 import type { codeToANSI as CodeToANSI } from '@shikijs/cli';
-import { Effect } from 'effect';
+import { Effect, Schema } from 'effect';
 import type { BundledLanguage, BundledTheme } from 'shiki';
 
 import { themes } from '../ui/themes/generated';
@@ -26,6 +26,11 @@ const ANSI_SGR_PATTERN = makeGlobalPattern(String.raw`\u001B\[([0-9;]*)m`);
 interface ShikiModule {
   codeToANSI: typeof CodeToANSI;
 }
+
+class ShikiHighlightError extends Schema.TaggedErrorClass<ShikiHighlightError>()(
+  'ShikiHighlightError',
+  { cause: Schema.Unknown },
+) {}
 
 /** Languages passed to Shiki's codeToANSI (superset of icon map keys). */
 const SHIKI_SUPPORTED_LANGS = new Set<string>([
@@ -120,10 +125,13 @@ const stripItalicAnsi = (code: string): string =>
     return `${ANSI_SGR_PREFIX}${filtered.join(';')}${ANSI_SGR_SUFFIX}`;
   });
 
-const loadShiki = async (): Promise<ShikiModule> => {
-  cachedShiki ??= await import('@shikijs/cli');
+const loadShiki = Effect.fn('md.load-shiki')(function* loadShikiGen() {
+  cachedShiki ??= yield* Effect.tryPromise({
+    catch: (cause) => new ShikiHighlightError({ cause }),
+    try: () => import('@shikijs/cli'),
+  });
   return cachedShiki;
-};
+});
 
 const makeHighlightCacheKey = (code: string, lang: string, themeId: string): string =>
   `${themeId}\u0000${lang}\u0000${code}`;
@@ -166,8 +174,11 @@ const highlightCode = Effect.fn('md.highlight-code')(function* highlightCodeEffe
   }
 
   return yield* Effect.gen(function* highlightCodeInner() {
-    const shiki = yield* Effect.tryPromise(() => loadShiki());
-    const highlighted = yield* Effect.tryPromise(() => shiki.codeToANSI(code, langId, themeId));
+    const shiki = yield* loadShiki();
+    const highlighted = yield* Effect.tryPromise({
+      catch: (cause) => new ShikiHighlightError({ cause }),
+      try: () => shiki.codeToANSI(code, langId, themeId),
+    });
     const normalized = highlighted.endsWith('\n')
       ? highlighted.slice(START_INDEX, TRAILING_NEWLINE_OFFSET)
       : highlighted;
@@ -177,4 +188,10 @@ const highlightCode = Effect.fn('md.highlight-code')(function* highlightCodeEffe
   }).pipe(Effect.catch(() => Effect.succeed(code)));
 });
 
-export { clearHighlightCache, highlightCode, SHIKI_SUPPORTED_LANGS, stripItalicAnsi };
+export {
+  clearHighlightCache,
+  highlightCode,
+  SHIKI_SUPPORTED_LANGS,
+  ShikiHighlightError,
+  stripItalicAnsi,
+};

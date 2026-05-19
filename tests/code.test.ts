@@ -1,6 +1,8 @@
 // Src/lib/elements/code.test.ts
 import { describe, expect, test } from 'bun:test';
 
+import { Effect } from 'effect';
+
 import { renderCodeBlock, renderInlineCode, wrapCodeLines } from '../src/lib/elements/code';
 
 describe('wrapCodeLines', () => {
@@ -78,13 +80,15 @@ describe('renderInlineCode', () => {
 
 describe('renderCodeBlock', () => {
   test('renders code in boxen container', async () => {
-    const result = await renderCodeBlock('const x = 1', 'ts', {
-      continuation: '↪',
-      theme: 'catppuccin-frappe',
-      useNerdFonts: false,
-      width: 60,
-      wrap: true,
-    });
+    const result = await Effect.runPromise(
+      renderCodeBlock('const x = 1', 'ts', {
+        continuation: '↪',
+        theme: 'catppuccin-frappe',
+        useNerdFonts: false,
+        width: 60,
+        wrap: true,
+      }),
+    );
 
     expect(result).toContain('const');
     // Boxen uses box-drawing characters
@@ -92,37 +96,43 @@ describe('renderCodeBlock', () => {
   });
 
   test('includes language label in header', async () => {
-    const result = await renderCodeBlock('print("hi")', 'python', {
-      continuation: '↪',
-      theme: 'catppuccin-frappe',
-      useNerdFonts: false,
-      width: 60,
-      wrap: true,
-    });
+    const result = await Effect.runPromise(
+      renderCodeBlock('print("hi")', 'python', {
+        continuation: '↪',
+        theme: 'catppuccin-frappe',
+        useNerdFonts: false,
+        width: 60,
+        wrap: true,
+      }),
+    );
 
     expect(result).toContain('py'); // Text label when nerd fonts disabled
   });
 
   test('handles unknown language gracefully', async () => {
-    const result = await renderCodeBlock('some code', 'unknown-lang', {
-      continuation: '↪',
-      theme: 'catppuccin-frappe',
-      useNerdFonts: false,
-      width: 60,
-      wrap: true,
-    });
+    const result = await Effect.runPromise(
+      renderCodeBlock('some code', 'unknown-lang', {
+        continuation: '↪',
+        theme: 'catppuccin-frappe',
+        useNerdFonts: false,
+        width: 60,
+        wrap: true,
+      }),
+    );
 
     expect(result).toContain('some code');
   });
 
   test('does not have extra empty line at bottom of code block', async () => {
-    const result = await renderCodeBlock('const x = 1;', 'ts', {
-      continuation: '↪',
-      theme: 'catppuccin-frappe',
-      useNerdFonts: false,
-      width: 60,
-      wrap: true,
-    });
+    const result = await Effect.runPromise(
+      renderCodeBlock('const x = 1;', 'ts', {
+        continuation: '↪',
+        theme: 'catppuccin-frappe',
+        useNerdFonts: false,
+        width: 60,
+        wrap: true,
+      }),
+    );
 
     const lines = result.split('\n');
     // Structure should be: [header, code, closing border, empty from trailing newline]
@@ -134,13 +144,15 @@ describe('renderCodeBlock', () => {
   });
 
   test('ends with newline for proper spacing after block', async () => {
-    const result = await renderCodeBlock('const x = 1;', 'ts', {
-      continuation: '↪',
-      theme: 'catppuccin-frappe',
-      useNerdFonts: false,
-      width: 60,
-      wrap: true,
-    });
+    const result = await Effect.runPromise(
+      renderCodeBlock('const x = 1;', 'ts', {
+        continuation: '↪',
+        theme: 'catppuccin-frappe',
+        useNerdFonts: false,
+        width: 60,
+        wrap: true,
+      }),
+    );
 
     expect(result.endsWith('\n')).toBe(true);
   });

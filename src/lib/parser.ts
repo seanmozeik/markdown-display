@@ -1,5 +1,5 @@
 // Src/lib/parser.ts
-import { Effect } from 'effect';
+import { Effect, Schema } from 'effect';
 import { Marked, type RendererObject, type Token } from 'marked';
 
 import { theme } from '../ui/themes';
@@ -21,6 +21,11 @@ interface ParseOptions {
   nerdFonts?: boolean;
   continuation?: string;
 }
+
+class MarkdownParseError extends Schema.TaggedErrorClass<MarkdownParseError>()(
+  'MarkdownParseError',
+  { cause: Schema.Unknown },
+) {}
 
 // Type for marked renderer context (this binding)
 interface RendererThis {
@@ -250,14 +255,23 @@ const HTML_ENTITIES: Record<string, string> = {
 const decodeHtmlEntities = (text: string): string =>
   text.replaceAll(/&#?\w+;/gu, (entity) => HTML_ENTITIES[entity] ?? entity);
 
-const parseMarkdown = async (markdown: string, options: ParseOptions): Promise<string> => {
+const parseMarkdown = Effect.fn('md.parse-markdown')(function* parseMarkdownGen(
+  markdown: string,
+  options: ParseOptions,
+) {
   const codeBlocks = new Map<string, { code: string; lang: string }>();
 
   const marked = new Marked();
   marked.use({ renderer: createRenderer(options, codeBlocks) });
 
   const parsed = marked.parse(markdown);
-  let result = typeof parsed === 'string' ? parsed : await parsed;
+  let result =
+    typeof parsed === 'string'
+      ? parsed
+      : yield* Effect.tryPromise({
+          catch: (cause) => new MarkdownParseError({ cause }),
+          try: () => parsed,
+        });
 
   result = decodeHtmlEntities(result);
 
@@ -272,9 +286,7 @@ const parseMarkdown = async (markdown: string, options: ParseOptions): Promise<s
 
     const refs = [...codeBlocks.entries()].map(([id, { code, lang }]) => ({ code, id, lang }));
 
-    const renderedById = await Effect.runPromise(
-      renderCodeBlocksParallel(refs, codeConfig, theme().shikiTheme),
-    );
+    const renderedById = yield* renderCodeBlocksParallel(refs, codeConfig, theme().shikiTheme);
 
     for (const [id, rendered] of renderedById) {
       result = result.replace(id, rendered);
@@ -282,6 +294,6 @@ const parseMarkdown = async (markdown: string, options: ParseOptions): Promise<s
   }
 
   return result;
-};
+});
 
-export { createRenderer, parseMarkdown };
+export { createRenderer, MarkdownParseError, parseMarkdown };

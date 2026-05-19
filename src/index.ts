@@ -17,7 +17,7 @@ export type {
 export { formatMdAppError, isMdAppError } from './app/format-error';
 export { showHelp, showVersion } from './app/cli-info';
 export { runMd, type MdCliOptions } from './app/run-md';
-export { app, program, runnableProgram, runtimeLayer } from './cli';
+export { app, program, runnableProgram, runtimeLayer } from './cli-app';
 export { render } from './lib/render';
 export {
   CODE_BLOCK_HIGHLIGHT_CONCURRENCY,
