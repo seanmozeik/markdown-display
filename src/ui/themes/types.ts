@@ -2,14 +2,22 @@
 
 /** Core color roles for markdown rendering */
 export interface ThemeColors {
-  bg: string; // Main background
-  surface: string; // Elevated surfaces (code blocks, boxes)
-  text: string; // Body text
-  muted: string; // Secondary text, blockquotes
-  subtle: string; // Borders, decorations
-  accent: string; // Headings, links
-  emphasis: string; // Bold text
-  auxiliary: string; // Italic text
+  /** Main background */
+  bg: string;
+  /** Elevated surfaces (code blocks, boxes) */
+  surface: string;
+  /** Body text */
+  text: string;
+  /** Secondary text, blockquotes */
+  muted: string;
+  /** Borders, decorations */
+  subtle: string;
+  /** Headings, links */
+  accent: string;
+  /** Bold text */
+  emphasis: string;
+  /** Italic text */
+  auxiliary: string;
   error: string;
   warning: string;
   success: string;
@@ -31,9 +39,12 @@ export interface ThemeOverrides {
 
 /** Complete theme definition */
 export interface ThemePalette {
-  name: string; // Display name (e.g., "Catppuccin Frappe")
-  id: string; // Theme ID (e.g., "catppuccin-frappe")
-  shikiTheme: string; // Shiki theme ID for code highlighting
+  /** Display name (e.g., "Catppuccin Frappe") */
+  name: string;
+  /** Theme ID (e.g., "catppuccin-frappe") */
+  id: string;
+  /** Shiki theme ID for code highlighting */
+  shikiTheme: string;
   type: 'light' | 'dark';
   colors: ThemeColors;
   overrides?: ThemeOverrides;

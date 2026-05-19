@@ -22,7 +22,9 @@ export const showVersion = Effect.fn('md.showVersion')((version: string) =>
   Effect.gen(function* showVersionGen() {
     yield* prepareThemedCli();
     const { showBanner } = yield* Effect.promise(() => import('../ui/banner'));
-    yield* Effect.promise(() => showBanner());
+    yield* Effect.sync(() => {
+      showBanner();
+    });
     const colors = getHexColors();
     console.log(
       boxen(getMutedColor()(`v${version}`), {
@@ -38,7 +40,9 @@ export const showHelp = Effect.fn('md.showHelp')((version: string) =>
   Effect.gen(function* showHelpGen() {
     yield* prepareThemedCli();
     const { showBanner } = yield* Effect.promise(() => import('../ui/banner'));
-    yield* Effect.promise(() => showBanner());
+    yield* Effect.sync(() => {
+      showBanner();
+    });
     console.log(getMutedColor()(`v${version}`));
     console.log();
 

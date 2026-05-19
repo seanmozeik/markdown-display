@@ -1,5 +1,6 @@
 // Src/lib/config.test.ts
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
+import { existsSync } from 'node:fs';
 import { mkdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -14,9 +15,9 @@ describe('loadConfigFile', () => {
   });
 
   afterEach(async () => {
-    try {
+    if (existsSync(testConfigPath)) {
       await unlink(testConfigPath);
-    } catch {}
+    }
   });
 
   test('returns default config when no user config exists', async () => {

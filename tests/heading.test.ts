@@ -7,7 +7,7 @@ describe('renderHeading', () => {
     const result = renderHeading('Title', 1, 40);
     expect(result).toContain('Title');
     // Boxen uses box-drawing characters
-    expect(result).toMatch(/[╭╮╯╰│─]/);
+    expect(result).toMatch(/[╭╮╯╰│─]/u);
   });
 
   test('h2 has line decoration', () => {
@@ -20,7 +20,7 @@ describe('renderHeading', () => {
     const result = renderHeading('Section', 3, 40);
     expect(result).toContain('Section');
     // Should not have boxen or line decoration
-    expect(result).not.toMatch(/[╭╮╯╰]/);
+    expect(result).not.toMatch(/[╭╮╯╰]/u);
   });
 
   test('adds appropriate vertical spacing', () => {

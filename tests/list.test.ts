@@ -21,8 +21,8 @@ describe('renderListItem', () => {
     const depth0 = renderListItem('Top', false, 0);
     const depth1 = renderListItem('Nested', false, 1);
 
-    const indent0 = (/^(\s*)/.exec(depth0))?.[1]?.length ?? 0;
-    const indent1 = (/^(\s*)/.exec(depth1))?.[1]?.length ?? 0;
+    const indent0 = /^(\s*)/u.exec(depth0)?.[1]?.length ?? 0;
+    const indent1 = /^(\s*)/u.exec(depth1)?.[1]?.length ?? 0;
 
     expect(indent1).toBeGreaterThan(indent0);
   });
@@ -80,7 +80,7 @@ describe('task list items', () => {
   test('mutes text for completed tasks', () => {
     const result = renderListItem('Done item', false, 0, undefined, { checked: true, task: true });
     // Should contain muted ANSI color code (the muted color from theme)
-    expect(result).toContain('\u001b[38;5;');
+    expect(result).toContain('\u001B[38;5;');
   });
 });
 
@@ -105,7 +105,7 @@ describe('list item wrapping', () => {
     // First line has bullet, continuation lines should be indented to align
     if (lines.length > 1) {
       // Continuation line should start with spaces to align under text
-      expect(lines[1]).toMatch(/^\s+/);
+      expect(lines[1]).toMatch(/^\s+/u);
     }
   });
 });

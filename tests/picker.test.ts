@@ -84,7 +84,7 @@ describe('findMarkdownFiles', () => {
   test('sorts files by modification time (most recent first)', async () => {
     // Create files with different mtimes
     await Bun.write(join(tempDir, 'old.md'), '# Old');
-    await new Promise((r) => setTimeout(r, 50)); // Small delay
+    await Bun.sleep(50);
     await Bun.write(join(tempDir, 'new.md'), '# New');
 
     const { findMarkdownFiles } = await import('../src/ui/picker');

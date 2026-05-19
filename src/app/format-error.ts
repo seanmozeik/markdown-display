@@ -1,11 +1,14 @@
 import { Match } from 'effect';
 
-import type { ConfigParseError } from '../config/errors';
-import type { ConfigReadError } from '../config/read-error';
+import { ConfigParseError } from '../config/errors';
+import { ConfigReadError } from '../config/read-error';
 import { getErrorColor } from '../ui/themes/semantic';
 import type { MdAppError } from './errors';
+import { FileNotFoundError } from './file-not-found-error';
+import { InvalidThemeError } from './invalid-theme-error';
+import { StdinReadError } from './stdin-read-error';
 
-export const formatMdAppError = (error: MdAppError): string =>
+const formatMdAppError = (error: MdAppError): string =>
   Match.value(error).pipe(
     Match.tagsExhaustive({
       ConfigParseError: (e: ConfigParseError) =>
@@ -19,17 +22,11 @@ export const formatMdAppError = (error: MdAppError): string =>
     }),
   );
 
-const MD_APP_ERROR_TAGS = new Set([
-  'ConfigParseError',
-  'ConfigReadError',
-  'FileNotFoundError',
-  'InvalidThemeError',
-  'StdinReadError',
-]);
+const isMdAppError = (error: unknown): error is MdAppError =>
+  error instanceof ConfigParseError ||
+  error instanceof ConfigReadError ||
+  error instanceof FileNotFoundError ||
+  error instanceof InvalidThemeError ||
+  error instanceof StdinReadError;
 
-export const isMdAppError = (error: unknown): error is MdAppError =>
-  typeof error === 'object' &&
-  error !== null &&
-  '_tag' in error &&
-  typeof (error as { _tag: unknown })._tag === 'string' &&
-  MD_APP_ERROR_TAGS.has((error as { _tag: string })._tag);
+export { formatMdAppError, isMdAppError };

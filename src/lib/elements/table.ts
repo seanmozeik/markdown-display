@@ -1,7 +1,6 @@
 // Src/lib/elements/table.ts
 import { Table } from 'console-table-printer';
 
-// Catppuccin Frappe colors for table styling
 const TABLE_STYLE = {
   headerBottom: { left: '├', mid: '┼', other: '─', right: '┤' },
   headerTop: { left: '┌', mid: '┬', other: '─', right: '┐' },
@@ -10,31 +9,35 @@ const TABLE_STYLE = {
 };
 
 const ROW_COLOR = 'white';
+const MIN_COLUMN_WIDTH = 10;
 
 interface TableOptions {
   width?: number;
 }
 
-export function renderTable(headers: string[], rows: string[][], options?: TableOptions): string {
+export const renderTable = (
+  headers: string[],
+  rows: string[][],
+  options?: TableOptions,
+): string => {
   const numColumns = headers.length;
 
-  // Calculate maxLen per column if width constraint provided
   let columnMaxLens: number[] | undefined;
-  if (options?.width && numColumns > 0) {
-    // Table structure: │ col1 │ col2 │ col3 │
-    // Borders: numColumns + 1, Padding: 2 per column
+  const tableWidth = options?.width;
+  if (tableWidth !== undefined && tableWidth > 0 && numColumns > 0) {
     const borderOverhead = numColumns + 1 + 2 * numColumns;
-    const availableForContent = options.width - borderOverhead;
-    // Distribute evenly, with remainder going to first columns
-    const baseLen = Math.max(10, Math.floor(availableForContent / numColumns));
+    const availableForContent = tableWidth - borderOverhead;
+    const baseLen = Math.max(MIN_COLUMN_WIDTH, Math.floor(availableForContent / numColumns));
     const remainder = availableForContent - baseLen * numColumns;
     columnMaxLens = headers.map((_, i) => (i < remainder ? baseLen + 1 : baseLen));
   }
 
   const table = new Table({
     colorMap: {
-      custom_header: '\u001b[38;5;189m\u001b[1m', // Frappe.text + bold
-      custom_row: '\u001b[38;5;146m', // Frappe.subtext1
+      // Frappe.text + bold
+      custom_header: '\u001B[38;5;189m\u001B[1m',
+      // Frappe.subtext1
+      custom_row: '\u001B[38;5;146m',
     },
     columns: headers.map((header, i) => {
       const maxLen = columnMaxLens?.[i];
@@ -42,7 +45,7 @@ export function renderTable(headers: string[], rows: string[][], options?: Table
         alignment: 'left' as const,
         color: ROW_COLOR,
         name: header,
-        ...(maxLen !== undefined ? { maxLen } : {}),
+        ...(maxLen === undefined ? {} : { maxLen }),
       };
     }),
     style: {
@@ -59,4 +62,4 @@ export function renderTable(headers: string[], rows: string[][], options?: Table
   }
 
   return table.render();
-}
+};

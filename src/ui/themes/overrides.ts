@@ -7,13 +7,20 @@ import type { ThemeOverrides } from './types';
  */
 export const themeOverrides: Record<string, ThemeOverrides> = {
   'catppuccin-frappe': {
-    bold: '#f4b8e4', // Pink
-    h1: '#ca9ee6', // Mauve
-    h2: '#babbf1', // Lavender
-    h3: '#8caaee', // Blue
-    h4: '#81c8be', // Teal
-    inlineCode: { bg: '#292c3c', fg: '#f2d5cf' }, // Rosewater on mantle
-    italic: '#99d1db', // Sky
+    // Pink
+    bold: '#f4b8e4',
+    // Mauve
+    h1: '#ca9ee6',
+    // Lavender
+    h2: '#babbf1',
+    // Blue
+    h3: '#8caaee',
+    // Teal
+    h4: '#81c8be',
+    // Rosewater on mantle
+    inlineCode: { bg: '#292c3c', fg: '#f2d5cf' },
+    // Sky
+    italic: '#99d1db',
   },
   'catppuccin-latte': {
     bold: '#ea76cb',

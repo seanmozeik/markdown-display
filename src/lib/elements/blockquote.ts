@@ -7,19 +7,23 @@ interface BlockquoteConfig {
   hyphenation?: boolean;
 }
 
-export function renderBlockquote(text: string, config?: BlockquoteConfig, depth = 1): string {
+const NEWLINE_NOT_DOUBLE = /\n(?!\n)/gu;
+const COLLAPSE_SPACES = / +/gu;
+
+export const renderBlockquote = (text: string, config?: BlockquoteConfig, depth = 1): string => {
   const prefixRaw = '│ '.repeat(depth);
   const prefix = getSubtleColor()(prefixRaw);
   const prefixWidth = prefixRaw.length;
-  const innerWidth = config?.width ? config.width - prefixWidth : 0;
+  const innerWidth =
+    config?.width !== undefined && config.width > 0 ? config.width - prefixWidth : 0;
 
-  // If width provided, re-wrap content to fit within blockquote
   const content =
     innerWidth > 0
-      ? wrapText(text.replaceAll(/\n(?!\n)/g, ' ').replaceAll(/ +/g, ' '), innerWidth, {
-          hyphenation: config?.hyphenation ?? true,
-          locale: 'en-us',
-        })
+      ? wrapText(
+          text.replaceAll(NEWLINE_NOT_DOUBLE, ' ').replaceAll(COLLAPSE_SPACES, ' '),
+          innerWidth,
+          { hyphenation: config?.hyphenation ?? true, locale: 'en-us' },
+        )
       : text;
 
   const mutedColor = getMutedColor();
@@ -27,4 +31,4 @@ export function renderBlockquote(text: string, config?: BlockquoteConfig, depth 
     .split('\n')
     .map((line) => `${prefix}${mutedColor(line)}`)
     .join('\n');
-}
+};

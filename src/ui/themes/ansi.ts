@@ -1,67 +1,89 @@
 // Src/ui/themes/ansi.ts
 import { getColorLevel } from './color-support';
 
+const ESC = '\u001B';
+const RESET = `${ESC}[0m`;
+
+const ANSI_STANDARD_COUNT = 16;
+const ANSI_CUBE_BASE = 16;
+const ANSI_CUBE_SIZE = 36;
+const ANSI_GRAYSCALE_BASE = 232;
+const ANSI_PALETTE_SIZE = 256;
+const RGB_MAX = 255;
+const RGB_MID = 128;
+const RGB_LIGHT = 192;
+const CUBE_LEVELS = 6;
+const CUBE_RGB_OFFSET = 55;
+const CUBE_RGB_STEP = 40;
+const GRAY_RAMP_START = 8;
+const GRAY_RAMP_STEP = 10;
+
+type Rgb = [number, number, number];
+
+const STANDARD_ANSI_COLORS: readonly Rgb[] = [
+  [0, 0, 0],
+  [RGB_MID, 0, 0],
+  [0, RGB_MID, 0],
+  [RGB_MID, RGB_MID, 0],
+  [0, 0, RGB_MID],
+  [RGB_MID, 0, RGB_MID],
+  [0, RGB_MID, RGB_MID],
+  [RGB_LIGHT, RGB_LIGHT, RGB_LIGHT],
+  [RGB_MID, RGB_MID, RGB_MID],
+  [RGB_MAX, 0, 0],
+  [0, RGB_MAX, 0],
+  [RGB_MAX, RGB_MAX, 0],
+  [0, 0, RGB_MAX],
+  [RGB_MAX, 0, RGB_MAX],
+  [0, RGB_MAX, RGB_MAX],
+  [RGB_MAX, RGB_MAX, RGB_MAX],
+] as const;
+
+const cubeComponentToRgb = (value: number): number =>
+  value === 0 ? 0 : CUBE_RGB_OFFSET + value * CUBE_RGB_STEP;
+
 /**
  * ANSI 256-color palette RGB values.
  * Colors 0-15: Standard colors (system-dependent, skip)
  * Colors 16-231: 6x6x6 color cube
  * Colors 232-255: Grayscale ramp
  */
-function getAnsi256Color(code: number): [number, number, number] {
-  if (code < 16) {
-    const standard: [number, number, number][] = [
-      [0, 0, 0],
-      [128, 0, 0],
-      [0, 128, 0],
-      [128, 128, 0],
-      [0, 0, 128],
-      [128, 0, 128],
-      [0, 128, 128],
-      [192, 192, 192],
-      [128, 128, 128],
-      [255, 0, 0],
-      [0, 255, 0],
-      [255, 255, 0],
-      [0, 0, 255],
-      [255, 0, 255],
-      [0, 255, 255],
-      [255, 255, 255],
-    ];
-    // Biome-ignore lint/style/noNonNullAssertion: code is guaranteed 0-15 by guard above
-    return standard[code]!;
+const getAnsi256Color = (code: number): Rgb => {
+  if (code < ANSI_STANDARD_COUNT) {
+    const color = STANDARD_ANSI_COLORS[code];
+    return color ?? [0, 0, 0];
   }
 
-  if (code < 232) {
-    const idx = code - 16;
-    const r = Math.floor(idx / 36);
-    const g = Math.floor((idx % 36) / 6);
-    const b = idx % 6;
-    const toRgb = (v: number) => (v === 0 ? 0 : 55 + v * 40);
-    return [toRgb(r), toRgb(g), toRgb(b)];
+  if (code < ANSI_GRAYSCALE_BASE) {
+    const idx = code - ANSI_CUBE_BASE;
+    const r = Math.floor(idx / ANSI_CUBE_SIZE);
+    const g = Math.floor((idx % ANSI_CUBE_SIZE) / CUBE_LEVELS);
+    const b = idx % CUBE_LEVELS;
+    return [cubeComponentToRgb(r), cubeComponentToRgb(g), cubeComponentToRgb(b)];
   }
 
-  const gray = 8 + (code - 232) * 10;
+  const gray = GRAY_RAMP_START + (code - ANSI_GRAYSCALE_BASE) * GRAY_RAMP_STEP;
   return [gray, gray, gray];
-}
+};
 
-export function hexToRgb(hex: string): [number, number, number] {
+const hexToRgb = (hex: string): Rgb => {
   const h = hex.replace('#', '').toLowerCase();
-  return [Number.parseInt(h.slice(0, 2), 16), Number.parseInt(h.slice(2, 4), 16), Number.parseInt(h.slice(4, 6), 16)];
-}
+  return [
+    Number.parseInt(h.slice(0, 2), 16),
+    Number.parseInt(h.slice(2, 4), 16),
+    Number.parseInt(h.slice(4, 6), 16),
+  ];
+};
 
-function colorDistance(
-  [r1, g1, b1]: [number, number, number],
-  [r2, g2, b2]: [number, number, number],
-): number {
-  return (r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2;
-}
+const colorDistance = ([r1, g1, b1]: Rgb, [r2, g2, b2]: Rgb): number =>
+  (r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2;
 
-export function hexToAnsi256(hex: string): number {
+const hexToAnsi256 = (hex: string): number => {
   const target = hexToRgb(hex);
-  let closest = 16;
+  let closest = ANSI_CUBE_BASE;
   let minDist = Infinity;
 
-  for (let i = 16; i < 256; i++) {
+  for (let i = ANSI_CUBE_BASE; i < ANSI_PALETTE_SIZE; i += 1) {
     const dist = colorDistance(target, getAnsi256Color(i));
     if (dist < minDist) {
       minDist = dist;
@@ -70,68 +92,70 @@ export function hexToAnsi256(hex: string): number {
   }
 
   return closest;
-}
+};
 
-export function ansiFg(hex: string): (text: string) => string {
+const ansiFg = (hex: string): ((text: string) => string) => {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\u001b[38;2;${r};${g};${b}m${text}\x1B[0m`;
+    return (text: string) => `${ESC}[38;2;${r};${g};${b}m${text}${RESET}`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\x1B[38;5;${code}m${text}\x1B[0m`;
-}
+  return (text: string) => `${ESC}[38;5;${code}m${text}${RESET}`;
+};
 
-export function ansiBg(hex: string): (text: string) => string {
+const ansiBg = (hex: string): ((text: string) => string) => {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\x1B[48;2;${r};${g};${b}m${text}\u001b[0m`;
+    return (text: string) => `${ESC}[48;2;${r};${g};${b}m${text}${RESET}`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\u001b[48;5;${code}m${text}\u001b[0m`;
-}
+  return (text: string) => `${ESC}[48;5;${code}m${text}${RESET}`;
+};
 
-export function ansiFgBg(fgHex: string, bgHex: string): (text: string) => string {
+const ansiFgBg = (fgHex: string, bgHex: string): ((text: string) => string) => {
   if (getColorLevel() >= 3) {
     const [fgR, fgG, fgB] = hexToRgb(fgHex);
     const [bgR, bgG, bgB] = hexToRgb(bgHex);
     return (text: string) =>
-      `\u001b[38;2;${fgR};${fgG};${fgB};48;2;${bgR};${bgG};${bgB}m${text}\u001b[0m`;
+      `${ESC}[38;2;${fgR};${fgG};${fgB};48;2;${bgR};${bgG};${bgB}m${text}${RESET}`;
   }
   const fgCode = hexToAnsi256(fgHex);
   const bgCode = hexToAnsi256(bgHex);
-  return (text: string) => `\u001b[38;5;${fgCode};48;5;${bgCode}m${text}\x1B[0m`;
-}
+  return (text: string) => `${ESC}[38;5;${fgCode};48;5;${bgCode}m${text}${RESET}`;
+};
 
-export function ansiBold(hex: string): (text: string) => string {
+const ansiBold = (hex: string): ((text: string) => string) => {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\x1B[1;38;2;${r};${g};${b}m${text}\x1B[0m`;
+    return (text: string) => `${ESC}[1;38;2;${r};${g};${b}m${text}${RESET}`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\x1B[1;38;5;${code}m${text}\u001b[0m`;
-}
+  return (text: string) => `${ESC}[1;38;5;${code}m${text}${RESET}`;
+};
 
-export function ansiItalic(hex: string): (text: string) => string {
+const ansiItalic = (hex: string): ((text: string) => string) => {
   if (getColorLevel() >= 3) {
     const [r, g, b] = hexToRgb(hex);
-    return (text: string) => `\x1B[3;38;2;${r};${g};${b}m${text}\u001b[0m`;
+    return (text: string) => `${ESC}[3;38;2;${r};${g};${b}m${text}${RESET}`;
   }
   const code = hexToAnsi256(hex);
-  return (text: string) => `\u001b[3;38;5;${code}m${text}\u001b[0m`;
-}
+  return (text: string) => `${ESC}[3;38;5;${code}m${text}${RESET}`;
+};
 
 /**
  * Style text with foreground color, transitioning to another color instead of resetting.
  * Useful for styled text embedded in colored contexts (like box titles in borders).
  */
-export function ansiFgTransition(fgHex: string, transitionHex: string): (text: string) => string {
+const ansiFgTransition = (fgHex: string, transitionHex: string): ((text: string) => string) => {
   if (getColorLevel() >= 3) {
     const [fgR, fgG, fgB] = hexToRgb(fgHex);
     const [trR, trG, trB] = hexToRgb(transitionHex);
     return (text: string) =>
-      `\x1B[38;2;${fgR};${fgG};${fgB}m${text}\u001b[38;2;${trR};${trG};${trB}m`;
+      `${ESC}[38;2;${fgR};${fgG};${fgB}m${text}${ESC}[38;2;${trR};${trG};${trB}m`;
   }
   const fgCode = hexToAnsi256(fgHex);
   const trCode = hexToAnsi256(transitionHex);
-  return (text: string) => `\u001b[38;5;${fgCode}m${text}\u001b[38;5;${trCode}m`;
-}
+  return (text: string) => `${ESC}[38;5;${fgCode}m${text}${ESC}[38;5;${trCode}m`;
+};
+
+export { ansiBg, ansiBold, ansiFg, ansiFgBg, ansiFgTransition, ansiItalic, hexToAnsi256, hexToRgb };

@@ -11,23 +11,6 @@ const CHECKBOXES = {
   unchecked: { nerd: '󰄱', unicode: '☐' },
 } as const;
 
-function getBullet(
-  config: ListItemConfig | undefined,
-  ordered: boolean,
-  depth: number,
-  index: number | undefined,
-): string {
-  if (config?.task) {
-    const style = config.checked ? CHECKBOXES.checked : CHECKBOXES.unchecked;
-    return config.nerdFonts ? style.nerd : style.unicode;
-  }
-  if (ordered) {
-    return `${index ?? 1}.`;
-  }
-  // Biome-ignore lint/style/noNonNullAssertion: modulo guarantees valid index
-  return BULLETS[depth % BULLETS.length]!;
-}
-
 interface ListItemConfig {
   width?: number;
   hyphenation?: boolean;
@@ -36,33 +19,48 @@ interface ListItemConfig {
   nerdFonts?: boolean;
 }
 
-export function renderListItem(
+const getBullet = (
+  config: ListItemConfig | undefined,
+  ordered: boolean,
+  depth: number,
+  index: number | undefined,
+): string => {
+  if (config?.task === true) {
+    const style = config.checked === true ? CHECKBOXES.checked : CHECKBOXES.unchecked;
+    return config.nerdFonts === true ? style.nerd : style.unicode;
+  }
+  if (ordered) {
+    return `${index ?? 1}.`;
+  }
+  const bulletIndex = depth % BULLETS.length;
+  return BULLETS[bulletIndex] ?? BULLETS[0];
+};
+
+const renderListItem = (
   text: string,
   ordered: boolean,
   depth: number,
   index?: number,
   config?: ListItemConfig,
-): string {
+): string => {
   const indent = ' '.repeat(depth * INDENT_SIZE);
   const bullet = getBullet(config, ordered, depth, index);
   const coloredBullet = getAccentColor()(bullet);
-  const styledText = config?.task && config.checked ? getMutedColor()(text) : text;
+  const styledText =
+    config?.task === true && config.checked === true ? getMutedColor()(text) : text;
 
-  // If no width specified, return without wrapping
-  if (!config?.width) {
+  if (config?.width === undefined || config.width === 0) {
     return `${indent}${coloredBullet} ${styledText}`;
   }
 
-  // Calculate available width for text (subtract indent + bullet + space)
   const bulletWidth = visibleLength(coloredBullet);
-  const prefixWidth = indent.length + bulletWidth + 1; // +1 for space after bullet
+  const prefixWidth = indent.length + bulletWidth + 1;
   const textWidth = config.width - prefixWidth;
 
   if (textWidth <= 0) {
     return `${indent}${coloredBullet} ${styledText}`;
   }
 
-  // Wrap the text (muting applied before wrapping so each line is styled)
   const wrapped = wrapText(styledText, textWidth, {
     hyphenation: config.hyphenation ?? false,
     locale: 'en-us',
@@ -79,13 +77,13 @@ export function renderListItem(
       return `${continuationIndent}${line}`;
     })
     .join('\n');
-}
+};
 
-export function renderList(
+const renderList = (
   items: string[],
   ordered: boolean,
   depth = 0,
   config?: ListItemConfig,
-): string {
-  return items.map((item, i) => renderListItem(item, ordered, depth, i + 1, config)).join('\n');
-}
+): string => items.map((item, i) => renderListItem(item, ordered, depth, i + 1, config)).join('\n');
+
+export { renderList, renderListItem };

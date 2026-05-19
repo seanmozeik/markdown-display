@@ -1,7 +1,6 @@
 import { Effect } from 'effect';
 
-import type { MdConfig } from '../config';
-import { loadUserConfig } from '../config';
+import { type MdConfig, loadUserConfig } from '../config';
 import { stripAnsi } from '../lib/ansi';
 import { calculateLayout } from '../lib/layout';
 import { countLines, PagingMode, pipeToLess, shouldUseColor, shouldUsePager } from '../lib/pager';
@@ -13,7 +12,7 @@ import { setColorConfig } from '../ui/themes/color-support';
 import { getSubtleColor } from '../ui/themes/semantic';
 import { FileNotFoundError, InvalidThemeError, StdinReadError } from './errors';
 
-export interface MdCliOptions {
+interface MdCliOptions {
   readonly files: readonly string[];
   readonly listThemes: boolean;
   readonly noColor: boolean;
@@ -88,19 +87,22 @@ export const runMd = Effect.fn('md.run')((flags: MdCliOptions) =>
     }
 
     const themeName = flags.theme ?? config.theme;
-    if (flags.theme !== undefined && !isValidTheme(flags.theme)) {
-      return yield* new InvalidThemeError({ theme: flags.theme });
-    }
-    loadTheme(themeName);
+    yield* flags.theme !== undefined && !isValidTheme(flags.theme)
+      ? Effect.fail(new InvalidThemeError({ theme: flags.theme }))
+      : Effect.sync(() => {
+          loadTheme(themeName);
+        });
 
     let filePaths = [...flags.files];
     const hasStdin = !process.stdin.isTTY;
-    const stdoutTTY = process.stdout.isTTY ?? false;
-    const stdinTTY = process.stdin.isTTY ?? true;
+    const stdoutTTY = process.stdout.isTTY;
+    const stdinTTY = process.stdin.isTTY;
 
     if (filePaths.length === 0 && !hasStdin) {
       const { showBanner } = yield* Effect.promise(() => import('../ui/banner'));
-      yield* Effect.promise(() => showBanner());
+      yield* Effect.sync(() => {
+        showBanner();
+      });
       const selected = yield* Effect.tryPromise({
         catch: (cause) => new StdinReadError({ cause }),
         try: () => showFilePicker(),
@@ -165,12 +167,12 @@ export const runMd = Effect.fn('md.run')((flags: MdCliOptions) =>
       stdoutTTY,
     });
 
-    if (pagingMode !== PagingMode.Never) {
-      yield* Effect.promise(() => pipeToLess(output, resolvedConfig.pager));
-    } else {
-      yield* Effect.sync(() => {
-        console.log(output);
-      });
-    }
+    yield* pagingMode === PagingMode.Never
+      ? Effect.sync(() => {
+          console.log(output);
+        })
+      : Effect.promise(() => pipeToLess(output, resolvedConfig.pager));
   }),
 );
+
+export type { MdCliOptions };

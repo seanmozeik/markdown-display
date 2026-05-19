@@ -14,7 +14,7 @@ describe('theme registry', () => {
   test('getTheme returns correct theme for valid ID', () => {
     const t = getTheme('nord');
     expect(t.id).toBe('nord');
-    expect(t.colors.bg).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(t.colors.bg).toMatch(/^#[0-9a-f]{6}$/iu);
   });
 
   test('getTheme returns catppuccin-frappe for invalid ID', () => {

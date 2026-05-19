@@ -8,7 +8,7 @@ interface LanguageInfo {
 
 // Nerd Font icons for programming languages (from nvim-web-devicons)
 // Reference: icons.lua - replace __ICON_X__ placeholders with icons from that file
-export const LANGUAGES: Record<string, LanguageInfo> = {
+const LANGUAGES: Record<string, LanguageInfo> = {
   bash: { color: '#89E051', icon: '', label: 'bash' },
   c: { color: '#599EFF', icon: '', label: 'c' },
   clojure: { color: '#8DC149', icon: '', label: 'clj' },
@@ -86,25 +86,27 @@ const LANG_ALIASES: Record<string, string> = {
   yml: 'yaml',
 };
 
-export function normalizeLang(lang: string): string {
+const normalizeLang = (lang: string): string => {
   const lower = lang.toLowerCase();
   return LANG_ALIASES[lower] ?? lower;
-}
+};
 
-export function getLanguageLabel(lang: string, nerdFontsEnabled: boolean): string {
+const getLanguageLabel = (lang: string, nerdFontsEnabled: boolean): string => {
   const normalized = normalizeLang(lang);
   const info = LANGUAGES[normalized];
-  return nerdFontsEnabled && info?.icon ? info.icon : normalized;
-}
+  if (nerdFontsEnabled && info !== undefined && info.icon.length > 0) {
+    return info.icon;
+  }
+  return normalized;
+};
 
-export function resolveNerdFonts(configValue: 'auto' | boolean): boolean {
-  return configValue === 'auto' ? false : configValue;
-}
+const resolveNerdFonts = (configValue: 'auto' | boolean): boolean =>
+  configValue === 'auto' ? false : configValue;
 
 // Terminals known to typically have nerd fonts installed
 const NERD_FONT_TERMINALS = ['WezTerm', 'kitty', 'Alacritty'];
 
-export function supportsNerdFonts(): boolean {
+const supportsNerdFonts = (): boolean => {
   // Explicit override via env var
   if (Bun.env.NERD_FONTS === '1' || Bun.env.NERD_FONTS === 'true') {
     return true;
@@ -116,4 +118,6 @@ export function supportsNerdFonts(): boolean {
   // Auto-detect based on terminal
   const term = Bun.env.TERM_PROGRAM ?? '';
   return NERD_FONT_TERMINALS.some((t) => term.includes(t));
-}
+};
+
+export { getLanguageLabel, LANGUAGES, normalizeLang, resolveNerdFonts, supportsNerdFonts };

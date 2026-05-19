@@ -14,7 +14,7 @@ import { visibleLength } from '../ansi';
 import { getLanguageLabel, normalizeLang, supportsNerdFonts } from '../languages';
 import { highlightCode } from '../shiki';
 
-export interface CodeConfig {
+interface CodeConfig {
   width: number;
   wrap: boolean;
   continuation: string;
@@ -22,13 +22,37 @@ export interface CodeConfig {
   useNerdFonts?: boolean;
 }
 
-/** Skip Shiki for very long blocks (bat / claudewatch pattern). */
-export const MAX_CODE_BLOCK_HIGHLIGHT_LENGTH = 16 * 1024;
+const KIBIBYTE = 1024;
+const CODE_BLOCK_HIGHLIGHT_KIB = 16;
 
-// ESC character for ANSI escape sequence parsing (avoid literal \x1b for linter)
-const ESC = String.fromCodePoint(0x1B);
+/** Skip Shiki for very long blocks (bat / claudewatch pattern). */
+const MAX_CODE_BLOCK_HIGHLIGHT_LENGTH = CODE_BLOCK_HIGHLIGHT_KIB * KIBIBYTE;
+
+const ESC = '\u001B';
 const ANSI_RESET = `${ESC}[0m`;
-const ANSI_SGR_PATTERN = new RegExp(`${ESC}\\[([0-9;]*)m`);
+const ANSI_SGR_PATTERN = new RegExp(`${ESC}\\[([0-9;]*)m`, 'u');
+const ANSI_SEQUENCE_PATTERN = new RegExp(`${ESC}\\[[0-9;]*m`, 'gu');
+
+const SGR_RESET = 0;
+const SGR_STYLE_MIN = 1;
+const SGR_STYLE_MAX = 9;
+const SGR_STYLE_OFF_BASE = 20;
+const SGR_FG_EXTENDED = 38;
+const SGR_BG_EXTENDED = 48;
+const SGR_FG_DEFAULT = 39;
+const SGR_BG_DEFAULT = 49;
+const SGR_FG_BASIC_MIN = 30;
+const SGR_FG_BASIC_MAX = 37;
+const SGR_FG_BRIGHT_MIN = 90;
+const SGR_FG_BRIGHT_MAX = 97;
+const SGR_BG_BASIC_MIN = 40;
+const SGR_BG_BASIC_MAX = 47;
+const SGR_BG_BRIGHT_MIN = 100;
+const SGR_BG_BRIGHT_MAX = 107;
+const SGR_MODE_256 = '5';
+const SGR_MODE_RGB = '2';
+const RGB_PARAM_COUNT = 4;
+const BOX_HORIZONTAL_PADDING = 4;
 
 /**
  * Track active ANSI styles. Handles basic SGR codes:
@@ -41,6 +65,69 @@ class AnsiState {
   private fgColor: string | null = null;
   private bgColor: string | null = null;
 
+  private resetAll(): void {
+    this.styles.clear();
+    this.fgColor = null;
+    this.bgColor = null;
+  }
+
+  private applyStyleOn(code: number, param: string): void {
+    if (code >= SGR_STYLE_MIN && code <= SGR_STYLE_MAX) {
+      this.styles.add(param);
+    }
+  }
+
+  private applyStyleOff(code: number): void {
+    if (code >= SGR_STYLE_OFF_BASE + 1 && code <= SGR_STYLE_OFF_BASE + SGR_STYLE_MAX) {
+      this.styles.delete(String(code - SGR_STYLE_OFF_BASE));
+    }
+  }
+
+  private applyExtendedColor(
+    params: string[],
+    index: number,
+    baseCode: number,
+    target: 'fg' | 'bg',
+  ): number {
+    if (params[index + 1] === SGR_MODE_256) {
+      const sequence = `${baseCode};5;${params[index + 2]}`;
+      if (target === 'fg') {
+        this.fgColor = sequence;
+      } else {
+        this.bgColor = sequence;
+      }
+      return 2;
+    }
+    if (params[index + 1] === SGR_MODE_RGB) {
+      const sequence = `${baseCode};2;${params[index + 2]};${params[index + 3]};${params[index + 4]}`;
+      if (target === 'fg') {
+        this.fgColor = sequence;
+      } else {
+        this.bgColor = sequence;
+      }
+      return RGB_PARAM_COUNT;
+    }
+    return 0;
+  }
+
+  private applyBasicFg(code: number, param: string): void {
+    if (
+      (code >= SGR_FG_BASIC_MIN && code <= SGR_FG_BASIC_MAX) ||
+      (code >= SGR_FG_BRIGHT_MIN && code <= SGR_FG_BRIGHT_MAX)
+    ) {
+      this.fgColor = param;
+    }
+  }
+
+  private applyBasicBg(code: number, param: string): void {
+    if (
+      (code >= SGR_BG_BASIC_MIN && code <= SGR_BG_BASIC_MAX) ||
+      (code >= SGR_BG_BRIGHT_MIN && code <= SGR_BG_BRIGHT_MAX)
+    ) {
+      this.bgColor = param;
+    }
+  }
+
   apply(sequence: string): void {
     const match = sequence.match(ANSI_SGR_PATTERN);
     const params = match?.[1]?.split(';').filter(Boolean) ?? [];
@@ -48,58 +135,40 @@ class AnsiState {
 
     while (i < params.length) {
       const param = params[i];
-      if (!param) {break;}
+      if (param === undefined || param.length === 0) {
+        break;
+      }
       const code = Number.parseInt(param, 10);
 
-      if (code === 0) {
-        // Reset all
-        this.styles.clear();
-        this.fgColor = null;
-        this.bgColor = null;
-      } else if (code >= 1 && code <= 9) {
-        // Style attributes (bold, dim, italic, underline, etc.)
-        this.styles.add(param);
-      } else if (code >= 21 && code <= 29) {
-        // Turn off style attributes
-        this.styles.delete(String(code - 20));
-      } else if (code === 38 && params[i + 1] === '5') {
-        // 256 foreground color
-        this.fgColor = `38;5;${params[i + 2]}`;
-        i += 2;
-      } else if (code === 38 && params[i + 1] === '2') {
-        // RGB foreground color
-        this.fgColor = `38;2;${params[i + 2]};${params[i + 3]};${params[i + 4]}`;
-        i += 4;
-      } else if (code === 48 && params[i + 1] === '5') {
-        // 256 background color
-        this.bgColor = `48;5;${params[i + 2]}`;
-        i += 2;
-      } else if (code === 48 && params[i + 1] === '2') {
-        // RGB background color
-        this.bgColor = `48;2;${params[i + 2]};${params[i + 3]};${params[i + 4]}`;
-        i += 4;
-      } else if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) {
-        // Basic foreground colors
-        this.fgColor = param;
-      } else if (code === 39) {
-        // Default foreground
-        this.fgColor = null;
-      } else if ((code >= 40 && code <= 47) || (code >= 100 && code <= 107)) {
-        // Basic background colors
-        this.bgColor = param;
-      } else if (code === 49) {
-        // Default background
-        this.bgColor = null;
+      if (code === SGR_RESET) {
+        this.resetAll();
+      } else {
+        this.applyStyleOn(code, param);
+        this.applyStyleOff(code);
+        i += this.applyExtendedColor(params, i, SGR_FG_EXTENDED, 'fg');
+        i += this.applyExtendedColor(params, i, SGR_BG_EXTENDED, 'bg');
+        this.applyBasicFg(code, param);
+        if (code === SGR_FG_DEFAULT) {
+          this.fgColor = null;
+        }
+        this.applyBasicBg(code, param);
+        if (code === SGR_BG_DEFAULT) {
+          this.bgColor = null;
+        }
       }
 
-      i++;
+      i += 1;
     }
   }
 
   toSequence(): string {
     const parts = [...this.styles];
-    if (this.fgColor) {parts.push(this.fgColor);}
-    if (this.bgColor) {parts.push(this.bgColor);}
+    if (this.fgColor !== null) {
+      parts.push(this.fgColor);
+    }
+    if (this.bgColor !== null) {
+      parts.push(this.bgColor);
+    }
     return parts.length === 0 ? '' : `${ESC}[${parts.join(';')}m`;
   }
 
@@ -120,50 +189,40 @@ class AnsiState {
  * Slice a string by visible character positions, preserving ANSI codes.
  * Returns [sliced portion with reset, remainder with state prefix]
  */
-function sliceByVisible(str: string, start: number, end?: number): [string, string] {
+const sliceByVisible = (str: string, start: number, end?: number): [string, string] => {
   let visiblePos = 0;
   let startIdx = 0;
   let endIdx = str.length;
   let foundStart = start === 0;
-  let foundEnd = end === undefined;
-
   const state = new AnsiState();
   let stateAtEnd: AnsiState | null = null;
 
-  const ansiRegex = new RegExp(`${ESC}\\[[0-9;]*m`, 'g');
-
   let i = 0;
   while (i < str.length) {
-    // Check for ANSI escape sequence at current position
-    ansiRegex.lastIndex = i;
-    const match = ansiRegex.exec(str);
+    ANSI_SEQUENCE_PATTERN.lastIndex = i;
+    const match = ANSI_SEQUENCE_PATTERN.exec(str);
 
     if (match?.index === i) {
-      // Found ANSI sequence at current position - update state
       state.apply(match[0]);
       i += match[0].length;
-      continue;
+    } else {
+      if (!foundStart && visiblePos === start) {
+        startIdx = i;
+        foundStart = true;
+      }
+
+      visiblePos += 1;
+
+      if (end !== undefined && visiblePos === end) {
+        endIdx = i + 1;
+        stateAtEnd = state.clone();
+        break;
+      }
+
+      i += 1;
     }
-
-    // This is a visible character
-    if (!foundStart && visiblePos === start) {
-      startIdx = i;
-      foundStart = true;
-    }
-
-    visiblePos++;
-
-    if (!foundEnd && end !== undefined && visiblePos === end) {
-      endIdx = i + 1;
-      stateAtEnd = state.clone();
-      foundEnd = true;
-      break;
-    }
-
-    i++;
   }
 
-  // If we didn't find start, it means start is beyond string length
   if (!foundStart) {
     return ['', ''];
   }
@@ -171,19 +230,18 @@ function sliceByVisible(str: string, start: number, end?: number): [string, stri
   const sliced = str.slice(startIdx, endIdx);
   const remainder = str.slice(endIdx);
 
-  // Add reset to end of sliced portion if we had active state
-  const slicedWithReset = stateAtEnd && !stateAtEnd.isEmpty() ? sliced + ANSI_RESET : sliced;
+  const slicedWithReset =
+    stateAtEnd !== null && !stateAtEnd.isEmpty() ? sliced + ANSI_RESET : sliced;
 
-  // Prepend state to remainder if there was active state
   const remainderWithState =
-    stateAtEnd && !stateAtEnd.isEmpty() && remainder
+    stateAtEnd !== null && !stateAtEnd.isEmpty() && remainder.length > 0
       ? stateAtEnd.toSequence() + remainder
       : remainder;
 
   return [slicedWithReset, remainderWithState];
-}
+};
 
-export function wrapCodeLines(code: string, width: number, continuation: string): string {
+const wrapCodeLines = (code: string, width: number, continuation: string): string => {
   const lines = code.split('\n');
   const wrapped: string[] = [];
   const continuationPrefix = `${getSubtleColor()(continuation)} `;
@@ -192,49 +250,40 @@ export function wrapCodeLines(code: string, width: number, continuation: string)
   for (const line of lines) {
     if (visibleLength(line) <= width) {
       wrapped.push(line);
-      continue;
-    }
+    } else {
+      const [firstChunk, firstRest] = sliceByVisible(line, 0, width);
+      wrapped.push(firstChunk);
 
-    // First chunk uses full width
-    const [firstChunk, firstRest] = sliceByVisible(line, 0, width);
-    wrapped.push(firstChunk);
+      let remaining = firstRest;
+      const chunkWidth = width - continuationWidth - 1;
 
-    // Subsequent chunks reserve space for continuation prefix (+ 1 extra space)
-    let remaining = firstRest;
-    const chunkWidth = width - continuationWidth - 1;
-
-    while (visibleLength(remaining) > 0) {
-      const [chunk, rest] = sliceByVisible(remaining, 0, chunkWidth);
-      wrapped.push(`${continuationPrefix} ${chunk}`);
-      remaining = rest;
+      while (visibleLength(remaining) > 0) {
+        const [chunk, rest] = sliceByVisible(remaining, 0, chunkWidth);
+        wrapped.push(`${continuationPrefix} ${chunk}`);
+        remaining = rest;
+      }
     }
   }
 
   return wrapped.join('\n');
-}
+};
 
-export function renderInlineCode(code: string): string {
-  return getInlineCodeStyle()(` ${code} `);
-}
+const renderInlineCode = (code: string): string => getInlineCodeStyle()(` ${code} `);
 
 /** Box + wrap already-highlighted source (no Shiki). */
-export const formatCodeBlockBox = (
-  highlighted: string,
-  lang: string,
-  config: CodeConfig,
-): string => {
+const formatCodeBlockBox = (highlighted: string, lang: string, config: CodeConfig): string => {
   const useNerdFonts = config.useNerdFonts ?? supportsNerdFonts();
   const wrapped = config.wrap
-    ? wrapCodeLines(highlighted, config.width - 4, config.continuation)
+    ? wrapCodeLines(highlighted, config.width - BOX_HORIZONTAL_PADDING, config.continuation)
     : highlighted;
 
-  const title = lang ? getLanguageLabel(lang, useNerdFonts) : undefined;
+  const title = lang.length > 0 ? getLanguageLabel(lang, useNerdFonts) : undefined;
 
   const box = boxen(wrapped, {
     borderColor: getHexColors().subtle,
     borderStyle: 'round',
     padding: { bottom: 0, left: 1, right: 1, top: 0 },
-    ...(title !== undefined ? { title: getBoxTitleStyle()(title) } : {}),
+    ...(title === undefined ? {} : { title: getBoxTitleStyle()(title) }),
     titleAlignment: 'left',
     width: config.width,
   });
@@ -242,7 +291,7 @@ export const formatCodeBlockBox = (
   return `${box}\n`;
 };
 
-export const highlightCodeBlockSource = Effect.fn('md.highlight-code-block')(
+const highlightCodeBlockSource = Effect.fn('md.highlight-code-block')(
   (code: string, lang: string, themeId: string) =>
     Effect.gen(function* highlightCodeBlockSourceGen() {
       if (code.length > MAX_CODE_BLOCK_HIGHLIGHT_LENGTH) {
@@ -250,20 +299,26 @@ export const highlightCodeBlockSource = Effect.fn('md.highlight-code-block')(
       }
       const langId = normalizeLang(lang);
       const highlighted = yield* highlightCode(code, langId, themeId);
-      if (!highlighted.includes('\u001B[')) {
-        return getMutedColor()(code);
+      if (highlighted.includes('\u001B[')) {
+        return highlighted;
       }
-      return highlighted;
+      return getMutedColor()(code);
     }),
 );
 
-export async function renderCodeBlock(
-  code: string,
-  lang: string,
-  config: CodeConfig,
-): Promise<string> {
+const renderCodeBlock = async (code: string, lang: string, config: CodeConfig): Promise<string> => {
   const highlighted = await Effect.runPromise(
     highlightCodeBlockSource(code, lang, theme().shikiTheme),
   );
   return formatCodeBlockBox(highlighted, lang, config);
-}
+};
+
+export {
+  type CodeConfig,
+  formatCodeBlockBox,
+  highlightCodeBlockSource,
+  MAX_CODE_BLOCK_HIGHLIGHT_LENGTH,
+  renderCodeBlock,
+  renderInlineCode,
+  wrapCodeLines,
+};

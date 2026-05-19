@@ -1,12 +1,11 @@
 // Src/lib/parser.ts
 import { Effect } from 'effect';
-import { Marked, type Token } from 'marked';
+import { Marked, type RendererObject, type Token } from 'marked';
 
 import { theme } from '../ui/themes';
 import { getBoldStyle, getItalicStyle } from '../ui/themes/semantic';
 import { renderBlockquote } from './elements/blockquote';
-import type { CodeConfig } from './elements/code';
-import { renderInlineCode } from './elements/code';
+import { type CodeConfig, renderInlineCode } from './elements/code';
 import { renderHeading } from './elements/heading';
 import { renderLink } from './elements/link';
 import { renderListItem } from './elements/list';
@@ -28,18 +27,40 @@ interface RendererThis {
   parser: { parse(tokens: Token[]): string; parseInline(tokens: Token[]): string };
 }
 
-export function createRenderer(
+const RANDOM_ID_RADIX = 36;
+
+interface ListItemToken {
+  tokens: Token[];
+  task?: boolean;
+  checked?: boolean;
+}
+
+interface NestedList {
+  items: ListItemToken[];
+  ordered: boolean;
+  start?: number;
+}
+
+interface CodeToken {
+  text: string;
+  lang?: string;
+}
+
+const isNestedListToken = (
+  token: Token,
+): token is Token & { items: ListItemToken[]; ordered: boolean; start?: number } =>
+  token.type === 'list' && 'items' in token && Array.isArray(token.items);
+
+const isCodeToken = (token: Token): token is Token & CodeToken =>
+  token.type === 'code' && 'text' in token && typeof token.text === 'string';
+
+const createRenderer = (
   options: ParseOptions,
   codeBlocks: Map<string, { code: string; lang: string }>,
-) {
-  function renderListWithDepth(
-    parser: RendererThis['parser'],
-    items: { tokens: Token[]; task?: boolean; checked?: boolean }[],
-    ordered: boolean,
-    start: number,
-    depth: number,
-  ): string {
-    // Inline token types that can be passed to parseInline
+): RendererObject => {
+  const classifyListItemTokens = (
+    item: ListItemToken,
+  ): { inlineTokens: Token[]; nestedLists: NestedList[]; blockContent: Token[] } => {
     const INLINE_TYPES = new Set([
       'text',
       'strong',
@@ -53,56 +74,59 @@ export function createRenderer(
       'checkbox',
     ]);
 
+    const inlineTokens: Token[] = [];
+    const nestedLists: NestedList[] = [];
+    const blockContent: Token[] = [];
+
+    for (const t of item.tokens) {
+      if (isNestedListToken(t)) {
+        nestedLists.push({
+          items: t.items.map((listItem) => ({
+            tokens: listItem.tokens,
+            ...(listItem.task === undefined ? {} : { task: listItem.task }),
+            ...(listItem.checked === undefined ? {} : { checked: listItem.checked }),
+          })),
+          ordered: t.ordered,
+          ...(typeof t.start === 'number' ? { start: t.start } : {}),
+        });
+      } else if (isCodeToken(t)) {
+        const id = `__CODE_${Date.now()}_${Math.random().toString(RANDOM_ID_RADIX)}__`;
+        codeBlocks.set(id, { code: t.text, lang: t.lang ?? '' });
+        blockContent.push({ raw: id, text: id, type: 'html' } as Token);
+      } else if (t.type === 'paragraph' && 'tokens' in t) {
+        inlineTokens.push(...t.tokens);
+      } else if (t.type === 'space') {
+        // Whitespace between block content - skip
+      } else if (t.type === 'html' && 'block' in t && t.block === false) {
+        inlineTokens.push(t);
+      } else if (INLINE_TYPES.has(t.type)) {
+        inlineTokens.push(t);
+      } else {
+        blockContent.push(t);
+      }
+    }
+
+    return { blockContent, inlineTokens, nestedLists };
+  };
+
+  const renderListWithDepth = (
+    parser: RendererThis['parser'],
+    items: ListItemToken[],
+    ordered: boolean,
+    start: number,
+    depth: number,
+  ): string => {
     return items
       .map((item, i) => {
-        // Separate tokens by type:
-        // - Inline tokens: can be parsed with parseInline
-        // - Paragraph: unwrap to get inner inline tokens
-        // - Code: handle specially for deferred syntax highlighting
-        // - List: handle recursively for nesting
-        // - Other block tokens (blockquote, table, heading, hr, html): render with parse()
-        const inlineTokens: Token[] = [];
-        const nestedLists: {
-          items: Array<{ tokens: Token[]; task?: boolean; checked?: boolean }>;
-          ordered: boolean;
-          start?: number;
-        }[] = [];
-        const blockContent: Token[] = [];
+        const { inlineTokens, nestedLists, blockContent } = classifyListItemTokens(item);
 
-        for (const t of item.tokens) {
-          if (t.type === 'list') {
-            nestedLists.push(t as (typeof nestedLists)[number]);
-          } else if (t.type === 'code') {
-            // Code blocks - store for deferred syntax highlighting
-            const codeToken = t as { text: string; lang?: string };
-            const id = `__CODE_${Date.now()}_${Math.random().toString(36)}__`;
-            codeBlocks.set(id, { code: codeToken.text, lang: codeToken.lang ?? '' });
-            blockContent.push({ raw: id, text: id, type: 'html' } as Token);
-          } else if (t.type === 'paragraph' && 'tokens' in t) {
-            // Paragraph wraps inline content in loose lists - extract inner tokens
-            inlineTokens.push(...(t.tokens));
-          } else if (t.type === 'space') {
-            // Whitespace between block content - skip
-          } else if (t.type === 'html' && 'block' in t && !t.block) {
-            // Inline HTML (e.g. <br>) should be parsed inline
-            inlineTokens.push(t);
-          } else if (INLINE_TYPES.has(t.type)) {
-            // Known inline token
-            inlineTokens.push(t);
-          } else {
-            // Other block tokens (blockquote, table, heading, hr, html)
-            blockContent.push(t);
-          }
-        }
-
-        // Render the item's inline content
         const text = parser.parseInline(inlineTokens);
         const renderedItem = renderListItem(text, ordered, depth, start + i, {
           width: options.width,
-          ...(item.checked !== undefined ? { checked: item.checked } : {}),
-          ...(item.task !== undefined ? { task: item.task } : {}),
-          ...(options.hyphenation !== undefined ? { hyphenation: options.hyphenation } : {}),
-          ...(options.nerdFonts !== undefined ? { nerdFonts: options.nerdFonts } : {}),
+          ...(item.checked === undefined ? {} : { checked: item.checked }),
+          ...(item.task === undefined ? {} : { task: item.task }),
+          ...(options.hyphenation === undefined ? {} : { hyphenation: options.hyphenation }),
+          ...(options.nerdFonts === undefined ? {} : { nerdFonts: options.nerdFonts }),
         });
 
         // Render any block content (tables, blockquotes, code blocks, etc.)
@@ -117,12 +141,16 @@ export function createRenderer(
 
         // Join: item text, then block content, then nested lists
         const parts = [renderedItem];
-        if (blockRendered) {parts.push(blockRendered);}
-        if (nestedRendered) {parts.push(nestedRendered);}
+        if (blockRendered) {
+          parts.push(blockRendered);
+        }
+        if (nestedRendered) {
+          parts.push(nestedRendered);
+        }
         return parts.join('\n');
       })
       .join('\n');
-  }
+  };
 
   return {
     blockquote(this: RendererThis, { tokens }: { tokens: Token[] }): string {
@@ -144,7 +172,7 @@ export function createRenderer(
     },
 
     code({ text, lang }: { text: string; lang?: string }): string {
-      const id = `__CODE_${Date.now()}_${Math.random().toString(36)}__`;
+      const id = `__CODE_${Date.now()}_${Math.random().toString(RANDOM_ID_RADIX)}__`;
       codeBlocks.set(id, { code: text, lang: lang ?? '' });
       return id;
     },
@@ -168,8 +196,7 @@ export function createRenderer(
     },
 
     html({ text }: { text: string }): string {
-      // Render inline HTML line breaks as terminal line breaks
-      if (/^<br\s*\/?>$/i.test(text.trim())) {
+      if (/^<br\s*\/?>$/iu.test(text.trim())) {
         return '\n';
       }
       return text;
@@ -182,17 +209,9 @@ export function createRenderer(
 
     list(
       this: RendererThis,
-      {
-        items,
-        ordered,
-        start,
-      }: {
-        items: { tokens: Token[]; task?: boolean; checked?: boolean }[];
-        ordered: boolean;
-        start: number | '';
-      },
+      { items, ordered, start }: { items: ListItemToken[]; ordered: boolean; start: number | '' },
     ): string {
-      return `${renderListWithDepth(this.parser, items, ordered, start || 1, 0)}\n`;
+      return `${renderListWithDepth(this.parser, items, ordered, typeof start === 'number' ? start : 1, 0)}\n`;
     },
 
     listitem(this: RendererThis, { tokens }: { tokens: Token[] }): string {
@@ -209,13 +228,7 @@ export function createRenderer(
       return getBoldStyle()(text);
     },
 
-    table({
-      header,
-      rows,
-    }: {
-      header: { text: string }[];
-      rows: Array<{ text: string }>[];
-    }): string {
+    table({ header, rows }: { header: { text: string }[]; rows: { text: string }[][] }): string {
       return `${renderTable(
         header.map((h) => h.text),
         rows.map((row) => row.map((c) => c.text)),
@@ -223,7 +236,7 @@ export function createRenderer(
       )}\n`;
     },
   };
-}
+};
 
 // Decode HTML entities that marked escapes (we're outputting to terminal, not HTML)
 const HTML_ENTITIES: Record<string, string> = {
@@ -234,19 +247,18 @@ const HTML_ENTITIES: Record<string, string> = {
   '&quot;': '"',
 };
 
-function decodeHtmlEntities(text: string): string {
-  return text.replaceAll(/&#?\w+;/g, (entity) => HTML_ENTITIES[entity] ?? entity);
-}
+const decodeHtmlEntities = (text: string): string =>
+  text.replaceAll(/&#?\w+;/gu, (entity) => HTML_ENTITIES[entity] ?? entity);
 
-export async function parseMarkdown(markdown: string, options: ParseOptions): Promise<string> {
+const parseMarkdown = async (markdown: string, options: ParseOptions): Promise<string> => {
   const codeBlocks = new Map<string, { code: string; lang: string }>();
 
   const marked = new Marked();
   marked.use({ renderer: createRenderer(options, codeBlocks) });
 
-  let result = marked.parse(markdown) as string;
+  const parsed = marked.parse(markdown);
+  let result = typeof parsed === 'string' ? parsed : await parsed;
 
-  // Decode HTML entities since we're outputting to terminal, not HTML
   result = decodeHtmlEntities(result);
 
   if (codeBlocks.size > 0) {
@@ -255,7 +267,7 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
       theme: theme().shikiTheme,
       width: options.width,
       wrap: options.wrap ?? true,
-      ...(options.nerdFonts !== undefined ? { useNerdFonts: options.nerdFonts } : {}),
+      ...(options.nerdFonts === undefined ? {} : { useNerdFonts: options.nerdFonts }),
     };
 
     const refs = [...codeBlocks.entries()].map(([id, { code, lang }]) => ({ code, id, lang }));
@@ -270,4 +282,6 @@ export async function parseMarkdown(markdown: string, options: ParseOptions): Pr
   }
 
   return result;
-}
+};
+
+export { createRenderer, parseMarkdown };

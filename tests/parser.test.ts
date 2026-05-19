@@ -63,7 +63,7 @@ describe('parseMarkdown', () => {
     const md = 'This is **bold** text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
     // Should contain ANSI bold+color codes (combined format), not literal asterisks
-    expect(result).toContain('\u001b[1;38;5;');
+    expect(result).toContain('\u001B[1;38;5;');
     expect(result).not.toContain('**');
   });
 
@@ -71,14 +71,14 @@ describe('parseMarkdown', () => {
     const md = 'This is *italic* text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
     // Should contain ANSI italic+color codes (combined format), not literal asterisks
-    expect(result).toContain('\u001b[3;38;5;');
+    expect(result).toContain('\u001B[3;38;5;');
     expect(result).not.toContain('*italic*');
   });
 
   test('renders bold in list items', async () => {
     const md = '- Item with **bold** text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
-    expect(result).toContain('\u001b[1;38;5;');
+    expect(result).toContain('\u001B[1;38;5;');
     expect(result).not.toContain('**');
   });
 
@@ -86,8 +86,8 @@ describe('parseMarkdown', () => {
     const md = 'This is ***bold italic*** text';
     const result = await parseMarkdown(md, { hyphenation: false, width: 80 });
     // Should contain both bold and italic ANSI codes, not literal asterisks
-    expect(result).toContain('\u001b[1;38;5;'); // Bold
-    expect(result).toContain('\u001b[3;38;5;'); // Italic
+    expect(result).toContain('\u001B[1;38;5;'); // Bold
+    expect(result).toContain('\u001B[3;38;5;'); // Italic
     expect(result).not.toContain('**');
     expect(result).not.toContain('***');
   });

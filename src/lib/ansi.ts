@@ -5,13 +5,16 @@
  * Broader escape patterns adapted from claudewatch/src/render/measure.ts.
  */
 
-// oxlint-disable-next-line no-control-regex
-const ANSI_PATTERN = /\u001B\[[0-9;]*m|\u001B\].*?\u0007|\u001B\[[\d;]*[A-Za-z]/gu;
+const ESC = '\u001B';
+const BEL = '\u0007';
+const ANSI_PATTERN = new RegExp(
+  `${ESC}\\[[0-9;]*m|${ESC}\\].*?${BEL}|${ESC}\\[[\\d;]*[A-Za-z]`,
+  'gu',
+);
 
-// oxlint-disable-next-line no-misleading-character-class
-const ZERO_WIDTH_PATTERN = /[\u{0300}-\u{036F}\u{200B}\u{200C}\u{200D}\u{FEFF}\u{202A}-\u{202E}]/gu;
+const ZERO_WIDTH_PATTERN = /[\u0300-\u036F\u200B\u200C\uFEFF\u202A-\u202E]|\u200D/gu;
 
-const SOFT_HYPHEN_REGEX = /\u00AD/g;
+const SOFT_HYPHEN_REGEX = /\u00AD/gu;
 
 export const stripAnsi = (str: string): string => str.replace(ANSI_PATTERN, '');
 

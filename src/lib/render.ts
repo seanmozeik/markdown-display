@@ -6,8 +6,10 @@ import { applyPadding, calculateLayout } from './layout';
 import { parseMarkdown } from './parser';
 import { getRawTerminalWidth, getTerminalWidth } from './width';
 
-export async function render(markdown: string, config: Config): Promise<string> {
-  if (!markdown.trim()) {return '';}
+export const render = async (markdown: string, config: Config): Promise<string> => {
+  if (!markdown.trim()) {
+    return '';
+  }
 
   const contentWidth =
     config.width === 'auto' ? getTerminalWidth() : getTerminalWidth(config.width);
@@ -30,4 +32,4 @@ export async function render(markdown: string, config: Config): Promise<string> 
   });
 
   return applyPadding(content, layout.sidePadding);
-}
+};

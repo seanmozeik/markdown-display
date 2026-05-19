@@ -21,24 +21,24 @@ describe('wrapCodeLines', () => {
 
   test('preserves ANSI state across wrapped lines', () => {
     // Simulate syntax-highlighted string that wraps
-    // \x1b[32m = basic green foreground
-    const greenText = `\u001b[32m${'x'.repeat(100)}\u001b[0m`;
+    // \u001B[32m = basic green foreground
+    const greenText = `\u001B[32m${'x'.repeat(100)}\u001B[0m`;
     const result = wrapCodeLines(greenText, 50, '→');
 
     const lines = result.split('\n');
     expect(lines.length).toBeGreaterThan(1);
 
     // First line should have reset at the end
-    expect(lines[0]).toContain('\u001b[0m');
+    expect(lines[0]).toContain('\u001B[0m');
 
     // Second line content should have the green color re-applied
     // (after the continuation marker which has its own styling)
-    expect(lines[1]).toContain('\u001b[32m');
+    expect(lines[1]).toContain('\u001B[32m');
   });
 
   test('handles multiple ANSI styles (bold + color)', () => {
     // Bold (1) + green (32)
-    const styledText = `\x1B[1;32m${'x'.repeat(100)}\u001b[0m`;
+    const styledText = `\u001B[1;32m${'x'.repeat(100)}\u001B[0m`;
     const result = wrapCodeLines(styledText, 50, '→');
 
     const lines = result.split('\n');
@@ -46,32 +46,32 @@ describe('wrapCodeLines', () => {
 
     // Second line should have both bold and color re-applied
     // The state is reconstructed as "1;32" (styles then color)
-    expect(lines[1]).toContain('\u001b['); // Has ANSI escape
+    expect(lines[1]).toContain('\u001B['); // Has ANSI escape
     expect(lines[1]).toContain('1;'); // Has bold code
     expect(lines[1]).toContain('32'); // Has green code
   });
 
   test('preserves 256-color syntax highlighting (Shiki style)', () => {
-    // Shiki uses 256-color mode: \x1b[38;5;Nm for foreground
+    // Shiki uses 256-color mode: \u001B[38;5;Nm for foreground
     // Simulate a highlighted string literal in color 114 (light green)
-    const shikiStyled = `\u001b[38;5;114m"this is a long string"${'x'.repeat(80)}\u001b[0m`;
+    const shikiStyled = `\u001B[38;5;114m"this is a long string"${'x'.repeat(80)}\u001B[0m`;
     const result = wrapCodeLines(shikiStyled, 50, '→');
 
     const lines = result.split('\n');
     expect(lines.length).toBeGreaterThan(1);
 
     // First line ends with reset
-    expect(lines[0]).toContain('\u001b[0m');
+    expect(lines[0]).toContain('\u001B[0m');
 
-    // Second line should re-apply the 256-color: \x1b[38;5;114m
-    expect(lines[1]).toContain('\u001b[38;5;114m');
+    // Second line should re-apply the 256-color: \u001B[38;5;114m
+    expect(lines[1]).toContain('\u001B[38;5;114m');
   });
 });
 
 describe('renderInlineCode', () => {
   test('applies inline code styling', () => {
     const result = renderInlineCode('const x = 1');
-    expect(result).toContain('\u001b[');
+    expect(result).toContain('\u001B[');
     expect(result).toContain('const x = 1');
   });
 });
@@ -88,7 +88,7 @@ describe('renderCodeBlock', () => {
 
     expect(result).toContain('const');
     // Boxen uses box-drawing characters
-    expect(result).toMatch(/[┌┐└┘│─╭╮╯╰]/);
+    expect(result).toMatch(/[┌┐└┘│─╭╮╯╰]/u);
   });
 
   test('includes language label in header', async () => {
@@ -127,8 +127,8 @@ describe('renderCodeBlock', () => {
     const lines = result.split('\n');
     // Structure should be: [header, code, closing border, empty from trailing newline]
     // Line at index 1 should be the code line (between header and closing border)
-    const codeLine = lines[1];
-    expect(codeLine).toMatch(/const/);
+    const [, codeLine] = lines;
+    expect(codeLine).toMatch(/const/u);
     // There should be exactly 4 lines (header, code, border, empty)
     expect(lines.length).toBe(4);
   });

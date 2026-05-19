@@ -11,12 +11,12 @@ describe('renderBlockquote', () => {
 
   test('handles multiline quotes', () => {
     const result = renderBlockquote('Line 1\nLine 2\nLine 3');
-    const barCount = (result.match(/│/g) ?? []).length;
+    const barCount = (result.match(/│/gu) ?? []).length;
     expect(barCount).toBe(3);
   });
 
   test('applies quote styling', () => {
     const result = renderBlockquote('Styled quote');
-    expect(result).toContain('\u001b[');
+    expect(result).toContain('\u001B[');
   });
 });

@@ -1,7 +1,7 @@
 // Src/ui/themes/color-support.ts
 import supportsColor from 'supports-color';
 
-export type ColorLevel = 0 | 1 | 2 | 3;
+type ColorLevel = 0 | 1 | 2 | 3;
 
 let cachedLevel: ColorLevel | null = null;
 let configOverride: boolean | 'auto' = 'auto';
@@ -10,41 +10,36 @@ let configOverride: boolean | 'auto' = 'auto';
  * Initialize color environment on module load.
  * Syncs NO_COLOR to FORCE_COLOR for chalk/boxen consistency.
  */
-function initColorEnvironment(): void {
+const initColorEnvironment = (): void => {
   const noColorEnv = Bun.env.NO_COLOR !== undefined && Bun.env.NO_COLOR !== '';
   const noColorFlag = process.argv.includes('--no-color');
 
   if (noColorEnv || noColorFlag) {
     Bun.env.FORCE_COLOR = '0';
   }
-}
+};
 
-// Run on module load
 initColorEnvironment();
 
 /**
  * Set color configuration override.
  * @param truecolor - true for truecolor, false for 256-color, 'auto' for detection
  */
-export function setColorConfig(truecolor: boolean | 'auto'): void {
+const setColorConfig = (truecolor: boolean | 'auto'): void => {
   configOverride = truecolor;
   cachedLevel = null;
 
-  // Sync to FORCE_COLOR so chalk/gradient-string respect our config
   if (truecolor === true) {
     Bun.env.FORCE_COLOR = '3';
   } else if (truecolor === false) {
     Bun.env.FORCE_COLOR = '2';
   }
-  // 'auto' leaves FORCE_COLOR as-is for natural detection
-}
+};
 
-/**
- * Reset the cached color level. Useful for testing.
- */
-export function resetColorCache(): void {
+/** Reset the cached color level. Useful for testing. */
+const resetColorCache = (): void => {
   cachedLevel = null;
-}
+};
 
 const detectAutoColorLevel = (): ColorLevel => {
   const force = Bun.env.FORCE_COLOR;
@@ -76,19 +71,20 @@ const detectAutoColorLevel = (): ColorLevel => {
   }
 
   const detected = supportsColor.stdout;
-  return detected ? (detected.level as ColorLevel) : 0;
+  if (detected === false) {
+    return 0;
+  }
+  return detected.level as ColorLevel;
 };
 
-/**
- * Get the current color level.
- * @returns 0 (no color), 1 (basic), 2 (256), or 3 (truecolor)
- */
-export function getColorLevel(): ColorLevel {
-  if (cachedLevel !== null) {return cachedLevel;}
+/** Get the current color level: 0 (none), 1 (basic), 2 (256), or 3 (truecolor). */
+const getColorLevel = (): ColorLevel => {
+  if (cachedLevel !== null) {
+    return cachedLevel;
+  }
 
   let level: ColorLevel;
 
-  // NO_COLOR standard (no-color.org) - highest priority
   if (Bun.env.NO_COLOR !== undefined && Bun.env.NO_COLOR !== '') {
     level = 0;
   } else if (configOverride === true) {
@@ -101,11 +97,10 @@ export function getColorLevel(): ColorLevel {
 
   cachedLevel = level;
   return level;
-}
+};
 
-/**
- * Check if truecolor is supported.
- */
-export function supportsTruecolor(): boolean {
-  return getColorLevel() >= 3;
-}
+/** Check if truecolor is supported. */
+const supportsTruecolor = (): boolean => getColorLevel() >= 3;
+
+export type { ColorLevel };
+export { getColorLevel, resetColorCache, setColorConfig, supportsTruecolor };

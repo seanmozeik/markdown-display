@@ -11,7 +11,7 @@ describe('render', () => {
 
     expect(result).toContain('Hello');
     expect(result).toContain('World');
-    expect(result).toContain('\u001b[');
+    expect(result).toContain('\u001B[');
   });
 
   test('handles empty input', async () => {

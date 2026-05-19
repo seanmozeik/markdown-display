@@ -28,7 +28,7 @@ interface ShikiModule {
 }
 
 /** Languages passed to Shiki's codeToANSI (superset of icon map keys). */
-export const SHIKI_SUPPORTED_LANGS = new Set<string>([
+const SHIKI_SUPPORTED_LANGS = new Set<string>([
   'apache',
   'bash',
   'c',
@@ -109,7 +109,7 @@ const isBundledLanguage = (value: string): value is BundledLanguage =>
   SHIKI_SUPPORTED_LANGS.has(value);
 const isBundledTheme = (value: string): value is BundledTheme => value in themes;
 
-export const stripItalicAnsi = (code: string): string =>
+const stripItalicAnsi = (code: string): string =>
   code.replaceAll(ANSI_SGR_PATTERN, (_full, params: string) => {
     const filtered = params
       .split(';')
@@ -138,14 +138,14 @@ const rememberHighlightedCode = (key: string, code: string): void => {
   highlightedCodeCache.set(key, code);
 };
 
-export const clearHighlightCache = (): void => {
+const clearHighlightCache = (): void => {
   highlightedCodeCache.clear();
 };
 
 /**
  * Highlight code using Shiki; returns plain code on unsupported lang/theme, size limit, or errors.
  */
-export const highlightCode = Effect.fn('md.highlight-code')(function* highlightCodeEffect(
+const highlightCode = Effect.fn('md.highlight-code')(function* highlightCodeEffect(
   code: string,
   lang: string,
   themeId: string,
@@ -176,3 +176,5 @@ export const highlightCode = Effect.fn('md.highlight-code')(function* highlightC
     return output;
   }).pipe(Effect.catch(() => Effect.succeed(code)));
 });
+
+export { clearHighlightCache, highlightCode, SHIKI_SUPPORTED_LANGS, stripItalicAnsi };

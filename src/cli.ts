@@ -30,8 +30,7 @@ const md = Command.make('md', { files: filesArg, ...mdCliOptions }, (options) =>
   }),
 ).pipe(Command.withDescription('Beautiful terminal markdown viewer'));
 
-export const app = md;
-export const program = Command.run(md, { version: pkg.version });
+const program = Command.run(md, { version: pkg.version });
 
 const stderrLogger = Logger.make(({ logLevel, message }) => {
   let text: string;
@@ -48,11 +47,21 @@ const stderrLogger = Logger.make(({ logLevel, message }) => {
 const verbose = process.argv.includes('--verbose');
 const minLogLevel: LogLevel.LogLevel = verbose ? 'Debug' : 'Warn';
 
-export const runtimeLayer = Layer.mergeAll(
+const runtimeLayer = Layer.mergeAll(
   BunServices.layer,
   Logger.layer([stderrLogger]),
   Layer.succeed(References.MinimumLogLevel, minLogLevel),
 );
+
+const formatUnknownError = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return String(error);
+};
 
 const writeBoundaryError = (error: unknown): void => {
   if (isMdAppError(error)) {
@@ -61,9 +70,7 @@ const writeBoundaryError = (error: unknown): void => {
     return;
   }
 
-  const message =
-    error instanceof Error ? error.message : (typeof error === 'string' ? error : String(error));
-  console.error(getErrorColor()(message));
+  console.error(getErrorColor()(formatUnknownError(error)));
   process.exitCode = 1;
 };
 
@@ -72,7 +79,7 @@ const wantsVersion = (): boolean =>
 
 const wantsHelp = (): boolean => process.argv.includes('--help') || process.argv.includes('-h');
 
-export const runnableProgram = Effect.gen(function* cliMain() {
+const runnableProgram = Effect.gen(function* cliMain() {
   if (wantsVersion()) {
     yield* showVersion(pkg.version);
     return;
@@ -87,7 +94,7 @@ export const runnableProgram = Effect.gen(function* cliMain() {
   Effect.catchCause((cause) =>
     Effect.sync(() => {
       const fail = cause.reasons.find(Cause.isFailReason);
-      writeBoundaryError(fail !== undefined ? fail.error : cause);
+      writeBoundaryError(fail === undefined ? cause : fail.error);
     }),
   ),
 );
@@ -95,3 +102,7 @@ export const runnableProgram = Effect.gen(function* cliMain() {
 if (import.meta.main) {
   BunRuntime.runMain(runnableProgram);
 }
+
+const app = md;
+
+export { app, md, program, runnableProgram, runtimeLayer };

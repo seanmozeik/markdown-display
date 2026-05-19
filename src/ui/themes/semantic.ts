@@ -5,31 +5,43 @@ import { theme } from './index';
 
 type StyleFn = (text: string) => string;
 
+interface HexColors {
+  accent: string;
+  h1: string;
+  subtle: string;
+}
+
+interface GradientColors {
+  banner: string[];
+  error: string[];
+  success: string[];
+}
+
 /** Get bold text style (uses override or emphasis color) */
-export function getBoldStyle(): StyleFn {
+export const getBoldStyle = (): StyleFn => {
   const t = theme();
   const color = t.overrides?.bold ?? t.colors.emphasis;
   return ansiBold(color);
-}
+};
 
 /** Get italic text style (uses override or auxiliary color) */
-export function getItalicStyle(): StyleFn {
+export const getItalicStyle = (): StyleFn => {
   const t = theme();
   const color = t.overrides?.italic ?? t.colors.auxiliary;
   return ansiItalic(color);
-}
+};
 
 /** Get inline code style (fg + bg) */
-export function getInlineCodeStyle(): StyleFn {
+export const getInlineCodeStyle = (): StyleFn => {
   const t = theme();
   if (t.overrides?.inlineCode) {
     return ansiFgBg(t.overrides.inlineCode.fg, t.overrides.inlineCode.bg);
   }
   return ansiFgBg(t.colors.accent, t.colors.surface);
-}
+};
 
 /** Get heading color by level (1-5) */
-export function getHeadingColor(level: number): StyleFn {
+export const getHeadingColor = (level: number): StyleFn => {
   const t = theme();
   const o = t.overrides;
   const heading = o?.heading;
@@ -51,78 +63,63 @@ export function getHeadingColor(level: number): StyleFn {
       return ansiFg(t.colors.muted);
     }
   }
-}
+};
 
 /** Get link color */
-export function getLinkColor(): StyleFn {
+export const getLinkColor = (): StyleFn => {
   const t = theme();
   return ansiFg(t.overrides?.link ?? t.colors.accent);
-}
+};
 
 /** Get body text color */
-export function getTextColor(): StyleFn {
-  return ansiFg(theme().colors.text);
-}
+export const getTextColor = (): StyleFn => ansiFg(theme().colors.text);
 
 /** Get muted/secondary text color */
-export function getMutedColor(): StyleFn {
-  return ansiFg(theme().colors.muted);
-}
+export const getMutedColor = (): StyleFn => ansiFg(theme().colors.muted);
 
 /** Get subtle/border color */
-export function getSubtleColor(): StyleFn {
-  return ansiFg(theme().colors.subtle);
-}
+export const getSubtleColor = (): StyleFn => ansiFg(theme().colors.subtle);
 
 /** Get error color */
-export function getErrorColor(): StyleFn {
-  return ansiFg(theme().colors.error);
-}
+export const getErrorColor = (): StyleFn => ansiFg(theme().colors.error);
 
 /** Get success color */
-export function getSuccessColor(): StyleFn {
-  return ansiFg(theme().colors.success);
-}
+export const getSuccessColor = (): StyleFn => ansiFg(theme().colors.success);
 
 /** Get accent color (headings, links, list markers) */
-export function getAccentColor(): StyleFn {
-  return ansiFg(theme().colors.accent);
-}
+export const getAccentColor = (): StyleFn => ansiFg(theme().colors.accent);
 
 /** Get hex color values for libraries that need hex (boxen, gradient-string) */
-export function getHexColors() {
+export const getHexColors = (): HexColors => {
   const t = theme();
   return {
     accent: t.colors.accent,
     h1: t.overrides?.h1 ?? t.overrides?.heading ?? t.colors.accent,
     subtle: t.colors.subtle,
   };
-}
+};
 
 /** Style box title that transitions back to border color instead of resetting */
-export function getBoxTitleStyle(): StyleFn {
+export const getBoxTitleStyle = (): StyleFn => {
   const t = theme();
   const titleColor = t.overrides?.link ?? t.colors.accent;
   const borderColor = t.colors.subtle;
   return ansiFgTransition(titleColor, borderColor);
-}
+};
 
 /** Get gradient color arrays for gradient-string library */
-export function getGradientColors() {
+export const getGradientColors = (): GradientColors => {
   const t = theme();
   const o = t.overrides;
 
-  // Banner gradient: Use heading colors (h1 -> h2 -> bold or accent)
-  // This creates a pleasing gradient from primary accent through heading colors
   const banner = [
     o?.h1 ?? o?.heading ?? t.colors.accent,
     o?.bold ?? o?.h2 ?? t.colors.emphasis,
     o?.h2 ?? t.colors.info,
   ];
 
-  // Status gradients
   const success = [t.colors.success, t.colors.info];
   const error = [t.colors.error, t.colors.warning];
 
   return { banner, error, success };
-}
+};

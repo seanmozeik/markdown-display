@@ -13,10 +13,16 @@ describe('supportsNerdFonts', () => {
   const originalNerdFont = Bun.env.NERD_FONTS;
 
   afterEach(() => {
-    if (originalTermProgram) {Bun.env.TERM_PROGRAM = originalTermProgram;}
-    else {delete Bun.env.TERM_PROGRAM;}
-    if (originalNerdFont) {Bun.env.NERD_FONTS = originalNerdFont;}
-    else {delete Bun.env.NERD_FONTS;}
+    if (originalTermProgram === undefined) {
+      delete Bun.env.TERM_PROGRAM;
+    } else {
+      Bun.env.TERM_PROGRAM = originalTermProgram;
+    }
+    if (originalNerdFont === undefined) {
+      delete Bun.env.NERD_FONTS;
+    } else {
+      Bun.env.NERD_FONTS = originalNerdFont;
+    }
   });
 
   test('returns true when NERD_FONTS env is set', () => {
@@ -72,7 +78,9 @@ describe('LANGUAGES', () => {
 describe('getLanguageLabel', () => {
   test('returns icon when nerdFonts enabled and icon exists', () => {
     const tsLang = LANGUAGES['typescript'];
-    if (!tsLang) {throw new Error('typescript should be in LANGUAGES');}
+    if (!tsLang) {
+      throw new Error('typescript should be in LANGUAGES');
+    }
     const result = getLanguageLabel('typescript', true);
     expect(result).toBe(tsLang.icon);
     expect(result.length).toBeGreaterThan(0);

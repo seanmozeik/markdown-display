@@ -1,12 +1,8 @@
 // Src/lib/elements/table.test.ts
 import { describe, expect, test } from 'bun:test';
 
+import { stripAnsi } from '../src/lib/ansi';
 import { renderTable } from '../src/lib/elements/table';
-
-function stripAnsi(str: string): string {
-  // Biome-ignore lint/suspicious/noControlCharactersInRegex: ESC character required for ANSI stripping
-  return str.replaceAll(/\x1B\[[0-9;]*m/g, '');
-}
 
 describe('renderTable', () => {
   test('renders table with proper grid borders', () => {

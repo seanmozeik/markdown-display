@@ -17,16 +17,16 @@ const clearNoColorForTest = (): (() => void) => {
   const savedForce = Bun.env.FORCE_COLOR;
   delete Bun.env.NO_COLOR;
   delete Bun.env.FORCE_COLOR;
-  return () => {
-    if (savedNoColor !== undefined) {
-      Bun.env.NO_COLOR = savedNoColor;
-    } else {
+  return (): void => {
+    if (savedNoColor === undefined) {
       delete Bun.env.NO_COLOR;
-    }
-    if (savedForce !== undefined) {
-      Bun.env.FORCE_COLOR = savedForce;
     } else {
+      Bun.env.NO_COLOR = savedNoColor;
+    }
+    if (savedForce === undefined) {
       delete Bun.env.FORCE_COLOR;
+    } else {
+      Bun.env.FORCE_COLOR = savedForce;
     }
   };
 };
@@ -81,16 +81,16 @@ describe('ansiFg', () => {
     setColorConfig(true);
     const style = ansiFg('#ff5500');
     const result = style('test');
-    expect(result).toContain('\u001b[38;2;255;85;0m');
-    expect(result).toContain('\x1B[0m');
+    expect(result).toContain('\u001B[38;2;255;85;0m');
+    expect(result).toContain('\u001B[0m');
   });
 
   test('outputs 256-color when level is 2', () => {
     setColorConfig(false);
     const style = ansiFg('#ff5500');
     const result = style('test');
-    expect(result).toContain('\x1B[38;5;');
-    expect(result).not.toContain('\u001b[38;2;');
+    expect(result).toContain('\u001B[38;5;');
+    expect(result).not.toContain('\u001B[38;2;');
   });
 });
 
@@ -112,15 +112,15 @@ describe('ansiBg', () => {
     setColorConfig(true);
     const style = ansiBg('#ff5500');
     const result = style('test');
-    expect(result).toContain('\x1B[48;2;255;85;0m');
+    expect(result).toContain('\u001B[48;2;255;85;0m');
   });
 
   test('outputs 256-color when level is 2', () => {
     setColorConfig(false);
     const style = ansiBg('#ff5500');
     const result = style('test');
-    expect(result).toContain('\u001b[48;5;');
-    expect(result).not.toContain('\x1B[48;2;');
+    expect(result).toContain('\u001B[48;5;');
+    expect(result).not.toContain('\u001B[48;2;');
   });
 });
 
@@ -142,14 +142,14 @@ describe('ansiFgBg', () => {
     setColorConfig(true);
     const style = ansiFgBg('#ff0000', '#0000ff');
     const result = style('test');
-    expect(result).toContain('\x1B[38;2;255;0;0;48;2;0;0;255m');
+    expect(result).toContain('\u001B[38;2;255;0;0;48;2;0;0;255m');
   });
 
   test('outputs 256-color for both fg and bg when level is 2', () => {
     setColorConfig(false);
     const style = ansiFgBg('#ff0000', '#0000ff');
     const result = style('test');
-    expect(result).toContain('\x1B[38;5;');
+    expect(result).toContain('\u001B[38;5;');
     expect(result).toContain(';48;5;');
   });
 });
@@ -172,14 +172,14 @@ describe('ansiBold', () => {
     setColorConfig(true);
     const style = ansiBold('#ff5500');
     const result = style('test');
-    expect(result).toContain('\x1B[1;38;2;255;85;0m');
+    expect(result).toContain('\u001B[1;38;2;255;85;0m');
   });
 
   test('outputs 256-color with bold when level is 2', () => {
     setColorConfig(false);
     const style = ansiBold('#ff5500');
     const result = style('test');
-    expect(result).toContain('\x1B[1;38;5;');
+    expect(result).toContain('\u001B[1;38;5;');
   });
 });
 
@@ -201,14 +201,14 @@ describe('ansiItalic', () => {
     setColorConfig(true);
     const style = ansiItalic('#ff5500');
     const result = style('test');
-    expect(result).toContain('\u001b[3;38;2;255;85;0m');
+    expect(result).toContain('\u001B[3;38;2;255;85;0m');
   });
 
   test('outputs 256-color with italic when level is 2', () => {
     setColorConfig(false);
     const style = ansiItalic('#ff5500');
     const result = style('test');
-    expect(result).toContain('\u001b[3;38;5;');
+    expect(result).toContain('\u001B[3;38;5;');
   });
 });
 
@@ -230,16 +230,16 @@ describe('ansiFgTransition', () => {
     setColorConfig(true);
     const style = ansiFgTransition('#ff0000', '#00ff00');
     const result = style('test');
-    expect(result).toContain('\u001b[38;2;255;0;0m');
-    expect(result).toContain('\u001b[38;2;0;255;0m');
-    expect(result).not.toContain('\u001b[0m'); // No reset, transitions instead
+    expect(result).toContain('\u001B[38;2;255;0;0m');
+    expect(result).toContain('\u001B[38;2;0;255;0m');
+    expect(result).not.toContain('\u001B[0m'); // No reset, transitions instead
   });
 
   test('outputs 256-color transition when level is 2', () => {
     setColorConfig(false);
     const style = ansiFgTransition('#ff0000', '#00ff00');
     const result = style('test');
-    expect(result).toContain('\u001b[38;5;');
-    expect(result).not.toContain('\u001b[38;2;');
+    expect(result).toContain('\u001B[38;5;');
+    expect(result).not.toContain('\u001B[38;2;');
   });
 });

@@ -12,11 +12,16 @@ describe('getColorLevel', () => {
   });
 
   afterEach(() => {
-    // Restore environment
-    if (originalNoColor !== undefined) {Bun.env.NO_COLOR = originalNoColor;}
-    else {delete Bun.env.NO_COLOR;}
-    if (originalForceColor !== undefined) {Bun.env.FORCE_COLOR = originalForceColor;}
-    else {delete Bun.env.FORCE_COLOR;}
+    if (originalNoColor === undefined) {
+      delete Bun.env.NO_COLOR;
+    } else {
+      Bun.env.NO_COLOR = originalNoColor;
+    }
+    if (originalForceColor === undefined) {
+      delete Bun.env.FORCE_COLOR;
+    } else {
+      Bun.env.FORCE_COLOR = originalForceColor;
+    }
     resetColorCache();
     setColorConfig('auto');
   });
@@ -28,10 +33,9 @@ describe('getColorLevel', () => {
   });
 
   test('does not disable color when NO_COLOR is unset', () => {
-    // When NO_COLOR is not set, config override should work
     delete Bun.env.NO_COLOR;
     resetColorCache();
-    setColorConfig(true); // Force truecolor
+    setColorConfig(true);
     expect(getColorLevel()).toBe(3);
   });
 
@@ -54,7 +58,6 @@ describe('getColorLevel', () => {
     resetColorCache();
     setColorConfig(true);
     const first = getColorLevel();
-    // Call again without changing config - should return cached value
     const second = getColorLevel();
     expect(first).toBe(second);
     expect(first).toBe(3);
@@ -63,10 +66,10 @@ describe('getColorLevel', () => {
   test('resetColorCache clears the cache', () => {
     delete Bun.env.NO_COLOR;
     setColorConfig(true);
-    getColorLevel(); // Cache level 3
+    getColorLevel();
     resetColorCache();
     setColorConfig(false);
-    expect(getColorLevel()).toBe(2); // Now should be 2
+    expect(getColorLevel()).toBe(2);
   });
 });
 
@@ -78,16 +81,16 @@ describe('setColorConfig', () => {
     const savedForce = Bun.env.FORCE_COLOR;
     delete Bun.env.NO_COLOR;
     delete Bun.env.FORCE_COLOR;
-    restoreEnv = () => {
-      if (savedNoColor !== undefined) {
-        Bun.env.NO_COLOR = savedNoColor;
-      } else {
+    restoreEnv = (): void => {
+      if (savedNoColor === undefined) {
         delete Bun.env.NO_COLOR;
-      }
-      if (savedForce !== undefined) {
-        Bun.env.FORCE_COLOR = savedForce;
       } else {
+        Bun.env.NO_COLOR = savedNoColor;
+      }
+      if (savedForce === undefined) {
         delete Bun.env.FORCE_COLOR;
+      } else {
+        Bun.env.FORCE_COLOR = savedForce;
       }
     };
     resetColorCache();
@@ -111,7 +114,6 @@ describe('setColorConfig', () => {
 
   test('accepts "auto" string', () => {
     setColorConfig('auto');
-    // Should not throw, result depends on terminal
     expect(() => getColorLevel()).not.toThrow();
   });
 });

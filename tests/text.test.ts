@@ -30,14 +30,14 @@ describe('renderText', () => {
 
   test('applies text color', () => {
     const result = renderText('Colored', { hyphenation: false, width: 80 });
-    expect(result).toContain('\u001b[');
+    expect(result).toContain('\u001B[');
   });
 });
 
 describe('wrapText with ANSI codes', () => {
   test('keeps ANSI-styled content atomic when wrapping', () => {
-    // Simulate inline code: \x1b[38;5;X;48;5;Ym foo \x1b[0m
-    const styledCode = '\u001b[38;5;123;48;5;234m foo \u001b[0m';
+    // Simulate inline code: \u001B[38;5;X;48;5;Ym foo \u001B[0m
+    const styledCode = '\u001B[38;5;123;48;5;234m foo \u001B[0m';
     const text = `Some text before ${styledCode} and after`;
     const result = wrapText(text, 30);
 
@@ -45,8 +45,8 @@ describe('wrapText with ANSI codes', () => {
     expect(result).toContain(styledCode);
     // Should not have the ANSI start on one line and reset on another
     for (const line of result.split('\n')) {
-      const hasStart = line.includes('\u001b[38;5;');
-      const hasReset = line.includes('\u001b[0m');
+      const hasStart = line.includes('\u001B[38;5;');
+      const hasReset = line.includes('\u001B[0m');
       // If line has ANSI start, it must also have reset (or no ANSI at all)
       if (hasStart) {
         expect(hasReset).toBe(true);
@@ -55,8 +55,8 @@ describe('wrapText with ANSI codes', () => {
   });
 
   test('handles multiple inline code blocks', () => {
-    const code1 = '\u001b[38;5;1m a \u001b[0m';
-    const code2 = '\u001b[38;5;2m b \u001b[0m';
+    const code1 = '\u001B[38;5;1m a \u001B[0m';
+    const code2 = '\u001B[38;5;2m b \u001B[0m';
     const text = `Word ${code1} word ${code2} word`;
     const result = wrapText(text, 20);
 

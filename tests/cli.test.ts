@@ -15,7 +15,7 @@ describe('md CLI', () => {
 
   test('--version shows version', async () => {
     const result = await $`bun run src/cli.ts --version`.text();
-    expect(result).toMatch(/v\d+\.\d+\.\d+/);
+    expect(result).toMatch(/v\d+\.\d+\.\d+/u);
     expect(result).toContain('╭');
   });
 
@@ -27,7 +27,7 @@ describe('md CLI', () => {
 
   test('renders markdown file', async () => {
     const result = await $`bun run src/cli.ts ${testFile} --no-pager`.text();
-    const normalized = result.replaceAll(/\u00AD/g, '');
+    const normalized = result.replaceAll('­', '');
     expect(normalized).toContain('Test');
     expect(normalized).toContain('Hello world');
   });

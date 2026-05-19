@@ -19,20 +19,20 @@ describe('semantic colors', () => {
 
   test('getBoldStyle returns override when available', () => {
     const style = getBoldStyle();
-    expect(style('test')).toContain('\u001b[1;'); // Bold
+    expect(style('test')).toContain('\u001B[1;'); // Bold
     expect(style('test')).toContain('test');
   });
 
   test('getItalicStyle returns override when available', () => {
     const style = getItalicStyle();
-    expect(style('test')).toContain('\u001b[3;'); // Italic
+    expect(style('test')).toContain('\u001B[3;'); // Italic
   });
 
   test('getInlineCodeStyle returns fg+bg combination', () => {
     const style = getInlineCodeStyle();
     const result = style('code');
     expect(result).toContain('code');
-    expect(result).toContain('\u001b['); // Has ANSI codes
+    expect(result).toContain('\u001B['); // Has ANSI codes
   });
 
   test('getHeadingColor returns level-appropriate colors', () => {

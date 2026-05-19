@@ -1,7 +1,7 @@
 // Src/lib/pager.ts
 import { stripAnsi } from './ansi';
 
-export enum PagingMode {
+enum PagingMode {
   Always = 'always',
   QuitIfOneScreen = 'quit-if-one-screen',
   Never = 'never',
@@ -21,50 +21,62 @@ interface PagingContext {
   forceAlways?: boolean;
 }
 
-export function shouldUsePager(ctx: PagingContext): PagingMode {
-  if (ctx.noPager || !ctx.stdoutTTY) {return PagingMode.Never;}
-  if (ctx.forceAlways) {return PagingMode.Always;}
-  if (ctx.lines <= ctx.height) {return PagingMode.Never;}
+export const shouldUsePager = (ctx: PagingContext): PagingMode => {
+  if (ctx.noPager === true || !ctx.stdoutTTY) {
+    return PagingMode.Never;
+  }
+  if (ctx.forceAlways === true) {
+    return PagingMode.Always;
+  }
+  if (ctx.lines <= ctx.height) {
+    return PagingMode.Never;
+  }
   return PagingMode.QuitIfOneScreen;
-}
+};
 
-export function getPagerCommand(config: PagerConfig): {
-  command: string;
-  args: string[];
-  env: Record<string, string>;
-} {
+export const getPagerCommand = (
+  config: PagerConfig,
+): { command: string; args: string[]; env: Record<string, string> } => {
   // Priority: config > MD_PAGER > PAGER > less (bat pattern)
-  const command = config.command || (Bun.env.MD_PAGER ?? Bun.env.PAGER) ?? 'less';
+  const command = config.command || (Bun.env.MD_PAGER ?? Bun.env.PAGER ?? 'less');
 
   // For less, inject smart defaults if no args configured
-  let {args} = config;
+  let { args } = config;
   if (command === 'less' && args.length === 0) {
-    args = ['-r', '-F', '-K', '-X']; // Raw control chars (for nerd fonts), quit-if-one-screen, quit-on-interrupt, no-init
+    // Raw control chars (nerd fonts), quit-if-one-screen, quit-on-interrupt, no-init
+    args = ['-r', '-F', '-K', '-X'];
   }
 
   return {
     args,
     command,
     env: {
-      LESSCHARSET: 'utf8', // Ensure UTF-8 (bat pattern)
-      LESSUTFBINFMT: '*d', // Display Unicode PUA chars (nerd fonts) as-is, not escaped
+      LESSCHARSET: 'utf8',
+      // Display Unicode PUA chars (nerd fonts) as-is, not escaped
+      LESSUTFBINFMT: '*d',
     },
   };
-}
+};
 
-export function countLines(content: string, width?: number): number {
-  if (!content) {return 1;}
+export const countLines = (content: string, width?: number): number => {
+  if (content.length === 0) {
+    return 1;
+  }
 
   const lines = content.split('\n');
-  if (!width) {return lines.length;}
+  if (width === undefined || width === 0) {
+    return lines.length;
+  }
 
-  return lines.reduce((total, line) => {
+  let total = 0;
+  for (const line of lines) {
     const visibleLength = stripAnsi(line).length;
-    return total + Math.max(1, Math.ceil(visibleLength / width));
-  }, 0);
-}
+    total += Math.max(1, Math.ceil(visibleLength / width));
+  }
+  return total;
+};
 
-export async function pipeToLess(content: string, config: PagerConfig): Promise<void> {
+export const pipeToLess = async (content: string, config: PagerConfig): Promise<void> => {
   const { command, args, env } = getPagerCommand(config);
 
   const proc = Bun.spawn([command, ...args], {
@@ -74,16 +86,18 @@ export async function pipeToLess(content: string, config: PagerConfig): Promise<
     stdout: 'inherit',
   });
 
-  proc.stdin.write(content);
-  proc.stdin.end();
+  await proc.stdin.write(content);
+  await proc.stdin.end();
 
   await proc.exited;
-}
+};
 
-export function shouldUseColor(): boolean {
+export const shouldUseColor = (): boolean => {
   // Respect NO_COLOR standard (bat pattern)
   if (Bun.env.NO_COLOR !== undefined) {
     return false;
   }
-  return process.stdout.isTTY ?? false;
-}
+  return process.stdout.isTTY;
+};
+
+export { PagingMode };

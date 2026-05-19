@@ -9,9 +9,9 @@ describe('renderLink', () => {
       osc8: true,
       show_urls: false,
     });
-    expect(result).toContain('\u001b]8;;https://example.com\u0007');
+    expect(result).toContain('\u001B]8;;https://example.com\u0007');
     expect(result).toContain('Click here');
-    expect(result).toContain('\u001b]8;;\u0007');
+    expect(result).toContain('\u001B]8;;\u0007');
   });
 
   test('renders plain link with URL when OSC 8 disabled', () => {
@@ -19,7 +19,7 @@ describe('renderLink', () => {
       osc8: false,
       show_urls: false,
     });
-    expect(result).not.toContain('\u001b]8;;');
+    expect(result).not.toContain('\u001B]8;;');
     expect(result).toContain('Click here');
     expect(result).toContain('https://example.com');
   });
@@ -29,7 +29,7 @@ describe('renderLink', () => {
       osc8: false,
       show_urls: false,
     });
-    const urlCount = (result.match(/example\.com/g) ?? []).length;
+    const urlCount = (result.match(/example\.com/gu) ?? []).length;
     expect(urlCount).toBe(1);
   });
 });
@@ -38,8 +38,11 @@ describe('supportsOsc8', () => {
   const originalTermProgram = Bun.env.TERM_PROGRAM;
 
   afterEach(() => {
-    if (originalTermProgram) {Bun.env.TERM_PROGRAM = originalTermProgram;}
-    else {delete Bun.env.TERM_PROGRAM;}
+    if (originalTermProgram === undefined) {
+      delete Bun.env.TERM_PROGRAM;
+    } else {
+      Bun.env.TERM_PROGRAM = originalTermProgram;
+    }
   });
 
   test('returns true for known supporting terminals', () => {

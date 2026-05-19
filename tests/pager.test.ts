@@ -40,10 +40,16 @@ describe('getPagerCommand', () => {
   const originalMdPager = Bun.env.MD_PAGER;
 
   afterEach(() => {
-    if (originalPager) {Bun.env.PAGER = originalPager;}
-    else {delete Bun.env.PAGER;}
-    if (originalMdPager) {Bun.env.MD_PAGER = originalMdPager;}
-    else {delete Bun.env.MD_PAGER;}
+    if (originalPager === undefined) {
+      delete Bun.env.PAGER;
+    } else {
+      Bun.env.PAGER = originalPager;
+    }
+    if (originalMdPager === undefined) {
+      delete Bun.env.MD_PAGER;
+    } else {
+      Bun.env.MD_PAGER = originalMdPager;
+    }
   });
 
   test('uses config command if provided', () => {
