@@ -108,15 +108,15 @@ const NERD_FONT_TERMINALS = ['WezTerm', 'kitty', 'Alacritty'];
 
 const supportsNerdFonts = (): boolean => {
   // Explicit override via env var
-  if (Bun.env.NERD_FONTS === '1' || Bun.env.NERD_FONTS === 'true') {
+  if (Bun.env['NERD_FONTS'] === '1' || Bun.env['NERD_FONTS'] === 'true') {
     return true;
   }
-  if (Bun.env.NERD_FONTS === '0' || Bun.env.NERD_FONTS === 'false') {
+  if (Bun.env['NERD_FONTS'] === '0' || Bun.env['NERD_FONTS'] === 'false') {
     return false;
   }
 
   // Auto-detect based on terminal
-  const term = Bun.env.TERM_PROGRAM ?? '';
+  const term = Bun.env['TERM_PROGRAM'] ?? '';
   return NERD_FONT_TERMINALS.some((t) => term.includes(t));
 };
 

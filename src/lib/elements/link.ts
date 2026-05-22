@@ -9,7 +9,7 @@ interface LinkConfig {
 const OSC8_TERMINALS = ['iTerm.app', 'WezTerm', 'vscode', 'Hyper', 'kitty', 'Alacritty'];
 
 export const supportsOsc8 = (): boolean => {
-  const term = Bun.env.TERM_PROGRAM ?? '';
+  const term = Bun.env['TERM_PROGRAM'] ?? '';
   return OSC8_TERMINALS.some((t) => term.includes(t));
 };
 

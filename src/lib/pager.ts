@@ -44,7 +44,7 @@ export const getPagerCommand = (
   config: PagerConfig,
 ): { command: string; args: string[]; env: Record<string, string> } => {
   // Priority: config > MD_PAGER > PAGER > less (bat pattern)
-  const command = config.command || (Bun.env.MD_PAGER ?? Bun.env.PAGER ?? 'less');
+  const command = config.command || (Bun.env['MD_PAGER'] ?? Bun.env['PAGER'] ?? 'less');
 
   // For less, inject smart defaults if no args configured
   let { args } = config;
@@ -112,7 +112,7 @@ export const pipeToLess = Effect.fn('md.pipe-to-less')(function* pipeToLessGen(
 
 export const shouldUseColor = (): boolean => {
   // Respect NO_COLOR standard (bat pattern)
-  if (Bun.env.NO_COLOR !== undefined) {
+  if (Bun.env['NO_COLOR'] !== undefined) {
     return false;
   }
   return process.stdout.isTTY;

@@ -11,11 +11,11 @@ let configOverride: boolean | 'auto' = 'auto';
  * Syncs NO_COLOR to FORCE_COLOR for chalk/boxen consistency.
  */
 const initColorEnvironment = (): void => {
-  const noColorEnv = Bun.env.NO_COLOR !== undefined && Bun.env.NO_COLOR !== '';
+  const noColorEnv = Bun.env['NO_COLOR'] !== undefined && Bun.env['NO_COLOR'] !== '';
   const noColorFlag = process.argv.includes('--no-color');
 
   if (noColorEnv || noColorFlag) {
-    Bun.env.FORCE_COLOR = '0';
+    Bun.env['FORCE_COLOR'] = '0';
   }
 };
 
@@ -30,9 +30,9 @@ const setColorConfig = (truecolor: boolean | 'auto'): void => {
   cachedLevel = null;
 
   if (truecolor === true) {
-    Bun.env.FORCE_COLOR = '3';
+    Bun.env['FORCE_COLOR'] = '3';
   } else if (truecolor === false) {
-    Bun.env.FORCE_COLOR = '2';
+    Bun.env['FORCE_COLOR'] = '2';
   }
 };
 
@@ -42,7 +42,7 @@ const resetColorCache = (): void => {
 };
 
 const detectAutoColorLevel = (): ColorLevel => {
-  const force = Bun.env.FORCE_COLOR;
+  const force = Bun.env['FORCE_COLOR'];
   if (force === '0') {
     return 0;
   }
@@ -85,7 +85,7 @@ const getColorLevel = (): ColorLevel => {
 
   let level: ColorLevel;
 
-  if (Bun.env.NO_COLOR !== undefined && Bun.env.NO_COLOR !== '') {
+  if (Bun.env['NO_COLOR'] !== undefined && Bun.env['NO_COLOR'] !== '') {
     level = 0;
   } else if (configOverride === true) {
     level = 3;

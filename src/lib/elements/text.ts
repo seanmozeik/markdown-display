@@ -1,6 +1,6 @@
-// Src/lib/elements/text.ts
 import { hyphenateSync } from 'hyphen/en';
 
+// Src/lib/elements/text.ts
 import { getTextColor } from '../../ui/themes/semantic';
 import { visibleLength } from '../ansi';
 
