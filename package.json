@@ -1,6 +1,6 @@
 {
   "name": "@seanmozeik/markdown-display",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Beautiful terminal markdown viewer",
   "keywords": [
     "bun",
