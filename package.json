@@ -1,6 +1,6 @@
 {
   "name": "@seanmozeik/markdown-display",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Beautiful terminal markdown viewer",
   "keywords": [
     "bun",
@@ -19,7 +19,8 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "hyphen.d.ts"
   ],
   "type": "module",
   "main": "./src/index.ts",
