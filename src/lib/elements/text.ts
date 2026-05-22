@@ -1,3 +1,4 @@
+/// <reference path="../../hyphen.d.ts" />
 import { hyphenateSync } from 'hyphen/en';
 
 // Src/lib/elements/text.ts
