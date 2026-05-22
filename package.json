@@ -32,7 +32,7 @@
   },
   "scripts": {
     "build": "bun scripts/build.ts",
-    "build:bundle": "bun scripts/build.ts -- --no-formula",
+    "build:release": "bun scripts/build.ts -- --release",
     "build:themes": "bun scripts/build-themes.ts",
     "check": "bun run format && bun run lint:fix && bun run typecheck",
     "dev": "bun run src/cli.ts",

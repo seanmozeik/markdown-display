@@ -88,6 +88,26 @@ Multiple files are concatenated with filename headers.
 --wrap              Wrap code (default)
 ```
 
+## Library Usage
+
+Use `md` as a library in your own CLI tools to render markdown with beautiful syntax highlighting and formatting.
+
+```ts
+import { renderMarkdown, render, DEFAULT_CONFIG } from '@seanmozeik/markdown-display';
+import { Effect } from 'effect';
+
+// Simple usage with defaults
+const program = renderMarkdown('# Hello World\n\nThis is **markdown**.');
+Effect.runSync(program);
+
+// Advanced usage with custom config
+const customConfig = { ...DEFAULT_CONFIG, width: 80, theme: 'github-dark' };
+const advancedProgram = render(markdown, customConfig);
+Effect.runSync(advancedProgram);
+```
+
+The library uses Effect v4 for composable error handling and async operations. All rendering functions return `Effect` programs that can be composed and run with `Effect.runSync` or `Effect.runPromise`.
+
 ## Configuration
 
 `~/.config/md/config.toml`
@@ -139,10 +159,11 @@ args = ["-r", "-F", "-K", "-X"]
 ## Build
 
 ```bash
-bun run build      # standalone binary
-bun run dev        # development
-bun test           # tests
-bun run check      # lint + format
+bun run build         # standalone binary (fast iteration)
+bun run build:release # full release with tarball + Homebrew formula
+bun run dev           # development
+bun test              # tests
+bun run check         # lint + format
 ```
 
 ## License

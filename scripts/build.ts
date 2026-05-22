@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 /**
- * 1) Bundle `src/cli.ts` → minified `dist/<bin>` with `#!/usr/bin/env bun` (see package.json `bin.md`).
- * 2) Pack `artifacts/md-{version}.tar.gz` for GitHub/Homebrew (dist/, src/, package.json).
- * 3) SHA256 that tarball and patch `Formula/md.rb` (`version` + `sha256`).
+ * Default: Bundle `src/cli.ts` → minified `dist/<bin>` with `#!/usr/bin/env bun`
+ * Release mode (--release): Also pack tarball and update Homebrew formula
  *
- * Fast iteration (JS only, no tarball / formula):
- *   bun run build -- --no-formula
+ * Usage:
+ *   bun run build              # CLI bundle only (fast iteration)
+ *   bun run build -- --release # Full release with tarball + formula
  */
 import { chmodSync, cpSync, mkdirSync, renameSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import pkg from '../package.json' with { type: 'json' };
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const skipTarballAndFormula = process.argv.includes('--no-formula');
+const releaseMode = process.argv.includes('--release');
 const { version } = pkg;
 const distPrefix = './dist/';
 const distDir = join(root, 'dist');
@@ -55,7 +55,7 @@ if (!bundle.startsWith('#!')) {
 }
 chmodSync(outPath, 0o755);
 
-if (skipTarballAndFormula) {
+if (!releaseMode) {
   process.exit(0);
 }
 

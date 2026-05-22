@@ -18,3 +18,4 @@ gh release create "v${VERSION}" \
 cp Formula/md.rb ../tap/Formula/md.rb && \
 cd ../tap && git add Formula/md.rb && \
 git commit -m "md ${VERSION}" && git push
+npm publish
