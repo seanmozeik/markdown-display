@@ -19,8 +19,7 @@
   },
   "files": [
     "dist",
-    "src",
-    "hyphen.d.ts"
+    "src"
   ],
   "type": "module",
   "main": "./src/index.ts",
