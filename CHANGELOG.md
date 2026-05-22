@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-05-22
+
+## Added
+
+- **TOML Configuration**: Added full TOML config support with `example.config.toml` for theme and layout customization
+- **Shiki Highlighting**: Enhanced code block rendering with Shiki syntax highlighting for better code presentation
+- **Render Markdown**: Added `renderMarkdown` convenience function for markdown processing in applications
+- **Error Handling**: Added specific error types for file not found, invalid theme, config errors, and pager issues
+
+## Changed
+
+- **CLI Performance**: Improved CLI performance with faster `--raw` path and separated bootstrap logic
+- **Code Architecture**: Refactored app architecture with better TypeScript typing and improved error handling
+- **Test Organization**: Moved test files to dedicated `tests/` directory for better project structure
+
+## Fixed
+
+- **npm Package**: Fixed package to be publicly available on npm
+
 ## [0.3.4] - 2026-01-26
 
 ### Changed
